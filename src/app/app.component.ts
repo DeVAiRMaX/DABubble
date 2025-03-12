@@ -45,7 +45,7 @@ import {
         opacity: 1,
       })),
       state('leftTop', style({
-        transform: 'translateX(-140%) translateY(-240%) scale(0.5)',
+        transform: 'translateX(-200%) translateY(-240%) scale(0.5)',
         opacity: 0,
       })),
       transition('center => leftTop', [
@@ -67,9 +67,11 @@ import {
     trigger('loginContainerAnimation', [
       state('hidden', style({
         opacity: 0,
+        display: 'none',
       })),
       state('visible', style({
         opacity: 1,
+        display: 'flex',
       })),
       transition('hidden => visible', [
         animate('0.65s ease-out')
@@ -113,6 +115,6 @@ export class AppComponent {
 
     setTimeout(() => {
       this.loginContainerState = 'visible';
-    }, 3400);
+    }, 3500);
   }
 }

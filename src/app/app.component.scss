@@ -48,6 +48,10 @@
   }
 }
 
+.login-container-animation {
+  display:none;
+}
+
 .login-container-header-logo {
   display: flex;
   align-items: center;
@@ -105,6 +109,7 @@
   justify-content: space-between;
   flex-direction: column;
   align-items: center;
+  max-width: 100%;
 }
 
 .login-box-container {
