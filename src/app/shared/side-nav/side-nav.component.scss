@@ -1,0 +1,98 @@
+.side-nav-container{
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+.side-nav-header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    mat-icon{
+        cursor: pointer;
+    }
+}
+
+.side-nav-header-logo{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    img{
+        width: 60px;
+        height: 60px;
+    }
+    h3{
+        font-size: 24px;
+        font-weight: 700;
+    }
+}
+
+.channel-list-container{
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.edit_btn{
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 10px;
+    transition: all 0.1s ease-in-out;
+    &:hover{
+        background-color: #0000000a;
+        color: #535AF1;
+    }
+}
+
+.channel-list-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .channel-list-header{
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+.channel-list-header-title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    &:hover{
+        color: #535AF1;
+    }
+}
+
+.add_btn{
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 10px;
+    transition: all 0.1s ease-in-out;
+    &:hover{
+        background-color: #0000000a;
+        color: #535AF1;
+    }
+}
+
+.channel-list-body{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-left: 14px;
+    a{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 20px;
+        padding: 4px 20px;
+        cursor: pointer;
+        &:hover{
+            background-color: #0000000a;
+            color: #535AF1;
+            font-weight: 700;
+        }
+    }
+}

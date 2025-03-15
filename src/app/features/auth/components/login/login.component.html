@@ -19,7 +19,7 @@
   
     <div class="login-container-header-text">
       <p>Neu bei DABubble?</p>
-      <a href="#">Konto erstellen</a>
+      <a [routerLink]="['/register']">Konto erstellen</a>
     </div>
   </div>
   <div class="login-box-container">
@@ -55,7 +55,7 @@
 
       <div class="login-actions">
         <button class="login-btn">Anmelden</button>
-        <button class="guest-login" [routerLink]="['dashboard']">Gast-Login</button>
+        <button class="guest-login" [routerLink]="['/dashboard']">Gast-Login</button>
       </div>
     </div>
 

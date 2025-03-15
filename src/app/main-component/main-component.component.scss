@@ -1,0 +1,34 @@
+.main-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.side-nav-container {
+  min-width: 366px;
+  height: calc(100vh - 137px);
+  background-color: #fff;
+  border-radius: 30px;
+  padding: 32px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.channel-chat-container {
+  width: 100%;
+  height: calc(100vh - 137px);
+  background-color: #fff;
+  border-radius: 30px;
+  padding: 32px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.thread-container {
+  min-width: 485px;
+  height: calc(100vh - 137px);
+  background-color: #fff;
+  border-radius: 30px;
+  padding: 32px 30px;
+}
