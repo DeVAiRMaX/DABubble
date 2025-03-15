@@ -1,0 +1,68 @@
+<div class="animation-background" [@BackgroundAnimation]="BackgroundState">
+  <div class="animation-container" [@ContainerAnimation]="ContainerState">
+    <div class="animation-logo" [@logoAnimation]="logoState">
+      <img src="./assets/img/logo.png" alt="logo" />
+    </div>
+    <div class="animation-text" [@textAnimation]="textState">
+      <h1>DABubble</h1>
+    </div>
+  </div>
+</div>
+
+<div class="login-container-animation" [@loginContainerAnimation]="loginContainerState">
+<div class="login-container">
+  <div class="login-container-header">
+    <div class="login-container-header-logo">
+      <img src="./assets/img/logo.png" alt="logo" />
+      <h1>DABubble</h1>
+    </div>
+  
+    <div class="login-container-header-text">
+      <p>Neu bei DABubble?</p>
+      <a href="#">Konto erstellen</a>
+    </div>
+  </div>
+  <div class="login-box-container">
+    <div class="login-box">
+      <h2>Anmeldung</h2>
+      <p class="login-hint">
+        Wir empfelen dir, die E-mailadresse zu nehmen, die du auf der Arbeit
+        benutzt.
+      </p>
+
+      <div class="input-group">
+        <div class="email-input">
+          <input type="email" placeholder="beispielname@email.com" />
+        </div>
+
+        <div class="password-input">
+          <input type="password" placeholder="Passwort" />
+        </div>
+      </div>
+
+      <div class="forgot-password">
+        <a href="#">Passwort vergessen?</a>
+      </div>
+
+      <div class="divider">
+        <span>ODER</span>
+      </div>
+
+      <button class="google-login">
+        <img src="assets/img/icons/google.png" alt="Google Icon" />
+        Anmelden mit Google
+      </button>
+
+      <div class="login-actions">
+        <button class="login-btn">Anmelden</button>
+        <button class="guest-login" [routerLink]="['dashboard']">Gast-Login</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="#">Impressum</a>
+      <a href="#">Datenschutz</a>
+    </div>
+  </div>
+</div>
+</div>

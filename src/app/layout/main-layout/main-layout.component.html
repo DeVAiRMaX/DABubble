@@ -1,0 +1,109 @@
+<div class="app-container">
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="logo">
+      <img class="logo-img" src="./assets/img/logo.png" alt="DABubble">
+      <span>DABubble</span>
+    </div>
+    <div class="search-bar">
+      <input type="text" placeholder="Devspace durchsuchen" />
+    </div>
+    <div class="user-profile">
+      <span>{{ currentUser.name }}</span>
+      <div class="avatar-container">
+        <img class="header-avatar-img" [src]="currentUser.avatar" [alt]="currentUser.name" class="avatar">
+        <div class="online-status" [class.online]="currentUser.online"></div>
+      </div>
+      <button class="dropdown-button">
+        <i class="chevron-down">▼</i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Left Sidebar -->
+    <nav class="sidebar">
+      <div class="workspace-header">
+        <img src="assets/images/devspace-icon.png" alt="Devspace">
+        <span>Devspace</span>
+        <button class="edit-button">✏️</button>
+      </div>
+      
+      <!-- Channels Section -->
+      <div class="channels-section">
+        <div class="section-header">
+          <h2>Channels</h2>
+          <button class="add-button">+</button>
+        </div>
+        <div class="channel active">
+          <span class="channel-prefix">#</span>
+          <span>Entwicklerteam</span>
+        </div>
+      </div>
+
+      <!-- Direct Messages Section -->
+      <div class="direct-messages">
+        <div class="section-header">
+          <h2>Direktnachrichten</h2>
+          <button class="add-button">+</button>
+        </div>
+        <div class="user-list">
+          <div *ngFor="let user of users" class="user-item" [class.active]="user === currentUser">
+            <div class="avatar-container">
+              <img [src]="user.avatar" [alt]="user.name" class="avatar">
+              <div class="online-status" [class.online]="user.online"></div>
+            </div>
+            <span>{{ user.name }}</span>
+            <span class="status" *ngIf="user.status">&nbsp;{{ user.status }}</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Chat Area -->
+    <main class="chat-area">
+      <div class="chat-header">
+        <div class="channel-info">
+          <span class="channel-prefix">#</span>
+          <span>Entwicklerteam</span>
+        </div>
+        <div class="channel-members">
+          <div class="member-avatars">
+            <div *ngFor="let member of channelMembers" class="avatar-container">
+              <img [src]="member.avatar" [alt]="member.name" class="avatar">
+              <div class="online-status" [class.online]="member.online"></div>
+            </div>
+          </div>
+          <span class="member-count">{{ channelMembers.length }}</span>
+        </div>
+      </div>
+
+      <div class="messages-container">
+        <div class="date-divider">Dienstag, 14 Januar</div>
+        <app-message *ngFor="let message of messages" [message]="message"></app-message>
+        <div class="date-divider">Heute</div>
+      </div>
+
+      <div class="message-input">
+        <div class="input-container">
+          <textarea placeholder="Nachricht an #Entwicklerteam"></textarea>
+          <div class="input-actions">
+            <button class="emoji-button">😊</button>
+            <button class="mention-button">&#64;</button>
+            <button class="send-button">➤</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Thread Panel -->
+    <aside class="thread-panel">
+      <app-thread 
+        [threadTitle]="selectedThread.title"
+        [parentMessage]="selectedThread.parentMessage"
+        [replies]="selectedThread.replies">
+      </app-thread>
+    </aside>
+  </div>
+</div> 
