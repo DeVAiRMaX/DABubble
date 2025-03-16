@@ -18,6 +18,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import {MatTreeModule} from '@angular/material/tree';
 
 @NgModule({
   imports: [
@@ -44,7 +45,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     RouterLink,
     RouterOutlet,
     MatListModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatTreeModule
   ]
 })
 export class SharedModule { } 
