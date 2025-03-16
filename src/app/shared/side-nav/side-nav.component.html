@@ -6,24 +6,74 @@
     </div>
     <span class="material-symbols-outlined edit_btn">edit_square</span>
   </div>
-  
+
   <div class="channel-list-container">
     <div class="channel-list-header">
       <div class="channel-list-header-title">
-        <span class="material-icons arrow_drop_down"> arrow_drop_down </span>
-        <span class="material-icons workspaces_outline"> workspaces_outline </span>
+        <span
+          class="material-icons arrow_drop_down"
+          (click)="toggleChannelList()"
+          [class.rotated]="!isChannelListExpanded"
+        >
+          arrow_drop_down
+        </span>
+        <span class="material-icons workspaces_outline">
+          workspaces_outline
+        </span>
         <h3>Channels</h3>
       </div>
       <span class="material-symbols-outlined add_btn">add</span>
     </div>
 
-    <div class="channel-list-body">
-      <a><span class="material-icons">
-        tag
-        </span> Entwicklerteam</a>
-      <a><span class="material-icons">
-        add_circle_outline
-        </span>Channel hinzufügen</a>
+    <div class="channel-list-body" [class.collapsed]="!isChannelListExpanded">
+      <a><span class="material-icons"> tag </span> Entwicklerteam</a>
+
+      <a
+        ><span class="material-icons"> add_circle_outline </span>Channel
+        hinzufügen</a
+      >
     </div>
+  </div>
+
+  <div class="channel-list-container">
+    <div class="channel-list-header">
+      <div class="channel-list-header-title">
+        <span class="material-icons arrow_drop_down" (click)="toggleMsgList()"
+          [class.rotated]="!isMsgListExpanded"
+          >arrow_drop_down</span
+        >
+        <span class="material-symbols-outlined"> account_circle </span>
+        <h3>Direktnachrichten</h3>
+      </div>
+    </div>
+
+    <div class="msg-list-body" [class.collapsed]="!isMsgListExpanded">
+
+      <div class="msg-container">
+        <div class="msg-container-avatar">
+          <img src="./assets/img/header_profilicon.png" alt="Avatar" />
+          <div class="msg-container-avatar-status"></div>
+        </div>
+        <p>Frederik Beck (Du)</p>
+      </div>
+
+      <div class="msg-container">
+        <div class="msg-container-avatar">
+          <img src="./assets/img/header_profilicon2.png" alt="Avatar" />
+          <div class="msg-container-avatar-status"></div>
+        </div>
+        <p>Sofia Müller</p>
+      </div>
+
+      <div class="msg-container">
+        <div class="msg-container-avatar">
+          <img src="./assets/img/header_profilicon3.png" alt="Avatar" />
+          <div class="msg-container-avatar-status"></div>
+        </div>
+        <p>Noah Braun</p>
+      </div>
+      
+    </div>
+
   </div>
 </div>

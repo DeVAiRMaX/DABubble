@@ -1,6 +1,119 @@
 <div class="channel-chat-container">
-    <div class="channel-chat-header">
-        <img src="./assets/img/devspace.png" alt="Devspace Logo">
-        Chat Channel
+  <div class="channel-chat-header">
+    <div class="channel-chat-header-left">
+      <span class="material-icons"> tag </span>
+      <h3>Entwicklerteam</h3>
+      <span class="material-symbols-outlined arrow_drop_down">
+        keyboard_arrow_down
+      </span>
     </div>
+
+    <div class="channel-chat-header-right">
+      <div class="channel-chat-header-right-user-container">
+        <div class="profile-images-container">
+          <img src="./assets/img/header_profilicon.png" alt="user" />
+          <img src="./assets/img/header_profilicon2.png" alt="user" />
+          <img src="./assets/img/header_profilicon3.png" alt="user" />
+        </div>
+        <p>3</p>
+      </div>
+      <div class="add_btn_user">
+        <span class="material-symbols-outlined"> person_add </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="channel-chat-body">
+    <div class="date-divider">
+      <div class="divider-line"></div>
+      <span class="date-text">Dienstag, 14 Januar</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="channel-chat-message-container">
+      <div class="channel-chat-message-container-left">
+        <div class="channel-chat-message-container-left-user-container">
+          <img src="./assets/img/header_profilicon3.png" alt="user" />
+        </div>
+        <div class="channel-chat-message-container-left-message-container">
+          <div
+            class="channel-chat-message-container-left-message-container-header"
+          >
+            <h3 class="msg-user-name">Noah Braun</h3>
+            <p class="msg-time">14:25</p>
+          </div>
+          <div class="msg-left">
+            <p>Welche Version ist aktuell von Angular?</p>
+          </div>
+          <div
+            class="channel-chat-message-container-left-message-container-time"
+          >
+            <a class="msg-count">2 Antworten</a>
+            <p class="last-msg-time">Letzte Antwort 14:56</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-divider">
+      <div class="divider-line"></div>
+      <span class="date-text">Dienstag, 14 Januar</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="channel-chat-message-container">
+      <div class="channel-chat-message-container-right">
+        <div class="channel-chat-message-container-left-user-container">
+          <img src="./assets/img/header_profilicon3.png" alt="user" />
+        </div>
+        <div class="channel-chat-message-container-right-message-container">
+          <div
+            class="channel-chat-message-container-right-message-container-header"
+          >
+            <h3 class="msg-user-name">Frederik Beck</h3>
+            <p class="msg-time">15:06 Uhr</p>
+          </div>
+          <div class="msg-right">
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Pellentesque blandit odio efficitur lectus vestibulum, quis
+              accumsan ante vulputate. Quisque tristique iaculis erat, eu
+              faucibus lacus iaculis ac.
+            </p>
+          </div>
+          <!-- <div
+            class="channel-chat-message-container-right-message-container-time"
+          >
+            <a class="msg-count">2 Antworten</a>
+            <p class="last-msg-time">Letzte Antwort 14:56</p>
+          </div> -->
+          <div class="msg-reaction-container">
+            <div class="reaction">
+              <img src="./assets/img/icons/rocket.png" alt="rocket" />
+              <p>1</p>
+            </div>
+            <div class="reaction">
+              <img src="./assets/img/icons/check.png" alt="check" />
+              <p>1</p>
+            </div>
+            <span class="material-symbols-outlined add_reaction_btn">
+                add_reaction
+                </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="msg-input-container">
+    <div class="input-wrapper">
+        <input type="text" placeholder="Nachricht an #Entwicklerteam">
+        <div class="input-actions">
+            <span class="material-symbols-outlined">sentiment_satisfied</span>
+            <span class="material-symbols-outlined">alternate_email</span>
+        </div>
+    </div>
+    <button class="send-button">
+        <span class="material-symbols-outlined">arrow_forward</span>
+    </button>
+</div>
 </div>
