@@ -1,5 +1,4 @@
-<div class="thread-container">
-
+<div *ngIf="!isClosed" class="thread-container">
   <div class="thread-header">
     <div class="thread-header-left">
       <h3>Thread</h3>
@@ -7,7 +6,12 @@
       <p>Entwicklerteam</p>
     </div>
     <div class="thread-header-right">
-      <span class="material-symbols-outlined close-thread-button"> close </span>
+      <span
+        (click)="toggleThread()"
+        class="material-symbols-outlined close-thread-button"
+      >
+        close
+      </span>
     </div>
   </div>
 
@@ -50,7 +54,6 @@
         </div>
         <div class="reaction-container">
           <div class="reaction">
-
             <div class="reaction-information-overlay">
               <div class="reaction-overlay-item">
                 <img src="./assets/img/emoji.png" alt="check" />
@@ -113,5 +116,4 @@
       </div>
     </div>
   </div>
-
 </div>

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { VariablesService } from '../../variables.service';
 
 @Component({
   selector: 'app-channel-chat',
@@ -8,5 +9,12 @@ import { Component } from '@angular/core';
   styleUrl: './channel-chat.component.scss'
 })
 export class ChannelChatComponent {
+
+  constructor(private variableService: VariablesService){}
+
+  toggleThread(){
+    this.variableService.toggleThread();
+
+  }
 
 }
