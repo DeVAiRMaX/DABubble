@@ -44,7 +44,7 @@
   padding: 10px;
   transition: all 0.1s ease-in-out;
   &:hover {
-    background-color: #0000000a;
+    background-color: #ECEEFE;
     color: #535af1;
   }
 }
@@ -73,7 +73,7 @@
   padding: 10px;
   transition: all 0.1s ease-in-out;
   &:hover {
-    background-color: #0000000a;
+    background-color: #ECEEFE;
     color: #535af1;
   }
 }
@@ -97,17 +97,17 @@
   }
 
   a {
-    width: fit-content;
+    width: 100%;
     display: flex;
     align-items: center;
     gap: 10px;
     border-radius: 20px;
-    padding: 4px 35px;
+    padding: 4px 0 4px 35px;
     cursor: pointer;
     &:hover {
-      background-color: #0000000a;
+      background-color: #ECEEFE;
       color: #535af1;
-      font-weight: 700;
+      font-weight: 600;
     }
   }
 }
@@ -143,7 +143,11 @@
   border-radius: 35px;
   transition: all 0.1s ease-in-out;
   &:hover {
-    background-color: #797df32f;
+    background-color: #ECEEFE;
+    p{
+      color: #535af1;
+      font-weight: 600;
+    }
   }
   p {
     font-size: 18px;

@@ -1,1 +1,46 @@
-<p>register works!</p>
+<div class="register-container">
+  <div class="register-container-header">
+    <div class="register-container-header-logo">
+      <img src="./assets/img/logo.png" alt="logo" />
+      <h1>DABubble</h1>
+    </div>
+  </div>
+  <div class="register-box-container">
+    <div class="register-box">
+      <span class="material-symbols-outlined back-arrow-btn" [routerLink]="['/']"> arrow_back </span>
+      <h2>Konto erstellen</h2>
+      <p class="register-hint">
+        Mit deinem Namen und deiner E-Mail-Adresse hast du dein neues
+        DABubble-Konto.
+      </p>
+
+      <div class="input-group">
+        <div class="person-input">
+          <input type="name" placeholder="Name und Nachname" />
+        </div>
+
+        <div class="email-input">
+          <input type="email" placeholder="Beispielname@email.com" />
+        </div>
+
+        <div class="password-input">
+          <input type="password" placeholder="Passwort" />
+        </div>
+      </div>
+
+      <div class="privacypolicy">
+        <input type="checkbox">
+        <p>Ich stimme der <a href="#">Datenschutzerklärung</a>zu.</p>
+      </div>
+
+      <div class="register-actions">
+        <button class="register-btn">Weiter</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="#">Impressum</a>
+      <a href="#">Datenschutz</a>
+    </div>
+  </div>
+</div>
