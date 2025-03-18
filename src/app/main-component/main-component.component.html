@@ -1,6 +1,8 @@
 <app-header></app-header>
 <div class="main-container">
-  <app-side-nav class="side-nav-container"></app-side-nav>
+  <app-side-nav
+    [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
+  ></app-side-nav>
   <app-channel-chat class="channel-chat-container"></app-channel-chat>
   <app-thread class="thread-container"></app-thread>
 </div>

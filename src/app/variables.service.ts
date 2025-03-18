@@ -12,6 +12,14 @@ export class VariablesService {
   threadIsClosed$ = this.isClosedSubject.asObservable();
 
 
+  private sideNavIsVisibleSubject = new BehaviorSubject<boolean>(true);
+  sideNavIsVisible$ = this.sideNavIsVisibleSubject.asObservable();
+
+  toggleSideNav(){
+    this.sideNavIsVisibleSubject.next(!this.sideNavIsVisibleSubject.value);
+  }
+
+
   toggleThread(){
     this.isClosedSubject.next(!this.isClosedSubject.value);
   }

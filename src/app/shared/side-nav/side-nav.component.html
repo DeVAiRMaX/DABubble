@@ -1,4 +1,9 @@
-<div class="side-nav-container">
+<div
+  [ngClass]="{
+    'side-nav-container': sideNavIsVisible,
+    hide: !sideNavIsVisible
+  }"
+>
   <div class="side-nav-header">
     <div class="side-nav-header-logo">
       <img src="./assets/img/devspace.png" alt="Devspace Logo" />
@@ -38,7 +43,9 @@
   <div class="channel-list-container">
     <div class="channel-list-header">
       <div class="channel-list-header-title">
-        <span class="material-icons arrow_drop_down" (click)="toggleMsgList()"
+        <span
+          class="material-icons arrow_drop_down"
+          (click)="toggleMsgList()"
           [class.rotated]="!isMsgListExpanded"
           >arrow_drop_down</span
         >
@@ -48,7 +55,6 @@
     </div>
 
     <div class="msg-list-body" [class.collapsed]="!isMsgListExpanded">
-
       <div class="msg-container">
         <div class="msg-container-avatar">
           <img src="./assets/img/header_profilicon.png" alt="Avatar" />
@@ -72,8 +78,17 @@
         </div>
         <p>Noah Braun</p>
       </div>
-      
     </div>
-
   </div>
+</div>
+
+<div (click)="toggleChannelNav()" class="hide-side-nav-div">
+  <img
+    [src]="
+      sideNavIsVisible
+        ? '/assets/img/icons/hideMenu.png'
+        : '/assets/img/icons/showMenu.png'
+    "
+  />
+  <span>Workspace-Menü schließen</span>
 </div>
