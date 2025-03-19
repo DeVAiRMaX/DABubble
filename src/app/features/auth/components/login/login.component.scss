@@ -122,7 +122,8 @@
   }
   
   .login-box {
-    width: 606px;
+    max-width: 606px;
+    min-width: 606px;
     background: white;
     padding: 2.5rem;
     border-radius: 30px;

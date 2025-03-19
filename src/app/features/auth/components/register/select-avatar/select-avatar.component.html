@@ -1,0 +1,46 @@
+<div class="avatar-container">
+  <div class="avatar-container-header">
+    <div class="avatar-container-header-logo">
+      <img src="./assets/img/logo.png" alt="logo" />
+      <h1>DABubble</h1>
+    </div>
+  </div>
+  <div class="avatar-box-container">
+    <div class="avatar-box">
+      <div class="avatar-box-header">
+        <span
+          class="material-symbols-outlined back-arrow-btn"
+          [routerLink]="['/register']"
+        >
+          arrow_back
+        </span>
+        <h2>Wähle deinen Avatar</h2>
+      </div>
+      <div class="select-avatar-box-content">
+        <div class="select-avatar-preview">
+          <img [src]="selectedAvatar" alt="person" />
+          <h3>Frederik Beck</h3>
+        </div>
+        <div class="select-avatar-box-content-item">
+          <p>Aus der Liste wählen</p>
+          <div class="select-avatar-box-content-item-list">
+            <img *ngFor="let avatar of avatars| slice:1" 
+                 [src]="avatar" 
+                 alt="person" 
+                 (click)="selectedAvatar = avatar"
+                 [class.selected]="selectedAvatar === avatar" />
+          </div>
+        </div>
+      </div>
+
+      <div class="avatar-actions">
+        <button class="avatar-btn" [routerLink]="['/avatar']">Weiter</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="#">Impressum</a>
+      <a href="#">Datenschutz</a>
+    </div>
+  </div>
+</div>
