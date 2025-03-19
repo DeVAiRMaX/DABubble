@@ -16,6 +16,14 @@ export class VariablesService {
   private sideNavIsVisibleSubject = new BehaviorSubject<boolean>(this.getStoredValue('sideNavIsVisible', true));
   sideNavIsVisible$ = this.sideNavIsVisibleSubject.asObservable();
 
+  private addChannelOverlayIsVisibleSubject = new BehaviorSubject<boolean>(false);
+  addChannelOverlayIsVisible$ = this.addChannelOverlayIsVisibleSubject.asObservable();
+
+  toggleAddChannelOverlay(){
+    const newValue = !this.addChannelOverlayIsVisibleSubject.value;
+    this.addChannelOverlayIsVisibleSubject.next(newValue);
+  }
+
   toggleSideNav() {
     const newValue = !this.sideNavIsVisibleSubject.value;
     this.sideNavIsVisibleSubject.next(newValue);
@@ -38,7 +46,6 @@ export class VariablesService {
   }
 
   private loadState() {
-  
     this.isClosedSubject.next(this.getStoredValue('isClosed', false));
     this.sideNavIsVisibleSubject.next(this.getStoredValue('sideNavIsVisible', true));
   }

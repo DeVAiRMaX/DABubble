@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 0 16px;
+  padding: 0 20px;
 }
 
 .side-nav-container {
@@ -13,6 +13,7 @@
   padding: 32px 30px;
   display: flex;
   flex-direction: column;
+  animation: slideIn 200ms ease-out-forwards;
 }
 
 .channel-chat-container {
@@ -31,4 +32,16 @@
   border-radius: 30px;
   max-width: 32%;
   min-width: 328px;
+}
+
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

@@ -54,10 +54,27 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  .header-user-avatar {
+}
+
+.header-user-avatar {
+  display: flex;
+  position: relative;
+  img {
     width: 70px;
     height: 70px;
+    border-radius: 50%;
   }
+}
+
+.header-user-avatar-status {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background-color: #92c83e;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border: 2px solid #fff;
 }
 
 mat-icon {
