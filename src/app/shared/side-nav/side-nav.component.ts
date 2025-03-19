@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { SharedModule } from '../../shared';
 import { VariablesService } from '../../variables.service';
 import { CommonModule } from '@angular/common';
+import { ChannelCreateOverlayComponent } from '../channel-create-overlay/channel-create-overlay.component';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-side-nav',
   standalone: true,
-  imports: [SharedModule, CommonModule],
+  imports: [SharedModule, CommonModule, ChannelCreateOverlayComponent],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.scss'
 })
@@ -14,6 +16,7 @@ export class SideNavComponent implements OnInit {
   isChannelListExpanded: boolean = true;
   isMsgListExpanded: boolean = true;
  sideNavIsVisible:boolean = true;
+ addChannelOverlayIsVisible$:Observable<boolean>;
   ngOnInit() {
     // Lade gespeicherte Zustände aus dem LocalStorage
     const savedChannelState = localStorage.getItem('channelListExpanded');
@@ -25,6 +28,8 @@ export class SideNavComponent implements OnInit {
 
  
   constructor(private variableService: VariablesService){
+
+    this.addChannelOverlayIsVisible$ = this.variableService.addChannelOverlayIsVisible$;
 
     this.variableService.sideNavIsVisible$.subscribe(value =>{
       this.sideNavIsVisible = value;
@@ -45,5 +50,9 @@ export class SideNavComponent implements OnInit {
     this.isMsgListExpanded = !this.isMsgListExpanded;
     // Speichere neuen Zustand im LocalStorage
     localStorage.setItem('msgListExpanded', JSON.stringify(this.isMsgListExpanded));
+  }
+
+  showAddChannelOverlay(){
+    this.variableService.toggleAddChannelOverlay();
   }
 }

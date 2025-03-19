@@ -1,0 +1,34 @@
+<div class="wholeComponent" @fadeSlideIn>
+  <div class="add-channel-formular">
+    <div class="add-channel-headline">
+      <span>Channel erstellen</span>
+      <button
+        (click)="closeAddChannelOverlay()"
+        class="close-add-channel-overlay"
+      >
+        X
+      </button>
+    </div>
+    <div class="add-channel-subheadline">
+      <span>
+        Channels dienen deinem Team zur Kommuniaktion. Am besten sollten sie
+        themenbezogen sein #marketing zum Beispiel.</span
+      >
+    </div>
+
+    <div class="add-channel-name">
+      <span>Channel-Name</span>
+      <input type="text" placeholder="# z.B. Kooperationsprojekte" />
+    </div>
+
+    <div class="add-channel-description">
+      <span
+        >Beschreibung
+        <p class="optional-txt">(optional)</p></span
+      >
+      <input type="text" placeholder="Beschreibung hinzufügen..." />
+    </div>
+
+    <button class="add-channel-button">Erstellen</button>
+  </div>
+</div>
