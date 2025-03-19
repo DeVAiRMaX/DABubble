@@ -12,9 +12,11 @@ export class ChannelChatComponent {
 
   constructor(private variableService: VariablesService){}
 
-  toggleThread(){
-    this.variableService.toggleThread();
-
+  toggleThread() {
+    if (this.variableService['isClosedSubject'].value) { 
+      this.variableService.toggleThread();
+    }
   }
+  
 
 }

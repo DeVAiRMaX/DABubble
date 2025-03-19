@@ -192,9 +192,15 @@
   position: absolute;
   bottom: 175px;
   left: 0px;
+  user-select: none;
 
->span{
-  rotate: -90deg;
+>div{
+
+  display: flex;
+  justify-content: center;
+  >span{
+    display: flex;
+  writing-mode: sideways-lr;
   min-width: max-content;
   width: 32px;
   font-family: 'Nunito';
@@ -204,6 +210,7 @@ line-height: 120%;
 letter-spacing: 0%;
 
 
+}
 }
 
 &:hover{

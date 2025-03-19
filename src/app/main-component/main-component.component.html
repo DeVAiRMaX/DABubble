@@ -4,5 +4,8 @@
     [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
   ></app-side-nav>
   <app-channel-chat class="channel-chat-container"></app-channel-chat>
-  <app-thread class="thread-container"></app-thread>
+  <app-thread
+    [ngClass]="{ 'thread-container': !threadIsVisible }"
+    class="thread-container"
+  ></app-thread>
 </div>
