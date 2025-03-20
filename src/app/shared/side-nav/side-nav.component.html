@@ -14,10 +14,9 @@
 
   <div class="channel-list-container">
     <div class="channel-list-header">
-      <div class="channel-list-header-title">
+      <div (click)="toggleChannelList()" class="channel-list-header-title">
         <span
           class="material-icons arrow_drop_down"
-          (click)="toggleChannelList()"
           [class.rotated]="!isChannelListExpanded"
         >
           arrow_drop_down
@@ -27,9 +26,7 @@
         </span>
         <h3>Channels</h3>
       </div>
-      <span
-        (click)="showAddChannelOverlay()"
-        class="material-symbols-outlined add_btn"
+      <span (click)="openDialog()" class="material-symbols-outlined add_btn"
         >add</span
       >
     </div>
@@ -37,7 +34,7 @@
     <div class="channel-list-body" [class.collapsed]="!isChannelListExpanded">
       <a><span class="material-icons"> tag </span> Entwicklerteam</a>
 
-      <a (click)="showAddChannelOverlay()"
+      <a (click)="openDialog()"
         ><span class="material-icons"> add_circle_outline </span>Channel
         hinzufügen</a
       >
@@ -46,10 +43,9 @@
 
   <div class="channel-list-container">
     <div class="channel-list-header">
-      <div class="channel-list-header-title">
+      <div (click)="toggleMsgList()" class="channel-list-header-title">
         <span
           class="material-icons arrow_drop_down"
-          (click)="toggleMsgList()"
           [class.rotated]="!isMsgListExpanded"
           >arrow_drop_down</span
         >
