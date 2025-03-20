@@ -1,166 +1,136 @@
+input,
+textarea {
+  height: 60px;
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: 40px;
+  border: 1px solid #adb0d9;
+  color: #686868;
+  font-family: "Nunito";
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 0%;
+}
 
-input, textarea{
-    height: 60px;
+::ng-deep .channelCreateOverlayComponent-dialog {
+  .mdc-dialog__surface {
+    background-color: transparent;
+  }
+}
+
+.add-channel-formular {
+  max-width: 870px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 20px;
+  box-shadow: 0px 6px 10px 0px #00000033;
+  background-color: white;
+  border-radius: 30px;
+  padding: 40px;
+  gap: 20px;
+
+  > .add-channel-headline {
+    display: flex;
+    margin-bottom: 20px;
     width: 100%;
-    padding: 18px 20px;
-    border-radius: 40px;
-    border: 1px solid #ADB0D9;
-    color: #686868;
-    font-family: 'Nunito';
-font-weight: 400;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
+    justify-content: space-between;
+    color: black;
+    font-size: 24px;
+    font-family: "Nunito";
+    font-weight: 700;
 
-}
+    > h2 {
+      font-family: "Nunito";
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: 0%;
+      color: black;
+    }
 
-.wholeComponent{
-    // position: absolute;
-    // top: 0px;
-    // left: 0px;
-    // bottom: 0px;
-    // right: 0px;
-  
-  
-  
-   
-}
+    > .close-btn {
+      cursor: pointer;
+      border-radius: 50%;
+      padding: 10px;
+      transition: all 0.1s ease-in-out;
+      &:hover {
+        background-color: #ECEEFE;
+        color: #535af1;
+      }
+    }
+  }
 
-.add-channel-formular{
-    max-width: 870px;
+  > .add-channel-subheadline {
+    > span {
+      display: flex;
+      flex-direction: column;
+      font-family: "Nunito";
+      font-weight: 400;
+      font-size: 18px;
+      line-height: 100%;
+      letter-spacing: 0%;
+    }
+  }
+
+  > .add-channel-name {
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
-    padding: 20px;
-    box-shadow: 0px 6px 10px 0px #00000033;
-    background-color: white;
-    border-radius: 30px;
-    padding: 40px;
     gap: 20px;
 
+    > span {
+      font-family: "Nunito";
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 100%;
+      letter-spacing: 0%;
+    }
+  }
 
-    >.add-channel-headline{
-        display: flex;
-        margin-bottom: 20px;
-        width: 100%;
-        justify-content: space-between;
-        color: black;
-        font-size: 24px;
-        font-family: 'Nunito';
-        font-weight: 700;
+  > .add-channel-description {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 
-        >span{
-            font-family: 'Nunito';
-font-weight: 700;
-font-size: 24px;
+    > span {
+      font-family: "Nunito";
+      display: flex;
+      gap: 5px;
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 100%;
+      letter-spacing: 0%;
 
-letter-spacing: 0%;
-color: black;
+      > .optional-txt {
+        color: #686868;
+        font-family: "Nunito";
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 100%;
+        letter-spacing: 0%;
+      }
+    }
+  }
 
-        }
+  > .add-channel-button {
+    max-width: 125px;
+    width: 125px;
+    border-radius: 25px;
+    color: white;
+    box-sizing: border-box;
+    padding: 12px 25px;
+    background-color: #444df2;
+    font-family: "Nunito";
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    border: none;
+    align-self: flex-end;
 
-        >.close-add-channel-overlay{
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
-            background-color: transparent;
-            border: none;
-            font-family: 'Nunito';
-font-weight: 700;
-font-size: 24px;
-letter-spacing: 0%;
-transition: all 125ms ease-in-out;
-
-&:hover{
-    cursor: pointer;
-    color: #535AF1;
-    background-color: #F0F1FE;
+    &:hover {
+      cursor: pointer;
+      background-color: #797ef3;
+    }
+  }
 }
-
-            
-        }
-
-    }
-
-    >.add-channel-subheadline{
-
-        >span{
-              display: flex;
-        flex-direction: column;
-        font-family: 'Nunito';
-font-weight: 400;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-        }
-      
-
-    }
-
-    >.add-channel-name{
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-
-        >span{
-            font-family: 'Nunito';
-font-weight: 700;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-
-        }
-    }
-
-    >.add-channel-description{
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-
-        >span{
-            font-family: 'Nunito';
-            display: flex;
-            gap: 5px;
-font-weight: 700;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-
->.optional-txt{
-    color: #686868;
-    font-family: 'Nunito';
-font-weight: 400;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-
-
-}
-
-        }
-    }
-
-    >.add-channel-button{
-        max-width: 125px;
-        width: 125px;
-        border-radius: 25px;
-        color: white;
-        box-sizing: border-box;
-        padding: 12px 25px;
-        background-color:  #444DF2;
-        font-family: 'Nunito';
-font-weight: 700;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-border: none;
-align-self: flex-end;
-
-&:hover{
-    cursor: pointer;
-    background-color: #797EF3;
-}
-
-    }
-}
-
