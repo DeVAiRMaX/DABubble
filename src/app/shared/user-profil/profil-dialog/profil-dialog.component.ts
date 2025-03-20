@@ -6,7 +6,6 @@ import {
   style,
   animate,
   transition,
-  AnimationEvent
 } from '@angular/animations';
 
 @Component({
@@ -16,22 +15,24 @@ import {
   templateUrl: './profil-dialog.component.html',
   styleUrl: './profil-dialog.component.scss',
   animations: [
-    trigger('animationstate', [
+    trigger('profilDialogAnimation', [
       state('open', style({
         transform: 'translateX(0)',
+        height: 'auto',
         opacity: 1
       })),
       state('close', style({
         transform: 'translateX(100%)',
+        height: '0',
         opacity: 0
       })),
       transition('close => open', [
-        style({ transform: 'translateX(100%)', opacity: 0 }),
+        style({ transform: 'translateX(100%)', height: '0', opacity: 0 }),
         animate('0.25s ease-out')
       ]),
       transition('open => close', [
-        animate('0.25s ease-out',
-          style({ transform: 'translateX(100%)', opacity: 0 })
+        animate('0.15s ease-out',
+          style({ transform: 'translateX(100%)', height: '0', opacity: 0 })
         )
       ])
     ])
@@ -39,7 +40,7 @@ import {
 })
 export class ProfilDialogComponent {
 
-  animationstate: 'open' | 'close' = 'close';
+  profilDialogAnimation: 'open' | 'close' = 'close';
 
   constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<ProfilDialogComponent>) {
   }
@@ -50,14 +51,14 @@ export class ProfilDialogComponent {
 
   startAnimation() {
     setTimeout(() => {
-      this.animationstate = 'open';
+      this.profilDialogAnimation = 'open';
     }, 10);
   }
 
   closeDialog() {
-    this.animationstate = 'close';
+    this.profilDialogAnimation = 'close';
     setTimeout(() => {
       this.dialogRef.close(ProfilDialogComponent);
-    }, 250);
+    }, 100);
   }
 }

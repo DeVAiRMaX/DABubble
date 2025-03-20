@@ -1,4 +1,4 @@
-<div class="dialog-container">
+<div class="dialog-container" [@dialogAnimation]="dialogAnimation">
   <button (click)="openProfilDialog()">Profil</button>
   <button (click)="closeDialog()" [routerLink]="['/']">Logout</button>
 </div>
