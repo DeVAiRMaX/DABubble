@@ -4,11 +4,12 @@ import { VariablesService } from '../../variables.service';
 import { CommonModule } from '@angular/common';
 import { ChannelCreateOverlayComponent } from '../channel-create-overlay/channel-create-overlay.component';
 import { Observable } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-side-nav',
   standalone: true,
-  imports: [SharedModule, CommonModule, ChannelCreateOverlayComponent],
+  imports: [SharedModule, CommonModule, ChannelCreateOverlayComponent, MatDialogModule],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.scss'
 })
@@ -27,13 +28,19 @@ export class SideNavComponent implements OnInit {
   }
 
  
-  constructor(private variableService: VariablesService){
+  constructor(private variableService: VariablesService, private dialog: MatDialog){
 
     this.addChannelOverlayIsVisible$ = this.variableService.addChannelOverlayIsVisible$;
 
     this.variableService.sideNavIsVisible$.subscribe(value =>{
       this.sideNavIsVisible = value;
     })
+  }
+
+  openDialog(){
+    this.dialog.open(ChannelCreateOverlayComponent, {
+      maxWidth: 'unset'
+    });
   }
 
   toggleChannelNav(){

@@ -217,3 +217,8 @@ letter-spacing: 0%;
   cursor: pointer;
 }
 }
+
+.mat-mdc-dialog-container{
+  max-width: unset !important;
+  min-width: unset !important;
+  }
