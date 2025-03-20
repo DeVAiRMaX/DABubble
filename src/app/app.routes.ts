@@ -3,6 +3,8 @@ import { LoginComponent } from './features/auth/components/login/login.component
 import { RegisterComponent } from './features/auth/components/register/register.component';
 import { MainComponentComponent } from './main-component/main-component.component';
 import { SelectAvatarComponent } from './features/auth/components/register/select-avatar/select-avatar.component';
+import { ResetPasswordComponent } from './features/auth/components/register/reset-password/reset-password.component';
+import { ConfirmResetPasswordComponent } from './features/auth/components/register/reset-password/confirm-reset-password/confirm-reset-password.component';
 
 export const routes: Routes = [
   {
@@ -24,5 +26,13 @@ export const routes: Routes = [
   {
     path: 'avatar',
     component: SelectAvatarComponent,
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
+  },
+  {
+    path: 'confirm-new-password',
+    component: ConfirmResetPasswordComponent,
   },
 ];
