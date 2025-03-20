@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { SharedModule } from './../../shared';
-import { DialogComponent } from '../dialog/dialog.component';
+import { DialogComponent } from '../header-dialog-profil/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
