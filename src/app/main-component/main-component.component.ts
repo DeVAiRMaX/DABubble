@@ -6,35 +6,37 @@ import { ThreadComponent } from '../shared/thread/thread.component';
 import { CommonModule } from '@angular/common';
 import { VariablesService } from '../variables.service';
 
-
 @Component({
   selector: 'app-main-component',
   standalone: true,
-  imports: [HeaderComponent, SideNavComponent, ChannelChatComponent, ThreadComponent, CommonModule],
+  imports: [
+    HeaderComponent,
+    SideNavComponent,
+    ChannelChatComponent,
+    ThreadComponent,
+    CommonModule,
+  ],
   templateUrl: './main-component.component.html',
-  styleUrl: './main-component.component.scss'
+  styleUrl: './main-component.component.scss',
 })
 export class MainComponentComponent {
- sideNavIsVisible:boolean = true;
- threadIsVisible: boolean = true;
-  constructor(private variableService: VariablesService){
-
-    this.variableService.sideNavIsVisible$.subscribe(value =>{
+  sideNavIsVisible: boolean = true;
+  threadIsVisible: boolean = true;
+  constructor(private variableService: VariablesService) {
+    this.variableService.sideNavIsVisible$.subscribe((value) => {
       this.sideNavIsVisible = value;
-    })
+    });
 
-    this.variableService.threadIsClosed$.subscribe(value =>{
+    this.variableService.threadIsClosed$.subscribe((value) => {
       this.threadIsVisible = value;
-    })
+    });
   }
 
-  toggleSideNav(){
+  toggleSideNav() {
     this.variableService.toggleSideNav();
   }
 
-  toggleThread(){
+  toggleThread() {
     this.variableService.toggleThread();
   }
-  
-
 }
