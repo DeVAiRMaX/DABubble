@@ -13,11 +13,19 @@ export class VariablesService {
   private isClosedSubject = new BehaviorSubject<boolean>(this.getStoredValue('isClosed', false));
   threadIsClosed$ = this.isClosedSubject.asObservable();
 
+  private addUserToChannelOverlayIsVisibleSubject = new BehaviorSubject<boolean>(false);
+  addUserToChannelOverlayIsVisible$ = this.addUserToChannelOverlayIsVisibleSubject.asObservable();
+
   private sideNavIsVisibleSubject = new BehaviorSubject<boolean>(this.getStoredValue('sideNavIsVisible', true));
   sideNavIsVisible$ = this.sideNavIsVisibleSubject.asObservable();
 
   private addChannelOverlayIsVisibleSubject = new BehaviorSubject<boolean>(false);
   addChannelOverlayIsVisible$ = this.addChannelOverlayIsVisibleSubject.asObservable();
+
+toggleAddUserToChannelOverlay(){
+  const newValue = !this.addUserToChannelOverlayIsVisibleSubject.value;
+  this.addUserToChannelOverlayIsVisibleSubject.next(newValue);
+}
 
   toggleAddChannelOverlay(){
     const newValue = !this.addChannelOverlayIsVisibleSubject.value;
