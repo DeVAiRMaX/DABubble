@@ -26,7 +26,10 @@
         >Beschreibung
         <p class="optional-txt">(optional)</p></span
       >
-      <input type="text" placeholder="Beschreibung hinzufügen..." />
+      <textarea
+        [ngStyle]="{ resize: 'none' }"
+        placeholder="Beschreibung hinzufügen..."
+      ></textarea>
     </div>
 
     <button class="add-channel-button">Erstellen</button>

@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-channel-create-overlay',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './channel-create-overlay.component.html',
   styleUrl: './channel-create-overlay.component.scss',
   animations: [

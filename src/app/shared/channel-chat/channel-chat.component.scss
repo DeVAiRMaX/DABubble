@@ -45,6 +45,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
 }
 
 .channel-chat-header-right-user-container {
@@ -404,4 +405,10 @@
   border-radius: 20px;
   padding: 20px;
   border: 1px solid #adb0d9;
+}
+
+.addUserToChannelOverlay{
+  position: absolute;
+  top: 100%;
+  right: 0px;
 }

@@ -14,10 +14,9 @@
 
   <div class="channel-list-container">
     <div class="channel-list-header">
-      <div class="channel-list-header-title">
+      <div (click)="toggleChannelList()" class="channel-list-header-title">
         <span
           class="material-icons arrow_drop_down"
-          (click)="toggleChannelList()"
           [class.rotated]="!isChannelListExpanded"
         >
           arrow_drop_down
@@ -46,10 +45,9 @@
 
   <div class="channel-list-container">
     <div class="channel-list-header">
-      <div class="channel-list-header-title">
+      <div (click)="toggleMsgList()" class="channel-list-header-title">
         <span
           class="material-icons arrow_drop_down"
-          (click)="toggleMsgList()"
           [class.rotated]="!isMsgListExpanded"
           >arrow_drop_down</span
         >

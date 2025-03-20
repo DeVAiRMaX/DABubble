@@ -17,9 +17,14 @@
         </div>
         <p>3</p>
       </div>
-      <div class="add_btn_user">
+      <div (click)="toggleAddUserToChannelOverlay()" class="add_btn_user">
         <span class="material-symbols-outlined"> person_add </span>
       </div>
+
+      <app-add-user-to-channel-overlay
+        class="addUserToChannelOverlay"
+        *ngIf="addUserToChannelOverlayIsVisible"
+      ></app-add-user-to-channel-overlay>
     </div>
   </div>
 
