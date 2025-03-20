@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   trigger,
@@ -6,11 +6,8 @@ import {
   style,
   animate,
   transition,
-  AnimationEvent,
 } from '@angular/animations';
-
-import { Auth, GoogleAuthProvider, signInWithPopup } from '@angular/fire/auth';
-import { Router } from '@angular/router';
+import { AuthService } from '../../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -102,35 +99,8 @@ import { Router } from '@angular/router';
     ]),
   ],
 })
-export class LoginComponent {
-  private auth: Auth = inject(Auth);
-  private router: Router = inject(Router);
-
-  async loginWithGoogle() {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(this.auth, provider);
-      if (result.user) {
-        const user = result.user;
-        const uid = user.uid;
-        const displayName = user.displayName;
-        const email = user.email;
-
-        console.log('Benutzerdaten:', { uid, displayName, email });
-
-        this.router.navigate(['/dashboard']);
-      } else {
-        // Fehlermeldung
-        console.warn('Keinen Benutzer gefunden.');
-      }
-    } catch (error: any) {
-      console.error('Fehler beim Anmelden mit Google:', error);
-      if (error.code === 'auth/popup-closed-by-user') {
-        window.location.reload();
-      }
-      // Andere fehlercodes
-    }
-  }
+export class LoginComponent implements OnInit {
+  private authService: AuthService = inject(AuthService);
 
   logoState: 'center' | 'left' = 'center';
   textState: 'hidden' | 'visible' = 'hidden';
@@ -140,6 +110,10 @@ export class LoginComponent {
 
   ngOnInit(): void {
     this.startAnimation();
+  }
+
+  loginWithGoogle() {
+    this.authService.loginWithGoogle();
   }
 
   startAnimation(): void {
