@@ -2,32 +2,40 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VariablesService {
-
   constructor() {
     this.loadState();
   }
 
-  private isClosedSubject = new BehaviorSubject<boolean>(this.getStoredValue('isClosed', false));
+  private isClosedSubject = new BehaviorSubject<boolean>(
+    this.getStoredValue('isClosed', false)
+  );
   threadIsClosed$ = this.isClosedSubject.asObservable();
 
-  private addUserToChannelOverlayIsVisibleSubject = new BehaviorSubject<boolean>(false);
-  addUserToChannelOverlayIsVisible$ = this.addUserToChannelOverlayIsVisibleSubject.asObservable();
+  private addUserToChannelOverlayIsVisibleSubject =
+    new BehaviorSubject<boolean>(false);
+  addUserToChannelOverlayIsVisible$ =
+    this.addUserToChannelOverlayIsVisibleSubject.asObservable();
 
-  private sideNavIsVisibleSubject = new BehaviorSubject<boolean>(this.getStoredValue('sideNavIsVisible', true));
+  private sideNavIsVisibleSubject = new BehaviorSubject<boolean>(
+    this.getStoredValue('sideNavIsVisible', true)
+  );
   sideNavIsVisible$ = this.sideNavIsVisibleSubject.asObservable();
 
-  private addChannelOverlayIsVisibleSubject = new BehaviorSubject<boolean>(false);
-  addChannelOverlayIsVisible$ = this.addChannelOverlayIsVisibleSubject.asObservable();
+  private addChannelOverlayIsVisibleSubject = new BehaviorSubject<boolean>(
+    false
+  );
+  addChannelOverlayIsVisible$ =
+    this.addChannelOverlayIsVisibleSubject.asObservable();
 
-toggleAddUserToChannelOverlay(){
-  const newValue = !this.addUserToChannelOverlayIsVisibleSubject.value;
-  this.addUserToChannelOverlayIsVisibleSubject.next(newValue);
-}
+  toggleAddUserToChannelOverlay() {
+    const newValue = !this.addUserToChannelOverlayIsVisibleSubject.value;
+    this.addUserToChannelOverlayIsVisibleSubject.next(newValue);
+  }
 
-  toggleAddChannelOverlay(){
+  toggleAddChannelOverlay() {
     const newValue = !this.addChannelOverlayIsVisibleSubject.value;
     this.addChannelOverlayIsVisibleSubject.next(newValue);
   }
@@ -55,6 +63,8 @@ toggleAddUserToChannelOverlay(){
 
   private loadState() {
     this.isClosedSubject.next(this.getStoredValue('isClosed', false));
-    this.sideNavIsVisibleSubject.next(this.getStoredValue('sideNavIsVisible', true));
+    this.sideNavIsVisibleSubject.next(
+      this.getStoredValue('sideNavIsVisible', true)
+    );
   }
 }

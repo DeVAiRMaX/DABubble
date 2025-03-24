@@ -1,4 +1,3 @@
-// src/app/shared/services/auth.service.ts
 import { Injectable, inject } from '@angular/core';
 import {
   Auth,
@@ -8,7 +7,7 @@ import {
   signInWithPopup,
   signOut,
 } from '@angular/fire/auth';
-import { Observable, BehaviorSubject, from } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 import { FirebaseService } from './firebase.service';
 

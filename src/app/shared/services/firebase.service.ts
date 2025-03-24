@@ -1,15 +1,16 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   Database,
   ref,
   set,
   get,
-  onValue,
   Unsubscribe,
+  push,
 } from '@angular/fire/database';
 import { User } from '@angular/fire/auth';
-import { Observable, from, of, throwError } from 'rxjs';
-import { catchError, map, switchMap, take } from 'rxjs/operators';
+import { Observable, from, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Channel } from '../interfaces/channel';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,8 @@ export class FirebaseService {
     }
 
     const userRef = ref(this.database, `users/${user.uid}`);
+
+    // MARK: - User Data Functions
 
     return from(
       set(userRef, {
@@ -50,9 +53,12 @@ export class FirebaseService {
     }
   }
 
-  getUserData(
-    uid: string
-  ): Observable<{ displayName: string; email: string; uid: string } | null> {
+  getUserData(uid: string): Observable<{
+    displayName: string;
+    email: string;
+    uid: string;
+    // channels: [];
+  } | null> {
     if (!uid) {
       return throwError(
         () => new Error('getUserData: UID darf nicht leer sein.')
@@ -67,6 +73,7 @@ export class FirebaseService {
             displayName: string;
             email: string;
             uid: string;
+            // channels: [];
           };
         } else {
           return null;
@@ -78,4 +85,62 @@ export class FirebaseService {
       })
     );
   }
+
+  // MARK: - Channel Functions
+
+  createChannel(
+    channelName: string,
+    description: string,
+    channelCreatorUid: string
+  ): Observable<string> {
+    if (!channelName || !channelCreatorUid) {
+      return throwError(
+        () =>
+          new Error(
+            'createChannel: channelName und channelCreatorUid dürfen nicht leer sein.'
+          )
+      );
+    }
+
+    const channelsRef = ref(this.database, 'channels');
+    const newChannelRef = push(channelsRef);
+    const channelKey = newChannelRef.key;
+
+    if (!channelKey) {
+      return throwError(
+        () =>
+          new Error('createChannel: Channel Key konnte nicht generiert werden.')
+      );
+    }
+
+    let timestamp = Date.now();
+    // const formattedTime = this.getTime(timestamp);
+
+    const newChannel: Channel = {
+      channelName: channelName,
+      members: [`${channelCreatorUid}`],
+      description: `${description}`,
+      messages: [
+        {
+          message: `Welcome to ${channelName}`,
+          reactions: ['U+1F973'],
+          sender: `DABubble`,
+          time: timestamp,
+        },
+      ],
+    };
+
+    return from(set(newChannelRef, newChannel)).pipe(
+      map(() => channelKey),
+      catchError((error) => {
+        console.error('Fehler beim Erstellen des Channels:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // getTime(timestamp: number) {
+  //   const date = new Date(timestamp)
+  //   console.log(date.toLocaleString());
+  // }
 }
