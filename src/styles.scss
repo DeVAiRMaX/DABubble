@@ -43,3 +43,7 @@ body {
     border-radius: 30px !important;
     border-top-right-radius: 0px !important;
 }
+
+.mat-mdc-dialog-inner-container{
+    height: unset !important;
+  }
