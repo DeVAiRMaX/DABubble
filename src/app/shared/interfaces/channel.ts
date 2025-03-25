@@ -10,4 +10,5 @@ export interface Channel {
       time: number;
     }
   ];
+  private: boolean;
 }

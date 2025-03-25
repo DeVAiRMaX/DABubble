@@ -1,0 +1,59 @@
+<div class="imp-container">
+  <div class="imp-container-header">
+    <div class="imp-container-header-logo">
+      <img src="./assets/img/logo.png" alt="logo" />
+      <h1>DABubble</h1>
+    </div>
+  </div>
+  <div class="imp-box-container">
+    <div class="imp-box">
+      <div class="imp-box-header">
+        <span class="material-symbols-outlined back-arrow-btn" [routerLink]="['/']">
+          arrow_back
+        </span>
+        <h2>Impressum</h2>
+      </div>
+      <div class="input-group">
+        <mat-accordion>
+          <mat-expansion-panel
+            (opened)="panelOpenState.set(true)"
+            (closed)="panelOpenState.set(false)"
+          >
+            <mat-expansion-panel-header>
+              <mat-panel-title> Entwickler: </mat-panel-title>
+              <mat-panel-description> </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div class="contact-container">
+              <mat-card>
+                <mat-card-content><p>Johannes Kroh</p></mat-card-content>
+              </mat-card>
+              <mat-card>
+                <mat-card-content><p>Maximilian Wagener</p></mat-card-content>
+              </mat-card>
+              <mat-card>
+                <mat-card-content><p>Giovanni Witulski</p></mat-card-content>
+              </mat-card>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel
+            (opened)="panelOpenState.set(true)"
+            (closed)="panelOpenState.set(false)"
+          >
+            <mat-expansion-panel-header>
+              <mat-panel-title> Kontakt: </mat-panel-title>
+              <mat-panel-description> </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div class="email-container">
+              <mat-card>
+                <mat-card-content><p>E-Mail: infodeineapp.de</p></mat-card-content>
+              </mat-card>
+              <mat-card>
+                <mat-card-content><p>Adresse: Musterstraße 123, 12345 Musterstadt, Deutschland</p></mat-card-content>
+              </mat-card>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+    </div>
+  </div>
+</div>
