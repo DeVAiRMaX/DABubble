@@ -6,6 +6,7 @@ import { EditChannelComponent } from './edit-channel/edit-channel.component';
 import { AddUserToChannelOverlayComponent } from './add-user-to-channel-overlay/add-user-to-channel-overlay.component';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogConfig, MatDialogModule } from '@angular/material/dialog';
+import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
 
 @Component({
   selector: 'app-channel-chat',
@@ -55,6 +56,8 @@ export class ChannelChatComponent {
       });
       
       
+     
+      
       setTimeout(() => {
         const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
         if (dialogElement) {
@@ -65,6 +68,38 @@ export class ChannelChatComponent {
           dialogElement.style.position = 'absolute'; 
           dialogElement.style.maxWidth = '515px';
           dialogElement.style.maxHeight = '295px';
+        }
+      }, 0); 
+    }
+  }
+
+  openChannelMembersDialog(){
+    const targetElement = document.querySelector('.channel-chat-header-right-user-container');
+    
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect(); // Position des Buttons ermitteln
+      
+      const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
+        position: { top: `${rect.bottom + 20 + window.scrollY}px` }, 
+        panelClass: 'custom-dialog',// 20px Abstand nach unten
+      });
+
+     
+      dialogRef.componentInstance.childEvent.subscribe(() => {
+        this.openAddUserToChannelDialog();
+      })
+      
+      setTimeout(() => {
+        const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
+        if (dialogElement) {
+          const dialogRect = dialogElement.getBoundingClientRect();
+          const newLeft = rect.right - dialogRect.width + window.scrollX; 
+          
+          dialogElement.style.left = `${newLeft}px`;
+          dialogElement.style.position = 'absolute'; 
+          dialogElement.style.maxWidth = '415px';
+          dialogElement.style.height = '700px';
+         
         }
       }, 0); 
     }

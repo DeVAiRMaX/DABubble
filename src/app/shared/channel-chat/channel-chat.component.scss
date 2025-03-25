@@ -160,7 +160,7 @@
   padding: 10px 45px;
   cursor: pointer;
   &:hover {
-    background-color: #797df32f;
+    background-color: rgb(236, 238, 255);
     .msg-left{
       background-color: #ffffff;
     }
@@ -235,7 +235,7 @@
   justify-content: flex-start;
   cursor: pointer;
   &:hover {
-    background-color: #797df32f;
+    background-color: rgb(236, 238, 255);
   }
 }
 
@@ -412,4 +412,5 @@
   top: 100%;
   right: 0px;
 }
+
 
