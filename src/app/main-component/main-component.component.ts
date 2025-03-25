@@ -5,6 +5,7 @@ import { ChannelChatComponent } from '../shared/channel-chat/channel-chat.compon
 import { ThreadComponent } from '../shared/thread/thread.component';
 import { CommonModule } from '@angular/common';
 import { VariablesService } from '../variables.service';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-main-component',
@@ -18,6 +19,19 @@ import { VariablesService } from '../variables.service';
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.scss',
+   animations: [
+      trigger('slideInOut', [
+        transition(':enter', [
+          style({ transform: 'translateX(100%)', opacity: 0 }), 
+          animate('200ms ease-out', style({ transform: 'translateX(0)', opacity: 1 })) 
+        ]),
+       
+        transition(':leave', [
+          style({ transform: 'translateX(0)', opacity: 1 }), 
+          animate('200ms ease-in', style({ transform: 'translateX(100%)', opacity: 0 })) 
+        ])
+      ])
+    ]
 })
 export class MainComponentComponent {
   sideNavIsVisible: boolean = true;

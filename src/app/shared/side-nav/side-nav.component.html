@@ -1,9 +1,4 @@
-<div
-  [ngClass]="{
-    'side-nav-container': sideNavIsVisible,
-    hide: !sideNavIsVisible
-  }"
->
+<div class="side-nav-container" *ngIf="sideNavIsVisible" [@slideInOut]>
   <div class="side-nav-header">
     <div class="side-nav-header-logo">
       <img src="./assets/img/devspace.png" alt="Devspace Logo" />

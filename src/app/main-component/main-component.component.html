@@ -5,7 +5,8 @@
   ></app-side-nav>
   <app-channel-chat class="channel-chat-container"></app-channel-chat>
   <app-thread
-    [ngClass]="{ 'thread-container': !threadIsVisible }"
+    *ngIf="!threadIsVisible"
     class="thread-container"
+    [@slideInOut]
   ></app-thread>
 </div>

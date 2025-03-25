@@ -5,13 +5,27 @@ import { CommonModule } from '@angular/common';
 import { ChannelCreateOverlayComponent } from '../channel-create-overlay/channel-create-overlay.component';
 import { Observable } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-side-nav',
   standalone: true,
   imports: [SharedModule, CommonModule, ChannelCreateOverlayComponent, MatDialogModule],
   templateUrl: './side-nav.component.html',
-  styleUrl: './side-nav.component.scss'
+  styleUrl: './side-nav.component.scss',
+  animations: [
+    trigger('slideInOut', [
+      transition(':enter', [
+        style({ transform: 'translateX(-100%)', opacity: 0 }), 
+        animate('200ms ease-out', style({ transform: 'translateX(0)', opacity: 1 })) 
+      ]),
+     
+      transition(':leave', [
+        style({ transform: 'translateX(0)', opacity: 1 }), 
+        animate('200ms ease-in', style({ transform: 'translateX(-100%)', opacity: 0 })) 
+      ])
+    ])
+  ]
 })
 export class SideNavComponent implements OnInit {
   isChannelListExpanded: boolean = true;
