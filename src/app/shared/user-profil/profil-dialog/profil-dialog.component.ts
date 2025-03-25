@@ -46,13 +46,13 @@ export class ProfilDialogComponent {
   }
 
   ngOnInit() {
-    this.startAnimation();
+    setTimeout(() => {
+      this.startAnimation();
+    }, 10);
   }
 
   startAnimation() {
-    setTimeout(() => {
-      this.profilDialogAnimation = 'open';
-    }, 10);
+    this.profilDialogAnimation = 'open';
   }
 
   closeDialog() {

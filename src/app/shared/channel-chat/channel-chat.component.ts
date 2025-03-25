@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { VariablesService } from '../../variables.service';
+
+import { SharedModule } from '../../shared';
+import { EditChannelComponent } from './edit-channel/edit-channel.component';
 import { AddUserToChannelOverlayComponent } from './add-user-to-channel-overlay/add-user-to-channel-overlay.component';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -7,7 +10,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 @Component({
   selector: 'app-channel-chat',
   standalone: true,
-  imports: [AddUserToChannelOverlayComponent, CommonModule, MatDialogModule],
+  imports: [AddUserToChannelOverlayComponent, CommonModule, MatDialogModule, SharedModule],
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss'
 })
@@ -27,14 +30,21 @@ export class ChannelChatComponent {
   }
 
   toggleThread() {
-    if (this.variableService['isClosedSubject'].value) { 
+    if (this.variableService['isClosedSubject'].value) {
       this.variableService.toggleThread();
     }
+  }
+
+
+  openEditChannelDialog() {
+    this.dialog.open(EditChannelComponent, {
+      maxWidth: 'none',
+      panelClass: 'custom-dialog-container',
+    });
   }
 
   openDialog(){
     this.dialog.open(AddUserToChannelOverlayComponent);
   }
-  
 
 }

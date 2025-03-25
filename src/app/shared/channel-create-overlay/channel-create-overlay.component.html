@@ -1,10 +1,14 @@
-<div class="wholeComponent" @fadeSlideIn>
+<div
+  class="wholeComponent"
+  [@channelCreateOverlayAnimation]="channelCreateOverlayAnimation"
+>
   <div class="add-channel-formular">
     <div class="add-channel-headline">
       <span>Channel erstellen</span>
-      <button (click)="closeDialog()" class="close-add-channel-overlay">
-        X
-      </button>
+
+      <span class="material-symbols-outlined close-btn" (click)="closeDialog()">
+        close
+      </span>
     </div>
     <div class="add-channel-subheadline">
       <span>
@@ -15,7 +19,11 @@
 
     <div class="add-channel-name">
       <span>Channel-Name</span>
-      <input type="text" placeholder="# z.B. Kooperationsprojekte" />
+      <input
+        [(ngModel)]="channelName"
+        type="text"
+        placeholder="# z.B. Kooperationsprojekte"
+      />
     </div>
 
     <div class="add-channel-description">
@@ -24,11 +32,14 @@
         <p class="optional-txt">(optional)</p></span
       >
       <textarea
+        [(ngModel)]="description"
         [ngStyle]="{ resize: 'none' }"
         placeholder="Beschreibung hinzufügen..."
       ></textarea>
     </div>
 
-    <button class="add-channel-button">Erstellen</button>
+    <button (click)="createChannel()" class="add-channel-button">
+      Erstellen
+    </button>
   </div>
 </div>

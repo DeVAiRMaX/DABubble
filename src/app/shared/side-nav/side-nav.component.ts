@@ -39,7 +39,8 @@ export class SideNavComponent implements OnInit {
 
   openDialog(){
     this.dialog.open(ChannelCreateOverlayComponent, {
-      maxWidth: 'unset'
+      maxWidth: 'unset',
+      panelClass: 'channelCreateOverlayComponent-dialog'
     });
   }
 

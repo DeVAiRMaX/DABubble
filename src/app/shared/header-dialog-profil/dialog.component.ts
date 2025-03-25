@@ -28,10 +28,10 @@ import {
       })),
       transition('close => open', [
         style({ height: '0', opacity: 0 }),
-        animate('0.25s ease-out')
+        animate('0.26s ease-out')
       ]),
       transition('open => close', [
-        animate('0.15s ease-out',
+        animate('0.10s ease-out',
           style({ height: '0', opacity: 0 })
         )
       ])
