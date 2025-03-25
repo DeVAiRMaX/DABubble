@@ -19,6 +19,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import {MatTreeModule} from '@angular/material/tree';
+import {MatExpansionModule} from '@angular/material/expansion';
 
 @NgModule({
   imports: [
@@ -46,7 +47,8 @@ import {MatTreeModule} from '@angular/material/tree';
     RouterOutlet,
     MatListModule,
     MatCheckboxModule,
-    MatTreeModule
+    MatTreeModule,
+    MatExpansionModule
   ]
 })
 export class SharedModule { } 

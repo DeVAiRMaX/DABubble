@@ -5,6 +5,8 @@ import { MainComponentComponent } from './main-component/main-component.componen
 import { SelectAvatarComponent } from './features/auth/components/register/select-avatar/select-avatar.component';
 import { ResetPasswordComponent } from './features/auth/components/register/reset-password/reset-password.component';
 import { ConfirmResetPasswordComponent } from './features/auth/components/register/reset-password/confirm-reset-password/confirm-reset-password.component';
+import { ImpressumComponent } from './shared/impressum/impressum.component';
+import { DataProtectionComponent } from './shared/data-protection/data-protection.component';
 
 export const routes: Routes = [
   {
@@ -34,5 +36,13 @@ export const routes: Routes = [
   {
     path: 'confirm-new-password',
     component: ConfirmResetPasswordComponent,
+  },
+  {
+    path: 'impressum',
+    component: ImpressumComponent,
+  },
+  {
+    path: 'datenschutz',
+    component: DataProtectionComponent,
   },
 ];
