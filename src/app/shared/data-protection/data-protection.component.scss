@@ -1,4 +1,4 @@
-.imp-container {
+.data-protection-container {
     height: 100vh;
     display: flex;
     justify-content: space-between;
@@ -7,7 +7,7 @@
     max-width: 100%;
   }
   
-  .imp-container-header {
+  .data-protection-container-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -25,7 +25,7 @@
     }
   }
   
-  .imp-container-header-logo {
+  .data-protection-container-header-logo {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -44,7 +44,7 @@
     }
   }
   
-  .imp-box-container {
+  .data-protection-box-container {
     height: 100vh;
     display: flex;
     align-items: center;
@@ -53,7 +53,7 @@
     padding: 2rem;
   }
   
-  .imp-box {
+  .data-protection-box {
     max-width: 698px;
     min-width: 698px;
     background: white;
@@ -65,7 +65,7 @@
     gap: 2rem;
   }
   
-  .imp-box-header {
+  .data-protection-box-header {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -91,17 +91,6 @@
     }
   }
   
-  .imp-hint {
-    text-align: center;
-    color: #000000;
-    font-size: 20px;
-    margin-bottom: 40px;
-    margin-top: 40px;
-    p{
-      font-size: 20px;
-      color: #686868;
-    }
-  }
   .input-group {
     display: flex;
     align-items: center;
@@ -112,33 +101,7 @@
         width: 100%;
     }
   }
-  li{
+  
+  li {
     list-style: none;
-  }
-  
-  .imp-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-  
-    button {
-      height: 49px;
-      padding: 12px 25px;
-      border-radius: 100px;
-      border: none;
-      cursor: pointer;
-      font-family: "Nunito", sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-    }
-  }
-  
-  .imp-btn {
-    background-color: #444df2;
-    color: white;
-    transition: all 0.1s ease-in-out;
-    &:hover {
-      background-color: #797ef3;
-      color: white;
-    }
   }
