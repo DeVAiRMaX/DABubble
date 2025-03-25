@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   Database,
   ref,
@@ -6,10 +6,11 @@ import {
   get,
   Unsubscribe,
   push,
+  child,
 } from '@angular/fire/database';
 import { User } from '@angular/fire/auth';
-import { Observable, from, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, combineLatest, from, of, throwError } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Channel } from '../interfaces/channel';
 
 @Injectable({
@@ -36,6 +37,7 @@ export class FirebaseService {
         uid: user.uid,
         displayName: user.displayName,
         email: user.email,
+        channelKeys: ['-OMCzsmmcro3xcrQMOVw'],
       })
     ).pipe(
       map(() => null),
@@ -45,7 +47,7 @@ export class FirebaseService {
       })
     );
   }
-
+  // -OMCzsmmcro3xcrQMOVw
   unsubscribeUserData(): void {
     if (this.unsubscribeUser) {
       this.unsubscribeUser();
@@ -57,7 +59,7 @@ export class FirebaseService {
     displayName: string;
     email: string;
     uid: string;
-    // channels: [];
+    channelKeys: string[];
   } | null> {
     if (!uid) {
       return throwError(
@@ -73,7 +75,7 @@ export class FirebaseService {
             displayName: string;
             email: string;
             uid: string;
-            // channels: [];
+            channelKeys: string[];
           };
         } else {
           return null;
@@ -128,12 +130,154 @@ export class FirebaseService {
           time: timestamp,
         },
       ],
+      private: false,
     };
 
     return from(set(newChannelRef, newChannel)).pipe(
       map(() => channelKey),
       catchError((error) => {
         console.error('Fehler beim Erstellen des Channels:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getChannel(channelKey: string): Observable<Channel | null> {
+    if (!channelKey) {
+      return throwError(
+        () => new Error('getChannel: channelKey darf nicht leer sein.')
+      );
+    }
+
+    const dbRef = ref(this.database);
+
+    return from(get(child(dbRef, `channels/${channelKey}`))).pipe(
+      map((snapshot) => {
+        if (snapshot.exists()) {
+          return snapshot.val() as Channel;
+        } else {
+          return null;
+        }
+      }),
+      catchError((error) => {
+        console.error('Fehler beim Abrufen des Channels:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getChannelsForUser(uid: string): Observable<Channel[]> {
+    if (!uid) {
+      return throwError(
+        () => new Error('getChannelsForUser: UID darf nicht leer sein.')
+      );
+    }
+
+    return this.getUserData(uid).pipe(
+      switchMap((userData) => {
+        if (
+          userData &&
+          userData.channelKeys &&
+          userData.channelKeys.length > 0
+        ) {
+          const channelObservables = userData.channelKeys.map((channelKey) =>
+            this.getChannel(channelKey)
+          );
+          return combineLatest(channelObservables).pipe(
+            map(
+              (channels) =>
+                channels.filter((channel) => channel !== null) as Channel[]
+            )
+          );
+        } else {
+          return of([]);
+        }
+      }),
+      catchError((error) => {
+        console.error(
+          'Fehler beim Abrufen der Kanäle für den Benutzer:',
+          error
+        );
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getUserChannelKeys(uid: string): Observable<string[]> {
+    return this.getUserData(uid).pipe(
+      map((userData) => {
+        if (userData && userData.channelKeys) {
+          return userData.channelKeys;
+        } else {
+          return [];
+        }
+      }),
+      catchError((error) => {
+        console.error('Error getting user channel keys:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  addChannelKeyToUser(uid: string, channelKey: string): Observable<void> {
+    if (!uid || !channelKey) {
+      return throwError(
+        () =>
+          new Error('addChannelKeyToUser: uid and channelKey must be provided.')
+      );
+    }
+
+    const userRef = ref(this.database, `users/${uid}`);
+
+    return this.getUserData(uid).pipe(
+      switchMap((userData) => {
+        const currentKeys =
+          userData && userData.channelKeys ? userData.channelKeys : [];
+        if (currentKeys.includes(channelKey)) {
+          return of(null);
+        }
+
+        const updatedKeys: string[] = [...currentKeys, channelKey];
+        return from(set(child(userRef, 'channelKeys'), updatedKeys));
+      }),
+      map(() => {
+        return;
+      }),
+      catchError((error) => {
+        console.error('Error adding channel key to user:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  removeChannelKeyFromUser(uid: string, channelKey: string): Observable<void> {
+    if (!uid || !channelKey) {
+      return throwError(
+        () =>
+          new Error(
+            'removeChannelKeyFromUser: uid and channelKey must be provided'
+          )
+      );
+    }
+
+    const userRef = ref(this.database, `users/${uid}`);
+
+    return this.getUserData(uid).pipe(
+      switchMap((userData) => {
+        if (!userData || !userData.channelKeys) {
+          return of(null);
+        }
+
+        const updatedKeys = userData.channelKeys.filter(
+          (key) => key !== channelKey
+        );
+        return from(set(child(userRef, 'channelKeys'), updatedKeys));
+      }),
+      map(() => {
+        return;
+      }),
+      catchError((error) => {
+        console.error('Error removing channel key from user:', error);
         return throwError(() => error);
       })
     );
