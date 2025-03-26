@@ -12,3 +12,5 @@ export interface Channel {
   ];
   private: boolean;
 }
+
+export type ChannelWithKey = Channel & { key: string };

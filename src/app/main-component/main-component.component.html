@@ -3,7 +3,11 @@
   <app-side-nav
     [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
   ></app-side-nav>
-  <app-channel-chat class="channel-chat-container"></app-channel-chat>
+  <app-channel-chat
+    *ngFor="let channel of userChannels; trackBy: trackByChannelKey"
+    [channel]="channel"
+    class="channel-chat-container"
+  ></app-channel-chat>
   <app-thread
     *ngIf="!threadIsVisible"
     class="thread-container"
