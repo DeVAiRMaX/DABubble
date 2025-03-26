@@ -283,8 +283,26 @@ export class FirebaseService {
     );
   }
 
-  // getTime(timestamp: number) {
-  //   const date = new Date(timestamp)
-  //   console.log(date.toLocaleString());
-  // }
+  creatNewUser(newUser: User) {
+    const userRef = ref(this.database, `users/`);
+    const newUserRef = push(userRef);
+    const userId = newUserRef.key;
+
+    if (userId) {
+      const userData = {
+        ...newUser,
+        uid: userId,
+        channelKeys: ['-OMCzsmmcro3xcrQMOVw'], //Beispiel Channelkey
+        avatar: './assets/img/character/6.png' //Beispiel Avatar
+      };
+  
+      return set(newUserRef, userData)
+        .then(() => console.log(`User created with ID: ${userId}`))
+        .catch(error => console.error('Error creating user:', error));
+    } else {
+      console.error('Failed to create user ID');
+      return Promise.reject('Failed to create user ID');
+    }
+  }
+
 }
