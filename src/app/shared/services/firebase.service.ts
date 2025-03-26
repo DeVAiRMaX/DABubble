@@ -1,24 +1,14 @@
 import { Injectable } from '@angular/core';
-import {
-  Database,
-  ref,
-  set,
-  get,
-  Unsubscribe,
-  push,
-  child,
-} from '@angular/fire/database';
+import { Database, ref, set, get, push, child } from '@angular/fire/database';
 import { User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { Channel } from '../interfaces/channel';
+import { Channel, ChannelWithKey } from '../interfaces/channel';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
-  private unsubscribeUser: Unsubscribe | null = null;
-
   constructor(private database: Database) {}
 
   saveUserData(user: User): Observable<null> {
@@ -37,7 +27,7 @@ export class FirebaseService {
         uid: user.uid,
         displayName: user.displayName,
         email: user.email,
-        channelKeys: ['-OMCzsmmcro3xcrQMOVw'],
+        channelKeys: ['-OMHiw5zKaBgMPOxnzaC', '-OMIPeYGF4ha3FjUK4xH'],
       })
     ).pipe(
       map(() => null),
@@ -46,13 +36,6 @@ export class FirebaseService {
         return throwError(() => error);
       })
     );
-  }
-  // -OMCzsmmcro3xcrQMOVw
-  unsubscribeUserData(): void {
-    if (this.unsubscribeUser) {
-      this.unsubscribeUser();
-      this.unsubscribeUser = null;
-    }
   }
 
   getUserData(uid: string): Observable<{
@@ -166,7 +149,45 @@ export class FirebaseService {
     );
   }
 
-  getChannelsForUser(uid: string): Observable<Channel[]> {
+  // getChannelsForUser(uid: string): Observable<Channel[]> {
+  //   if (!uid) {
+  //     return throwError(
+  //       () => new Error('getChannelsForUser: UID darf nicht leer sein.')
+  //     );
+  //   }
+
+  //   return this.getUserData(uid).pipe(
+  //     switchMap((userData) => {
+  //       if (
+  //         userData &&
+  //         userData.channelKeys &&
+  //         userData.channelKeys.length > 0
+  //       ) {
+  //         const channelObservables = userData.channelKeys.map((channelKey) =>
+  //           this.getChannel(channelKey)
+  //         );
+  //         return combineLatest(channelObservables).pipe(
+  //           map(
+  //             (channels) =>
+  //               channels.filter((channel) => channel !== null) as Channel[]
+  //           )
+  //         );
+  //       } else {
+  //         return of([]);
+  //       }
+  //     }),
+  //     catchError((error) => {
+  //       console.error(
+  //         'Fehler beim Abrufen der Kanäle für den Benutzer:',
+  //         error
+  //       );
+  //       return throwError(() => error);
+  //     })
+  //   );
+  // }
+
+  getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
+    // Rückgabetyp angepasst
     if (!uid) {
       return throwError(
         () => new Error('getChannelsForUser: UID darf nicht leer sein.')
@@ -180,16 +201,31 @@ export class FirebaseService {
           userData.channelKeys &&
           userData.channelKeys.length > 0
         ) {
+          // Erstelle Observables, die Channel holen UND den Key hinzufügen
           const channelObservables = userData.channelKeys.map((channelKey) =>
-            this.getChannel(channelKey)
+            this.getChannel(channelKey).pipe(
+              map((channelData) => {
+                if (channelData) {
+                  // Füge den Key zum Channel-Objekt hinzu
+                  return { ...channelData, key: channelKey } as ChannelWithKey;
+                }
+                return null; // Behalte null bei, falls Channel nicht gefunden wurde
+              })
+            )
           );
+
+          // Kombiniere die Ergebnisse
           return combineLatest(channelObservables).pipe(
             map(
-              (channels) =>
-                channels.filter((channel) => channel !== null) as Channel[]
+              (channelsWithPossibleNulls) =>
+                // Filtere null-Werte heraus
+                channelsWithPossibleNulls.filter(
+                  (channel) => channel !== null
+                ) as ChannelWithKey[]
             )
           );
         } else {
+          // Keine Channel-Keys gefunden, leeres Array zurückgeben
           return of([]);
         }
       }),
@@ -199,6 +235,7 @@ export class FirebaseService {
           error
         );
         return throwError(() => error);
+        return of([]);
       })
     );
   }
@@ -282,9 +319,4 @@ export class FirebaseService {
       })
     );
   }
-
-  // getTime(timestamp: number) {
-  //   const date = new Date(timestamp)
-  //   console.log(date.toLocaleString());
-  // }
 }

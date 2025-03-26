@@ -1,12 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
 import { SharedModule } from '../../shared';
 import { EditChannelComponent } from './edit-channel/edit-channel.component';
 import { AddUserToChannelOverlayComponent } from './add-user-to-channel-overlay/add-user-to-channel-overlay.component';
 import { CommonModule } from '@angular/common';
-import { MatDialog, MatDialogConfig, MatDialogModule } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogConfig,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
+import { ChannelWithKey } from '../interfaces/channel';
 
 @Component({
   selector: 'app-channel-chat',
@@ -20,18 +25,30 @@ import { ChannelMembersOverlayComponent } from './channel-members-overlay/channe
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
 })
-export class ChannelChatComponent {
+export class ChannelChatComponent implements OnInit {
   addUserToChannelOverlayIsVisible: boolean = false;
+  @Input() channel!: ChannelWithKey;
+  private variableService: VariablesService = inject(VariablesService);
 
-  constructor(
-    private variableService: VariablesService,
-    private dialog: MatDialog
-  ) {
+  constructor(private dialog: MatDialog) {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
       (value) => {
         this.addUserToChannelOverlayIsVisible = value;
       }
     );
+  }
+
+  ngOnInit(): void {
+    if (this.channel) {
+      console.log(
+        'ChannelChatComponent erhalten:',
+        this.channel.channelName,
+        'mit Key:',
+        this.channel.key
+      );
+    } else {
+      console.warn('ChannelChatComponent hat keinen Channel erhalten!');
+    }
   }
 
   toggleAddUserToChannelOverlay() {
@@ -62,10 +79,7 @@ export class ChannelChatComponent {
         position: { top: `${rect.bottom + 20 + window.scrollY}px` },
         panelClass: 'custom-dialog', // 20px Abstand nach unten
       });
-      
-      
-     
-      
+
       setTimeout(() => {
         const dialogElement = document.querySelector(
           'mat-dialog-container'
@@ -83,40 +97,37 @@ export class ChannelChatComponent {
     }
   }
 
-  openChannelMembersDialog(){
-    const targetElement = document.querySelector('.channel-chat-header-right-user-container');
-    
+  openChannelMembersDialog() {
+    const targetElement = document.querySelector(
+      '.channel-chat-header-right-user-container'
+    );
+
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect(); // Position des Buttons ermitteln
-      
+
       const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
-        position: { top: `${rect.bottom + 20 + window.scrollY}px` }, 
-        panelClass: 'custom-dialog',// 20px Abstand nach unten
+        position: { top: `${rect.bottom + 20 + window.scrollY}px` },
+        panelClass: 'custom-dialog', // 20px Abstand nach unten
       });
 
-     
       dialogRef.componentInstance.childEvent.subscribe(() => {
         this.openAddUserToChannelDialog();
-      })
-      
+      });
+
       setTimeout(() => {
-        const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
+        const dialogElement = document.querySelector(
+          'mat-dialog-container'
+        ) as HTMLElement;
         if (dialogElement) {
           const dialogRect = dialogElement.getBoundingClientRect();
-          const newLeft = rect.right - dialogRect.width + window.scrollX; 
-          
+          const newLeft = rect.right - dialogRect.width + window.scrollX;
+
           dialogElement.style.left = `${newLeft}px`;
-          dialogElement.style.position = 'absolute'; 
+          dialogElement.style.position = 'absolute';
           dialogElement.style.maxWidth = '415px';
           dialogElement.style.height = '700px';
-         
         }
-      }, 0); 
+      }, 0);
     }
   }
-  
-  
-  
-  
-  
 }
