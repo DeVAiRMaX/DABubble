@@ -51,6 +51,7 @@
   justify-content: space-between;
   flex-direction: column;
   padding: 2rem;
+  position: relative;
 }
 
 .register-box {
@@ -60,6 +61,8 @@
   padding: 2.5rem;
   border-radius: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  
 }
 
 .register-box-header {
@@ -266,7 +269,7 @@
     border: none;
 
     &::before {
-      content: '🚫';
+      content: "🚫";
       position: absolute;
       right: -25px;
       top: 50%;

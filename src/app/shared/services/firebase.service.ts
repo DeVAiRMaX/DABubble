@@ -1,15 +1,18 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Database, ref, set, get, push, child } from '@angular/fire/database';
 import { User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
-  constructor(private database: Database) {}
+  constructor(private database: Database) { }
+
+  private router = inject(Router);
 
   saveUserData(user: User): Observable<null> {
     if (!user) {
@@ -329,17 +332,22 @@ export class FirebaseService {
       const userData = {
         ...newUser,
         uid: userId,
-        channelKeys: ['-OMCzsmmcro3xcrQMOVw'], //Beispiel Channelkey
-        avatar: './assets/img/character/6.png' //Beispiel Avatar
+        channelKeys: ['PLACEHOLDER'], //Beispiel Channelkey
+        avatar: './assets/img/character/PLACEHOLDER' //Beispiel Avatar
       };
-  
+
       return set(newUserRef, userData)
-        .then(() => console.log(`User created with ID: ${userId}`))
+        .then(() => this.router.navigate([`/avatar/${userId}`]))
         .catch(error => console.error('Error creating user:', error));
     } else {
       console.error('Failed to create user ID');
       return Promise.reject('Failed to create user ID');
     }
+  }
+
+  updateAvatar(choosenAvatar: string) {
+    // this.id = this.route.snapshot.paramMap.get('id')!;
+    // console.log(this.id);
   }
 
 }

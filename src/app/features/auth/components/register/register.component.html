@@ -7,6 +7,7 @@
   </div>
   <div class="register-box-container">
     <div class="register-box">
+      
       <div class="register-box-header">
         <span
           class="material-symbols-outlined back-arrow-btn"
@@ -55,11 +56,14 @@
             <span *ngIf="formControls['privacyPolicy'].errors?.['required']">Sie müssen den Datenschutzbestimmungen zustimmen.</span>
           </div>
         </div>
-
+        <mat-progress-bar mode="query" *ngIf="isLoading"></mat-progress-bar>
+        
         <div class="register-actions">
           <button class="register-btn" (click)="registNewUser()" [disabled]="registerForm.invalid">Weiter</button>
         </div>
+        
       </form>
+      
     </div>
 
     <div class="footer">

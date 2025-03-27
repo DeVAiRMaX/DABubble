@@ -24,17 +24,18 @@
         <div class="select-avatar-box-content-item">
           <p>Aus der Liste wählen</p>
           <div class="select-avatar-box-content-item-list">
-            <img *ngFor="let avatar of avatars| slice:1" 
+            <img *ngFor="let avatar of avatars| slice:1; let i = index" 
                  [src]="avatar" 
-                 alt="person" 
-                 (click)="selectedAvatar = avatar"
-                 [class.selected]="selectedAvatar === avatar" />
+                 alt="person"
+                 (click)="selectedAvatar = avatar;"
+                 [class.selected]="selectedAvatar === avatar"
+                  />
           </div>
         </div>
       </div>
 
       <div class="avatar-actions">
-        <button class="avatar-btn" [routerLink]="['/avatar']">Weiter</button>
+        <button class="avatar-btn" [routerLink]="['/avatar']" *ngIf="selectedAvatar !== avatars[0]" (click)="updateAvatar(selectedAvatar)">Weiter</button>
       </div>
     </div>
 

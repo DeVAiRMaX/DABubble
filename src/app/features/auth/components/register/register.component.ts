@@ -15,6 +15,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 export class RegisterComponent {
   registerForm: FormGroup;
   newUserData = new newUserData();
+
+  isLoading:boolean = false;
+
   private firebase: FirebaseService = inject(FirebaseService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
@@ -34,17 +37,19 @@ export class RegisterComponent {
 
   async registNewUser() {
     if (this.registerForm.valid) {
+      this.isLoading = true;
       this.newUserData.displayName = this.registerForm.value.displayName;
       this.newUserData.email = this.registerForm.value.email;
       this.newUserData.password = this.registerForm.value.password;
       const newUser = this.newUserData.toJson();
       try {
         await this.firebase.creatNewUser(newUser);
-        this.router.navigate(['/avatar']);
+        this.router.navigate([`/avatar/`]);
       } catch (error) {
         console.error('Fehler bei der Registrierung:', error);
         // Hier könnten Sie eine Fehlerbehandlung hinzufügen
       }
     }
+    this.isLoading = false;
   }
 }

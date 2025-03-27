@@ -26,7 +26,7 @@ export const routes: Routes = [
     component: MainComponentComponent,
   },
   {
-    path: 'avatar',
+    path: 'avatar/:id',
     component: SelectAvatarComponent,
   },
   {
@@ -45,4 +45,5 @@ export const routes: Routes = [
     path: 'datenschutz',
     component: DataProtectionComponent,
   },
+  { path: '**', redirectTo: '' }
 ];
