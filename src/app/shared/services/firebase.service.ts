@@ -345,9 +345,31 @@ export class FirebaseService {
     }
   }
 
-  updateAvatar(choosenAvatar: string) {
-    // this.id = this.route.snapshot.paramMap.get('id')!;
-    // console.log(this.id);
+  async updateAvatar(choosenAvatar: string, id: string) {
+    const userRef = ref(this.database, `users/${id}/avatar`);
+    try {
+      await set(userRef, choosenAvatar);
+      console.log('Avatar updated successfully');
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+    }
+  }
+
+  async resiveUserData(id: string): Promise<string | null> {
+    const userRef = ref(this.database, `users/${id}`);
+    try {
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const displayName = snapshot.val().displayName;
+        return displayName;
+      } else {
+        console.log('No user data found');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return null;
+    }
   }
 
 }

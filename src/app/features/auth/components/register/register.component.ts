@@ -44,10 +44,8 @@ export class RegisterComponent {
       const newUser = this.newUserData.toJson();
       try {
         await this.firebase.creatNewUser(newUser);
-        this.router.navigate([`/avatar/`]);
       } catch (error) {
         console.error('Fehler bei der Registrierung:', error);
-        // Hier könnten Sie eine Fehlerbehandlung hinzufügen
       }
     }
     this.isLoading = false;
