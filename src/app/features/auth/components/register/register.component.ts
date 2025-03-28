@@ -35,19 +35,27 @@ export class RegisterComponent {
     return this.registerForm.controls;
   }
 
-  async registNewUser() {
+  registNewUser() {
     if (this.registerForm.valid) {
       this.isLoading = true;
       this.newUserData.displayName = this.registerForm.value.displayName;
       this.newUserData.email = this.registerForm.value.email;
       this.newUserData.password = this.registerForm.value.password;
       const newUser = this.newUserData.toJson();
-      try {
-        await this.firebase.creatNewUser(newUser);
-      } catch (error) {
-        console.error('Fehler bei der Registrierung:', error);
-      }
+  
+      this.firebase.creatNewUser(newUser)
+        .then(userId => {
+          console.log('User successfully registered, navigating to avatar page');
+          this.router.navigate([`/avatar/${userId}`]);
+        })
+        .catch(error => {
+          console.error('Fehler bei der Registrierung:', error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
     }
-    this.isLoading = false;
   }
+  
+  
 }

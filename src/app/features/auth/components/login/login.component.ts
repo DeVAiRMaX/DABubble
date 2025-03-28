@@ -149,20 +149,23 @@ export class LoginComponent implements OnInit {
     }, 3500);
   }
 
-  async login(userEmail: string, userPassword: string) {
-    try {
-      const result = await this.database.checkIfUserExists(userEmail, userPassword);
-      if (result.userExists) {
-        console.log('✅ User successfully logged in!');
-        console.log('User Key:', result.userKey);
-        this.router.navigate([`/dashboard/${result.userKey}`])
-      } else {
-        console.log('❌ Login failed! Incorrect email or password');
-      }
-    } catch (error) {
-      console.error('🚨 Error during login:', error);
-    }
+  login(userEmail: string, userPassword: string) {
+    this.database.checkIfUserExists(userEmail, userPassword)
+      .then(result => {
+        if (result.userExists) {
+          console.log('✅ User successfully logged in!');
+          console.log('User Key:', result.userKey);
+          // Token noch im Localestorage speichern!!!
+          this.router.navigate([`/dashboard/${result.userKey}`])
+        } else {
+          console.log('❌ Login failed! Incorrect email or password');
+        }
+      })
+      .catch(error => {
+        console.error('🚨 Error during login:', error);
+      });
   }
+  
   
 
 

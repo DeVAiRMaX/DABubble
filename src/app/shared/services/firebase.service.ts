@@ -324,7 +324,7 @@ export class FirebaseService {
     );
   }
 
-  creatNewUser(newUser: User) {
+  creatNewUser(newUser: User): Promise<string> {
     const userRef = ref(this.database, `users/`);
     const newUserRef = push(userRef);
     const userId = newUserRef.key;
@@ -333,70 +333,82 @@ export class FirebaseService {
       const userData = {
         ...newUser,
         uid: userId,
-        channelKeys: ['PLACEHOLDER'], //Beispiel Channelkey
-        avatar: './assets/img/character/PLACEHOLDER' //Beispiel Avatar
+        channelKeys: ['PLACEHOLDER'], // Beispiel Channelkey
+        avatar: './assets/img/character/PLACEHOLDER' // Beispiel Avatar
       };
 
       return set(newUserRef, userData)
-        .then(() => this.router.navigate([`/avatar/${userId}`]))
-        .catch(error => console.error('Error creating user:', error));
+        .then(() => {
+          console.log('User created successfully');
+          return userId;
+        })
+        .catch(error => {
+          console.error('Error creating user:', error);
+          return Promise.reject(error);
+        });
     } else {
       console.error('Failed to create user ID');
       return Promise.reject('Failed to create user ID');
     }
   }
 
-  async updateAvatar(choosenAvatar: string, id: string) {
+
+
+  updateAvatar(choosenAvatar: string, id: string): Promise<void> {
     const userRef = ref(this.database, `users/${id}/avatar`);
-    try {
-      await set(userRef, choosenAvatar);
-      console.log('Avatar updated successfully');
-    } catch (error) {
-      console.error('Error updating avatar:', error);
-    }
+
+    return set(userRef, choosenAvatar)
+      .then(() => {
+        console.log('Avatar updated successfully');
+      })
+      .catch(error => {
+        console.error('Error updating avatar:', error);
+        return Promise.reject(error);
+      });
   }
 
-  async resiveUserData(id: string): Promise<string | null> {
+
+  resiveUserData(id: string): Promise<string | null> {
     const userRef = ref(this.database, `users/${id}`);
-    try {
-      const snapshot = await get(userRef);
-      if (snapshot.exists()) {
-        const displayName = snapshot.val().displayName;
-        return displayName;
-      } else {
-        console.log('No user data found');
+    
+    return get(userRef)
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const displayName = snapshot.val().displayName;
+          return displayName;
+        } else {
+          console.log('No user data found');
+          return null;
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
         return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      return null;
-    }
+      });
   }
+  
 
-  async checkIfUserExists(userEmail: string, userPassword: string): Promise<{ userExists: boolean, userKey?: string }> {
+  checkIfUserExists(userEmail: string, userPassword: string): Promise<{ userExists: boolean, userKey?: string }> {
     const accountsRef = ref(this.database, '/users');
-    try {
-      const snapshot = await get(accountsRef);
+
+    return get(accountsRef).then(snapshot => {
       if (snapshot.exists()) {
         const users = snapshot.val();
         for (const key in users) {
           if (users[key].email === userEmail && users[key].password === userPassword) {
-            console.log('✅ Login successful:', users[key]);
             return { userExists: true, userKey: key };
           }
         }
-        console.log('❌ Incorrect email or password');
         return { userExists: false };
       } else {
-        console.log('❌ No users found');
         return { userExists: false };
       }
-    } catch (error) {
-      console.error('🚨 Error checking user:', error);
+    }).catch(error => {
       return { userExists: false };
-    }
+    });
   }
-  
+
+
 
 
 

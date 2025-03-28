@@ -42,21 +42,39 @@ export class SelectAvatarComponent {
 
 
 
-  async ngOnInit() {
+  ngOnInit() {
     this.avatars = avatars.avatarimg;
-    this.id = this.route.snapshot.paramMap.get('id');    
-    this.firebaseService.resiveUserData(this.id);
-    this.displayName = await this.firebaseService.resiveUserData(this.id);
+    this.renderUserData();
   }
+
+  renderUserData() {
+    this.id = this.route.snapshot.paramMap.get('id');
+    
+    this.firebaseService.resiveUserData(this.id)
+      .then(displayName => {
+        this.displayName = displayName;
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+      });
+  }
+
 
   updateAvatar(choosenAvatar: string) {
     this.selectedAvatar = choosenAvatar;
-    
-    this.firebaseService.updateAvatar(choosenAvatar, this.id);
-    this.successMsgAnimation = true;
-    setTimeout(() => {
-      this.router.navigate([`/login`])
-      this.successMsgAnimation = false;
-    }, 2000);
+
+    this.firebaseService.updateAvatar(choosenAvatar, this.id)
+      .then(() => {
+        this.successMsgAnimation = true;
+        setTimeout(() => {
+          this.router.navigate([`/login`]);
+          this.successMsgAnimation = false;
+        }, 2000);
+      })
+      .catch(error => {
+        console.error('Error updating avatar:', error);
+      });
   }
+
+
 }
