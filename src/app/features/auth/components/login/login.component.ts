@@ -150,6 +150,7 @@ export class LoginComponent implements OnInit {
   }
 
   login(userEmail: string, userPassword: string) {
+    // Gastlogin ergänzen!!
     this.database.checkIfUserExists(userEmail, userPassword)
       .then(result => {
         if (result.userExists) {
