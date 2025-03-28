@@ -1,4 +1,11 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
 import { SharedModule } from '../../shared';
@@ -25,7 +32,7 @@ import { ChannelWithKey } from '../interfaces/channel';
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
 })
-export class ChannelChatComponent implements OnInit {
+export class ChannelChatComponent implements OnInit, OnChanges {
   addUserToChannelOverlayIsVisible: boolean = false;
   @Input() channel!: ChannelWithKey;
   private variableService: VariablesService = inject(VariablesService);
@@ -38,16 +45,38 @@ export class ChannelChatComponent implements OnInit {
     );
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['channel'] && changes['channel'].currentValue) {
+      const currentChannel = changes['channel'].currentValue as ChannelWithKey;
+      console.log(
+        'ChannelChatComponent ngOnChanges - Channel erhalten:',
+        currentChannel.channelName,
+        'mit Key:',
+        currentChannel.key
+      );
+    } else if (
+      changes['channel'] &&
+      !changes['channel'].currentValue &&
+      !changes['channel'].firstChange
+    ) {
+      console.warn(
+        'ChannelChatComponent ngOnChanges - Channel wurde entfernt oder ist undefined.'
+      );
+    }
+  }
+
   ngOnInit(): void {
     if (this.channel) {
       console.log(
-        'ChannelChatComponent erhalten:',
+        'ChannelChatComponent ngOnInit - Channel war bereits verfügbar:',
         this.channel.channelName,
         'mit Key:',
         this.channel.key
       );
     } else {
-      console.warn('ChannelChatComponent hat keinen Channel erhalten!');
+      console.warn(
+        'ChannelChatComponent ngOnInit - Channel war bei ngOnInit noch nicht verfügbar.'
+      );
     }
   }
 

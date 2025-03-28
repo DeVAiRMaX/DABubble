@@ -49,6 +49,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   uid: string | null = '';
   channelKeys: string[] = [];
   userChannels: ChannelWithKey[] = [];
+  selectedChannel: ChannelWithKey | undefined = undefined;
 
   private subService: SubService = inject(SubService);
   private authService: AuthService = inject(AuthService);
@@ -91,11 +92,6 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     );
   }
 
-  trackByChannelKey(index: number, channel: ChannelWithKey): string {
-    // Typ hier auch verwenden
-    return channel.key;
-  }
-
   loadUserSpecificData(uid: string): void {
     this.subService.unsubscribeAll();
 
@@ -115,23 +111,40 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   }
 
   loadChannels(uid: string): void {
-    this.subService.unsubscribeAll();
-    this.subService.add(
-      this.firebaseService.getChannelsForUser(uid).subscribe({
-        next: (channels) => {
-          this.userChannels = channels;
-          this.renderChannels(this.userChannels);
-        },
-        error: (err) => {
-          console.error('Fehler beim Laden der Channels:', err);
-          this.userChannels = [];
-        },
-      })
-    );
+    const channelSub = this.firebaseService.getChannelsForUser(uid).subscribe({
+      next: (channels) => {
+        this.userChannels = [...channels];
+        if (this.userChannels.length > 0) {
+          if (
+            !this.selectedChannel ||
+            !this.userChannels.some((c) => c.key === this.selectedChannel!.key)
+          ) {
+            this.selectedChannel = { ...this.userChannels[0] };
+          } else {
+            const updatedSelected = this.userChannels.find(
+              (c) => c.key === this.selectedChannel!.key
+            );
+            if (updatedSelected) {
+              this.selectedChannel = { ...updatedSelected };
+            } else {
+              this.selectedChannel = undefined;
+            }
+          }
+        } else {
+          this.selectedChannel = undefined;
+        }
+      },
+      error: (err) => {
+        console.error('Fehler beim Laden der Channels:', err);
+        this.userChannels = [];
+        this.selectedChannel = undefined;
+      },
+    });
+    this.subService.add(channelSub);
   }
 
-  renderChannels(userChannels: Channel[]) {
-    console.log(userChannels);
+  onChannelSelected(channel: ChannelWithKey): void {
+    this.selectedChannel = { ...channel };
   }
 
   toggleSideNav(): void {

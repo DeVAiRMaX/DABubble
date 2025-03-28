@@ -1,6 +1,6 @@
 export interface User {
-  channels?: string[];
+  uid: string;
+  displayName: string;
   email: string;
-  name: string;
-  password: string;
+  channelKeys?: string[];
 }

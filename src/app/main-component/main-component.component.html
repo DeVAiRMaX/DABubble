@@ -2,15 +2,29 @@
 <div class="main-container">
   <app-side-nav
     [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
-  ></app-side-nav>
+    *ngIf="sideNavIsVisible"
+    [userChannels]="userChannels"
+    (channelSelected)="onChannelSelected($event)"
+  >
+    ></app-side-nav
+  >
+
   <app-channel-chat
-    *ngFor="let channel of userChannels; trackBy: trackByChannelKey"
-    [channel]="channel"
     class="channel-chat-container"
-  ></app-channel-chat>
+    *ngIf="selectedChannel"
+    [channel]="selectedChannel"
+  >
+    ></app-channel-chat
+  >
+
   <app-thread
     *ngIf="!threadIsVisible"
     class="thread-container"
     [@slideInOut]
   ></app-thread>
 </div>
+
+<!--    
+*ngFor="let channel of userChannels; trackBy: trackByChannelKey"
+[channel]="channel"
+ -->

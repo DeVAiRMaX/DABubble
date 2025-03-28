@@ -1,8 +1,18 @@
 import { inject, Injectable } from '@angular/core';
-import { Database, ref, set, get, push, child, query, orderByChild, equalTo } from '@angular/fire/database';
-import { User } from '@angular/fire/auth';
+import {
+  Database,
+  ref,
+  set,
+  get,
+  push,
+  child,
+  query,
+  orderByChild,
+  equalTo,
+} from '@angular/fire/database';
+import { user, User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
 import { Router } from '@angular/router';
 import { where } from '@angular/fire/firestore';
@@ -11,7 +21,7 @@ import { where } from '@angular/fire/firestore';
   providedIn: 'root',
 })
 export class FirebaseService {
-  constructor(private database: Database) { }
+  constructor(private database: Database) {}
 
   private router = inject(Router);
 
@@ -120,10 +130,28 @@ export class FirebaseService {
       private: false,
     };
 
-    return from(set(newChannelRef, newChannel)).pipe(
-      map(() => channelKey),
+    const createChannelOperation = from(set(newChannelRef, newChannel));
+
+    return createChannelOperation.pipe(
+      tap(() =>
+        console.log(
+          `[createChannel] Operation 1 (set channel ${channelKey}) erfolgreich.`
+        )
+      ),
+      switchMap(() => {
+        console.log(
+          `[createChannel] Rufe Operation 2 (addChannelKeyToUser) für User ${channelCreatorUid}, Key ${channelKey} auf.`
+        );
+        return this.addChannelKeyToUser(channelCreatorUid, channelKey);
+      }),
+      map(() => {
+        console.log(
+          `[createChannel] Operation 2 (addChannelKeyToUser) erfolgreich abgeschlossen.`
+        );
+        return channelKey;
+      }),
       catchError((error) => {
-        console.error('Fehler beim Erstellen des Channels:', error);
+        console.error('[createChannel] Fehler im Verkettungsprozess:', error);
         return throwError(() => error);
       })
     );
@@ -152,43 +180,6 @@ export class FirebaseService {
       })
     );
   }
-
-  // getChannelsForUser(uid: string): Observable<Channel[]> {
-  //   if (!uid) {
-  //     return throwError(
-  //       () => new Error('getChannelsForUser: UID darf nicht leer sein.')
-  //     );
-  //   }
-
-  //   return this.getUserData(uid).pipe(
-  //     switchMap((userData) => {
-  //       if (
-  //         userData &&
-  //         userData.channelKeys &&
-  //         userData.channelKeys.length > 0
-  //       ) {
-  //         const channelObservables = userData.channelKeys.map((channelKey) =>
-  //           this.getChannel(channelKey)
-  //         );
-  //         return combineLatest(channelObservables).pipe(
-  //           map(
-  //             (channels) =>
-  //               channels.filter((channel) => channel !== null) as Channel[]
-  //           )
-  //         );
-  //       } else {
-  //         return of([]);
-  //       }
-  //     }),
-  //     catchError((error) => {
-  //       console.error(
-  //         'Fehler beim Abrufen der Kanäle für den Benutzer:',
-  //         error
-  //       );
-  //       return throwError(() => error);
-  //     })
-  //   );
-  // }
 
   getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
     // Rückgabetyp angepasst
@@ -334,7 +325,7 @@ export class FirebaseService {
         ...newUser,
         uid: userId,
         channelKeys: ['PLACEHOLDER'], // Beispiel Channelkey
-        avatar: './assets/img/character/PLACEHOLDER' // Beispiel Avatar
+        avatar: './assets/img/character/PLACEHOLDER', // Beispiel Avatar
       };
 
       return set(newUserRef, userData)
@@ -342,7 +333,7 @@ export class FirebaseService {
           console.log('User created successfully');
           return userId;
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error creating user:', error);
           return Promise.reject(error);
         });
@@ -352,8 +343,6 @@ export class FirebaseService {
     }
   }
 
-
-
   updateAvatar(choosenAvatar: string, id: string): Promise<void> {
     const userRef = ref(this.database, `users/${id}/avatar`);
 
@@ -361,18 +350,17 @@ export class FirebaseService {
       .then(() => {
         console.log('Avatar updated successfully');
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error updating avatar:', error);
         return Promise.reject(error);
       });
   }
 
-
   resiveUserData(id: string): Promise<string | null> {
     const userRef = ref(this.database, `users/${id}`);
-    
+
     return get(userRef)
-      .then(snapshot => {
+      .then((snapshot) => {
         if (snapshot.exists()) {
           const displayName = snapshot.val().displayName;
           return displayName;
@@ -381,39 +369,37 @@ export class FirebaseService {
           return null;
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching user data:', error);
         return null;
       });
   }
-  
 
-  checkIfUserExists(userEmail: string, userPassword: string): Promise<{ userExists: boolean, userKey?: string }> {
+  checkIfUserExists(
+    userEmail: string,
+    userPassword: string
+  ): Promise<{ userExists: boolean; userKey?: string }> {
     const accountsRef = ref(this.database, '/users');
 
-    return get(accountsRef).then(snapshot => {
-      if (snapshot.exists()) {
-        const users = snapshot.val();
-        for (const key in users) {
-          if (users[key].email === userEmail && users[key].password === userPassword) {
-            return { userExists: true, userKey: key };
+    return get(accountsRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const users = snapshot.val();
+          for (const key in users) {
+            if (
+              users[key].email === userEmail &&
+              users[key].password === userPassword
+            ) {
+              return { userExists: true, userKey: key };
+            }
           }
+          return { userExists: false };
+        } else {
+          return { userExists: false };
         }
+      })
+      .catch((error) => {
         return { userExists: false };
-      } else {
-        return { userExists: false };
-      }
-    }).catch(error => {
-      return { userExists: false };
-    });
+      });
   }
-
-
-
-
-
-
-
-
-
 }

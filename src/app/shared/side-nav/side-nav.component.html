@@ -27,7 +27,9 @@
     </div>
 
     <div class="channel-list-body" [class.collapsed]="!isChannelListExpanded">
-      <a><span class="material-icons"> tag </span> Entwicklerteam</a>
+      <a *ngFor="let chan of userChannels" (click)="selectChannel(chan)">
+        <span class="material-icons"> tag </span> {{ chan.channelName }}
+      </a>
 
       <a (click)="openDialog()"
         ><span class="material-icons"> add_circle_outline </span>Channel
