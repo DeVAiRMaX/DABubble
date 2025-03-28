@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import {
   trigger,
   state,
@@ -8,11 +9,12 @@ import {
   transition,
 } from '@angular/animations';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { FirebaseService } from '../../../../shared/services/firebase.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   animations: [
@@ -101,12 +103,17 @@ import { AuthService } from '../../../../shared/services/auth.service';
 })
 export class LoginComponent implements OnInit {
   private authService: AuthService = inject(AuthService);
+  private database: FirebaseService = inject(FirebaseService);
+  private router = inject(Router);
 
   logoState: 'center' | 'left' = 'center';
   textState: 'hidden' | 'visible' = 'hidden';
   ContainerState: 'center' | 'leftTop' = 'center';
   BackgroundState: 'visible' | 'hidden' = 'visible';
   loginContainerState: 'hidden' | 'visible' = 'hidden';
+
+  userEmail: string = '';
+  userPassword: string = '';
 
   ngOnInit(): void {
     this.startAnimation();
@@ -141,4 +148,23 @@ export class LoginComponent implements OnInit {
       this.loginContainerState = 'visible';
     }, 3500);
   }
+
+  async login(userEmail: string, userPassword: string) {
+    try {
+      const result = await this.database.checkIfUserExists(userEmail, userPassword);
+      if (result.userExists) {
+        console.log('✅ User successfully logged in!');
+        console.log('User Key:', result.userKey);
+        this.router.navigate([`/dashboard/${result.userKey}`])
+      } else {
+        console.log('❌ Login failed! Incorrect email or password');
+      }
+    } catch (error) {
+      console.error('🚨 Error during login:', error);
+    }
+  }
+  
+
+
+
 }

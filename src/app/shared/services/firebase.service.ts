@@ -1,10 +1,11 @@
 import { inject, Injectable } from '@angular/core';
-import { Database, ref, set, get, push, child } from '@angular/fire/database';
+import { Database, ref, set, get, push, child, query, orderByChild, equalTo } from '@angular/fire/database';
 import { User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
 import { Router } from '@angular/router';
+import { where } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -371,5 +372,36 @@ export class FirebaseService {
       return null;
     }
   }
+
+  async checkIfUserExists(userEmail: string, userPassword: string): Promise<{ userExists: boolean, userKey?: string }> {
+    const accountsRef = ref(this.database, '/users');
+    try {
+      const snapshot = await get(accountsRef);
+      if (snapshot.exists()) {
+        const users = snapshot.val();
+        for (const key in users) {
+          if (users[key].email === userEmail && users[key].password === userPassword) {
+            console.log('✅ Login successful:', users[key]);
+            return { userExists: true, userKey: key };
+          }
+        }
+        console.log('❌ Incorrect email or password');
+        return { userExists: false };
+      } else {
+        console.log('❌ No users found');
+        return { userExists: false };
+      }
+    } catch (error) {
+      console.error('🚨 Error checking user:', error);
+      return { userExists: false };
+    }
+  }
+  
+
+
+
+
+
+
 
 }

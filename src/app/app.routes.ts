@@ -22,6 +22,10 @@ export const routes: Routes = [
     component: RegisterComponent,
   },
   {
+    path: 'dashboard/:id',
+    component: MainComponentComponent,
+  },
+  {
     path: 'dashboard',
     component: MainComponentComponent,
   },
