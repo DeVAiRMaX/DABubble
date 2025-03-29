@@ -79,6 +79,7 @@ export class ChannelCreateOverlayComponent {
             console.error('Fehler beim Erstellen des Channels:', error);
           },
         });
+        this.closeDialog();
     } else {
       console.error('Kein Benutzer eingeloggt, kann keinen Channel erstellen.');
     }
