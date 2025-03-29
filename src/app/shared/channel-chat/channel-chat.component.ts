@@ -7,6 +7,7 @@ import { AddUserToChannelOverlayComponent } from './add-user-to-channel-overlay/
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogConfig, MatDialogModule } from '@angular/material/dialog';
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
+import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-persons-dialog.component';
 
 @Component({
   selector: 'app-channel-chat',
@@ -91,7 +92,7 @@ export class ChannelChatComponent {
       
       const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
         position: { top: `${rect.bottom + 20 + window.scrollY}px` }, 
-        panelClass: 'custom-dialog',// 20px Abstand nach unten
+        panelClass: ['custom-dialog', 'memberOverlay'] , // 20px Abstand nach unten
       });
 
      
@@ -111,8 +112,43 @@ export class ChannelChatComponent {
           dialogElement.style.height = '700px';
          
         }
-      }, 0); 
+      }, 20); 
     }
+  }
+
+  openTagPeopleDialog(){
+    const targetElement = document.querySelector('.input-container-wrapper');
+
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect(); // Position des Buttons ermitteln
+
+      const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
+        position: { bottom: `${rect.top - 20 + window.scrollY}px` , left: `${rect.left + 20 + window.scrollX}px`},
+        panelClass: ['tagging-dialog', 'transparentBackdrop'], 
+       
+      });
+      
+      
+     
+      
+      setTimeout(() => {
+        const dialogElement = document.querySelector(
+          'mat-dialog-container'
+        ) as HTMLElement;
+        if (dialogElement) {
+          const dialogRect = dialogElement.getBoundingClientRect();
+          
+
+          
+          dialogElement.style.position = 'absolute';
+          dialogElement.style.width = '350px';
+          
+          dialogElement.style.borderBottomLeftRadius = '0px';
+          
+        }
+      }, 10);
+    }
+
   }
   
   

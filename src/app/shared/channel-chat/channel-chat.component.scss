@@ -4,6 +4,24 @@
   grid-template-rows: auto 1fr auto;
 }
 
+::ng-deep .memberOverlay{
+  width: 415px;
+}
+
+::ng-deep .tagging-dialog{
+  max-width: 350px;
+  max-height: 467px;
+  
+}
+
+::ng-deep .mat-mdc-dialog-surface{
+  border-radius: 20px 20px 20px 0px !important;
+}
+
+
+
+
+
 .channel-chat-header {
   width: 100%;
   display: flex;

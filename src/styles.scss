@@ -47,3 +47,7 @@ body {
 .mat-mdc-dialog-inner-container{
     height: unset !important;
   }
+
+  ::ng-deep .transparentBackdrop .cdk-overlay-backdrop{
+    background: transparent !important;
+  }

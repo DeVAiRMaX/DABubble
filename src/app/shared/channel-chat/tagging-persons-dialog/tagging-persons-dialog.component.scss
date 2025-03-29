@@ -1,0 +1,63 @@
+.wholeDialog{
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+    max-width: 350px;
+    height: 467px;
+    max-height: 467px;
+    overflow-y: scroll;
+    box-sizing: border-box;
+    padding: 20px 21px 20px 21px;
+    border-radius: 20px 20px 20px 0px;
+    border: 1px solid #ADB0D9;
+    box-shadow: 0px 2px 10px 0px #00000014;
+    gap: 15px;
+
+
+
+
+    >.singleContact{
+        display: flex;
+        gap: 15px;
+        box-sizing: border-box;
+        padding: 4px 20px 4px 20px;
+        align-items: center;
+position: relative;
+
+        &:hover{
+            background-color:#ECEEFE;
+            border-radius: 35px;
+            cursor: pointer;
+        }
+
+        >img{
+            width: 50px;
+            height: 50px;
+            border-radius: 100px;
+            
+
+        }
+
+        &::after{
+            content: "";
+            width: 10px; 
+            height: 10px;
+            background-color: #92C83E;
+            border-radius: 50%; 
+            position: absolute;
+            bottom: 5px; 
+            left: 55px; 
+            border: 2px solid white;
+        }
+
+        >span{
+            color: black;
+            font-family: 'Nunito';
+font-weight: 400;
+font-size: 18px;
+line-height: 100%;
+letter-spacing: 0%;
+
+        }
+    }
+}

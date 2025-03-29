@@ -46,6 +46,7 @@ color: black;
                 border: none;
                 border-radius: 100px; 
                 background-color: #ECEEFE ;
+                cursor: pointer;
             }
         }
     }
@@ -78,6 +79,12 @@ color: black;
                 letter-spacing: 0%;
                 color: black;
                 
+            }
+
+            &:hover{
+                background-color: #eceefe;
+                border-radius: 100px;
+                cursor: pointer;
             }
 
         }

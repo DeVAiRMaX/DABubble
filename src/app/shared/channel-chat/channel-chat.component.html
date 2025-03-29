@@ -129,7 +129,12 @@
       <input type="text" placeholder="Nachricht an #Entwicklerteam" />
       <div class="icons">
         <div>
-          <span class="material-symbols-outlined"> alternate_email </span>
+          <span
+            (click)="openTagPeopleDialog()"
+            class="material-symbols-outlined"
+          >
+            alternate_email
+          </span>
           <span class="material-symbols-outlined"> sentiment_satisfied </span>
         </div>
         <img src="./assets/img/icons/send.png" class="send-btn" alt="send" />
