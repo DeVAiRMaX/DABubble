@@ -7,6 +7,7 @@
   </div>
   <div class="register-box-container">
     <div class="register-box">
+      
       <div class="register-box-header">
         <span
           class="material-symbols-outlined back-arrow-btn"
@@ -21,28 +22,48 @@
         DABubble-Konto.
       </p>
 
-      <div class="input-group">
+      <form [formGroup]="registerForm" class="input-group">
         <div class="person-input">
-          <input type="name" placeholder="Name und Nachname" />
+          <input type="text" placeholder="Name und Nachname" formControlName="displayName" />
+          <div *ngIf="formControls['displayName'].invalid && (formControls['displayName'].dirty || formControls['displayName'].touched)" class="error-message">
+            <span *ngIf="formControls['displayName'].errors?.['required']">Name ist erforderlich.</span>
+            <span *ngIf="formControls['displayName'].errors?.['minlength']">Name muss mindestens 3 Zeichen lang sein.</span>
+          </div>
         </div>
 
         <div class="email-input">
-          <input type="email" placeholder="Beispielname@email.com" />
+          <input type="email" placeholder="Beispielname@email.com" formControlName="email" />
+          <div *ngIf="formControls['email'].invalid && (formControls['email'].dirty || formControls['email'].touched)" class="error-message">
+            <span *ngIf="formControls['email'].errors?.['required']">E-Mail ist erforderlich.</span>
+            <span *ngIf="formControls['email'].errors?.['email']">Bitte geben Sie eine gültige E-Mail-Adresse ein.</span>
+          </div>
         </div>
 
         <div class="password-input">
-          <input type="password" placeholder="Passwort" />
+          <input type="password" placeholder="Passwort" formControlName="password" />
+          <div *ngIf="formControls['password'].invalid && (formControls['password'].dirty || formControls['password'].touched)" class="error-message">
+            <span *ngIf="formControls['password'].errors?.['required']">Passwort ist erforderlich.</span>
+            <span *ngIf="formControls['password'].errors?.['minlength']">Passwort muss mindestens 6 Zeichen lang sein.</span>
+          </div>
         </div>
-      </div>
 
-      <div class="privacypolicy">
-        <input type="checkbox" />
-        <p>Ich stimme der <a href="#">Datenschutzerklärung</a>zu.</p>
-      </div>
-
-      <div class="register-actions">
-        <button class="register-btn" [routerLink]="['/avatar']">Weiter</button>
-      </div>
+        <div class="privacypolicy">
+          <div class="checkbox-container">
+            <input type="checkbox" formControlName="privacyPolicy" />
+            <p>Ich stimme der <a href="#">Datenschutzerklärung</a> zu.</p>
+          </div>
+          <div *ngIf="formControls['privacyPolicy'].invalid && (formControls['privacyPolicy'].dirty || formControls['privacyPolicy'].touched)" class="error-message">
+            <span *ngIf="formControls['privacyPolicy'].errors?.['required']">Sie müssen den Datenschutzbestimmungen zustimmen.</span>
+          </div>
+        </div>
+        <mat-progress-bar mode="query" *ngIf="isLoading"></mat-progress-bar>
+        
+        <div class="register-actions">
+          <button class="register-btn" (click)="registNewUser()" [disabled]="registerForm.invalid">Weiter</button>
+        </div>
+        
+      </form>
+      
     </div>
 
     <div class="footer">

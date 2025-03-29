@@ -1,25 +1,29 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   Database,
   ref,
   set,
   get,
-  Unsubscribe,
   push,
   child,
+  query,
+  orderByChild,
+  equalTo,
 } from '@angular/fire/database';
-import { User } from '@angular/fire/auth';
+import { user, User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { Channel } from '../interfaces/channel';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { Channel, ChannelWithKey } from '../interfaces/channel';
+import { Router } from '@angular/router';
+import { where } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
-  private unsubscribeUser: Unsubscribe | null = null;
-
   constructor(private database: Database) {}
+
+  private router = inject(Router);
 
   saveUserData(user: User): Observable<null> {
     if (!user) {
@@ -37,7 +41,7 @@ export class FirebaseService {
         uid: user.uid,
         displayName: user.displayName,
         email: user.email,
-        channelKeys: ['-OMCzsmmcro3xcrQMOVw'],
+        channelKeys: ['-OMHiw5zKaBgMPOxnzaC', '-OMIPeYGF4ha3FjUK4xH'],
       })
     ).pipe(
       map(() => null),
@@ -46,13 +50,6 @@ export class FirebaseService {
         return throwError(() => error);
       })
     );
-  }
-  // -OMCzsmmcro3xcrQMOVw
-  unsubscribeUserData(): void {
-    if (this.unsubscribeUser) {
-      this.unsubscribeUser();
-      this.unsubscribeUser = null;
-    }
   }
 
   getUserData(uid: string): Observable<{
@@ -133,10 +130,28 @@ export class FirebaseService {
       private: false,
     };
 
-    return from(set(newChannelRef, newChannel)).pipe(
-      map(() => channelKey),
+    const createChannelOperation = from(set(newChannelRef, newChannel));
+
+    return createChannelOperation.pipe(
+      tap(() =>
+        console.log(
+          `[createChannel] Operation 1 (set channel ${channelKey}) erfolgreich.`
+        )
+      ),
+      switchMap(() => {
+        console.log(
+          `[createChannel] Rufe Operation 2 (addChannelKeyToUser) für User ${channelCreatorUid}, Key ${channelKey} auf.`
+        );
+        return this.addChannelKeyToUser(channelCreatorUid, channelKey);
+      }),
+      map(() => {
+        console.log(
+          `[createChannel] Operation 2 (addChannelKeyToUser) erfolgreich abgeschlossen.`
+        );
+        return channelKey;
+      }),
       catchError((error) => {
-        console.error('Fehler beim Erstellen des Channels:', error);
+        console.error('[createChannel] Fehler im Verkettungsprozess:', error);
         return throwError(() => error);
       })
     );
@@ -166,7 +181,8 @@ export class FirebaseService {
     );
   }
 
-  getChannelsForUser(uid: string): Observable<Channel[]> {
+  getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
+    // Rückgabetyp angepasst
     if (!uid) {
       return throwError(
         () => new Error('getChannelsForUser: UID darf nicht leer sein.')
@@ -180,16 +196,31 @@ export class FirebaseService {
           userData.channelKeys &&
           userData.channelKeys.length > 0
         ) {
+          // Erstelle Observables, die Channel holen UND den Key hinzufügen
           const channelObservables = userData.channelKeys.map((channelKey) =>
-            this.getChannel(channelKey)
+            this.getChannel(channelKey).pipe(
+              map((channelData) => {
+                if (channelData) {
+                  // Füge den Key zum Channel-Objekt hinzu
+                  return { ...channelData, key: channelKey } as ChannelWithKey;
+                }
+                return null; // Behalte null bei, falls Channel nicht gefunden wurde
+              })
+            )
           );
+
+          // Kombiniere die Ergebnisse
           return combineLatest(channelObservables).pipe(
             map(
-              (channels) =>
-                channels.filter((channel) => channel !== null) as Channel[]
+              (channelsWithPossibleNulls) =>
+                // Filtere null-Werte heraus
+                channelsWithPossibleNulls.filter(
+                  (channel) => channel !== null
+                ) as ChannelWithKey[]
             )
           );
         } else {
+          // Keine Channel-Keys gefunden, leeres Array zurückgeben
           return of([]);
         }
       }),
@@ -199,6 +230,7 @@ export class FirebaseService {
           error
         );
         return throwError(() => error);
+        return of([]);
       })
     );
   }
@@ -283,8 +315,91 @@ export class FirebaseService {
     );
   }
 
-  // getTime(timestamp: number) {
-  //   const date = new Date(timestamp)
-  //   console.log(date.toLocaleString());
-  // }
+  creatNewUser(newUser: User): Promise<string> {
+    const userRef = ref(this.database, `users/`);
+    const newUserRef = push(userRef);
+    const userId = newUserRef.key;
+
+    if (userId) {
+      const userData = {
+        ...newUser,
+        uid: userId,
+        channelKeys: ['PLACEHOLDER'], // Beispiel Channelkey
+        avatar: './assets/img/character/PLACEHOLDER', // Beispiel Avatar
+      };
+
+      return set(newUserRef, userData)
+        .then(() => {
+          console.log('User created successfully');
+          return userId;
+        })
+        .catch((error) => {
+          console.error('Error creating user:', error);
+          return Promise.reject(error);
+        });
+    } else {
+      console.error('Failed to create user ID');
+      return Promise.reject('Failed to create user ID');
+    }
+  }
+
+  updateAvatar(choosenAvatar: string, id: string): Promise<void> {
+    const userRef = ref(this.database, `users/${id}/avatar`);
+
+    return set(userRef, choosenAvatar)
+      .then(() => {
+        console.log('Avatar updated successfully');
+      })
+      .catch((error) => {
+        console.error('Error updating avatar:', error);
+        return Promise.reject(error);
+      });
+  }
+
+  resiveUserData(id: string): Promise<string | null> {
+    const userRef = ref(this.database, `users/${id}`);
+
+    return get(userRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const displayName = snapshot.val().displayName;
+          return displayName;
+        } else {
+          console.log('No user data found');
+          return null;
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching user data:', error);
+        return null;
+      });
+  }
+
+  checkIfUserExists(
+    userEmail: string,
+    userPassword: string
+  ): Promise<{ userExists: boolean; userKey?: string }> {
+    const accountsRef = ref(this.database, '/users');
+
+    return get(accountsRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const users = snapshot.val();
+          for (const key in users) {
+            if (
+              users[key].email === userEmail &&
+              users[key].password === userPassword
+            ) {
+              return { userExists: true, userKey: key };
+            }
+          }
+          return { userExists: false };
+        } else {
+          return { userExists: false };
+        }
+      })
+      .catch((error) => {
+        return { userExists: false };
+      });
+  }
 }

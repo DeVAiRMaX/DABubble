@@ -19,22 +19,23 @@
       <div class="select-avatar-box-content">
         <div class="select-avatar-preview">
           <img [src]="selectedAvatar" alt="person" />
-          <h3>Frederik Beck</h3>
+          <h3>{{ displayName }}</h3>
         </div>
         <div class="select-avatar-box-content-item">
           <p>Aus der Liste wählen</p>
           <div class="select-avatar-box-content-item-list">
-            <img *ngFor="let avatar of avatars| slice:1" 
+            <img *ngFor="let avatar of avatars| slice:1; let i = index" 
                  [src]="avatar" 
-                 alt="person" 
-                 (click)="selectedAvatar = avatar"
-                 [class.selected]="selectedAvatar === avatar" />
+                 alt="person"
+                 (click)="selectedAvatar = avatar;"
+                 [class.selected]="selectedAvatar === avatar"
+                  />
           </div>
         </div>
       </div>
 
       <div class="avatar-actions">
-        <button class="avatar-btn" [routerLink]="['/avatar']">Weiter</button>
+        <button class="avatar-btn" *ngIf="selectedAvatar !== avatars[0]" (click)="updateAvatar(selectedAvatar)">Weiter</button>
       </div>
     </div>
 
@@ -42,5 +43,8 @@
       <a [routerLink]="['/impressum']">Impressum</a>
         <a [routerLink]="['/datenschutz']">Datenschutz</a>
     </div>
+  </div>
+  <div class="success-msg" *ngIf="successMsgAnimation" [@successMsgAnimation]="successMsgAnimation">
+    <h3>Konto erfolgreich erstellt!</h3>
   </div>
 </div>

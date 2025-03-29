@@ -8,9 +8,8 @@ import { VariablesService } from '../variables.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FirebaseService } from '../shared/services/firebase.service';
 import { AuthService } from '../shared/services/auth.service';
-import { User } from '@angular/fire/auth';
-import { Channel } from '../shared/interfaces/channel';
-import { Subscription } from 'rxjs';
+import { SubService } from '../shared/services/sub.service';
+import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
 
 @Component({
   selector: 'app-main-component',
@@ -44,19 +43,15 @@ import { Subscription } from 'rxjs';
     ]),
   ],
 })
-export class MainComponentComponent implements OnInit {
+export class MainComponentComponent implements OnInit, OnDestroy {
   sideNavIsVisible: boolean = true;
   threadIsVisible: boolean = true;
   uid: string | null = '';
   channelKeys: string[] = [];
-  userChannels: Channel[] = [];
+  userChannels: ChannelWithKey[] = [];
+  selectedChannel: ChannelWithKey | undefined = undefined;
 
-  private sideNavSub: Subscription | null = null;
-  private threadSub: Subscription | null = null;
-  private authUserSub: Subscription | null = null;
-  private channelKeysSub: Subscription | null = null;
-  private userChannelsSub: Subscription | null = null;
-
+  private subService: SubService = inject(SubService);
   private authService: AuthService = inject(AuthService);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private variableService: VariablesService = inject(VariablesService);
@@ -65,43 +60,43 @@ export class MainComponentComponent implements OnInit {
     this.variableService.sideNavIsVisible$.subscribe((value) => {
       this.sideNavIsVisible = value;
     });
-
     this.variableService.threadIsClosed$.subscribe((value) => {
       this.threadIsVisible = value;
     });
   }
 
   ngOnInit(): void {
-    this.sideNavSub = this.variableService.sideNavIsVisible$.subscribe(
-      (value) => {
+    this.subService.add(
+      this.variableService.sideNavIsVisible$.subscribe((value) => {
         this.sideNavIsVisible = value;
-      }
+      })
     );
-    this.threadSub = this.variableService.threadIsClosed$.subscribe((value) => {
-      this.threadIsVisible = value;
-    });
 
-    this.authUserSub = this.authService.user$.subscribe((user) => {
-      if (user) {
-        this.uid = user.uid;
-        console.log('Benutzer eingeloggt, UID:', this.uid);
-        this.loadUserSpecificData(this.uid);
-      } else {
-        this.uid = null;
-        console.log('Benutzer ist nicht eingeloggt.');
-        this.channelKeys = [];
-        this.userChannels = [];
-      }
-    });
+    this.subService.add(
+      this.variableService.threadIsClosed$.subscribe((value) => {
+        this.threadIsVisible = value;
+      })
+    );
+
+    this.subService.add(
+      this.authService.user$.subscribe((user) => {
+        if (user) {
+          this.uid = user.uid;
+          this.loadUserSpecificData(this.uid);
+        } else {
+          this.uid = null;
+          this.channelKeys = [];
+          this.userChannels = [];
+        }
+      })
+    );
   }
 
   loadUserSpecificData(uid: string): void {
-    this.channelKeysSub?.unsubscribe();
-    this.userChannelsSub?.unsubscribe();
+    this.subService.unsubscribeAll();
 
-    this.channelKeysSub = this.firebaseService
-      .getUserChannelKeys(uid)
-      .subscribe({
+    this.subService.add(
+      this.firebaseService.getUserChannelKeys(uid).subscribe({
         next: (keys) => {
           this.channelKeys = keys;
           console.log('Channel Keys:', this.channelKeys);
@@ -111,33 +106,45 @@ export class MainComponentComponent implements OnInit {
           console.error('Fehler beim Laden der Channel Keys:', err);
           this.channelKeys = [];
         },
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.sideNavSub?.unsubscribe();
-    this.threadSub?.unsubscribe();
-    this.authUserSub?.unsubscribe();
-    this.channelKeysSub?.unsubscribe();
-    this.userChannelsSub?.unsubscribe();
+      })
+    );
   }
 
   loadChannels(uid: string): void {
-    console.log('Lade Channels für Benutzer:', uid);
-    this.userChannelsSub?.unsubscribe();
+    const channelSub = this.firebaseService.getChannelsForUser(uid).subscribe({
+      next: (channels) => {
+        this.userChannels = [...channels];
+        if (this.userChannels.length > 0) {
+          if (
+            !this.selectedChannel ||
+            !this.userChannels.some((c) => c.key === this.selectedChannel!.key)
+          ) {
+            this.selectedChannel = { ...this.userChannels[0] };
+          } else {
+            const updatedSelected = this.userChannels.find(
+              (c) => c.key === this.selectedChannel!.key
+            );
+            if (updatedSelected) {
+              this.selectedChannel = { ...updatedSelected };
+            } else {
+              this.selectedChannel = undefined;
+            }
+          }
+        } else {
+          this.selectedChannel = undefined;
+        }
+      },
+      error: (err) => {
+        console.error('Fehler beim Laden der Channels:', err);
+        this.userChannels = [];
+        this.selectedChannel = undefined;
+      },
+    });
+    this.subService.add(channelSub);
+  }
 
-    this.userChannelsSub = this.firebaseService
-      .getChannelsForUser(uid)
-      .subscribe({
-        next: (channels) => {
-          this.userChannels = channels;
-          console.log('Geladene Channels:', this.userChannels);
-        },
-        error: (err) => {
-          console.error('Fehler beim Laden der Channels:', err);
-          // this.userChannels = [];
-        },
-      });
+  onChannelSelected(channel: ChannelWithKey): void {
+    this.selectedChannel = { ...channel };
   }
 
   toggleSideNav(): void {
@@ -146,5 +153,9 @@ export class MainComponentComponent implements OnInit {
 
   toggleThread(): void {
     this.variableService.toggleThread();
+  }
+
+  ngOnDestroy(): void {
+    this.subService.unsubscribeAll();
   }
 }

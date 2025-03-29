@@ -35,11 +35,11 @@
 
         <div class="input-group">
           <div class="email-input">
-            <input type="email" placeholder="beispielname@email.com" />
+            <input type="email" placeholder="beispielname@email.com" [(ngModel)]="userEmail" />
           </div>
 
           <div class="password-input">
-            <input type="password" placeholder="Passwort" />
+            <input type="password" placeholder="Passwort" [(ngModel)]="userPassword" />
           </div>
         </div>
 
@@ -57,7 +57,7 @@
         </button>
 
         <div class="login-actions">
-          <button class="login-btn">Anmelden</button>
+          <button class="login-btn" (click)="login(userEmail, userPassword)">Anmelden</button>
           <button class="guest-login" [routerLink]="['/dashboard']">
             Gast-Login
           </button>
