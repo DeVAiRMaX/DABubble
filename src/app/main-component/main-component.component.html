@@ -2,7 +2,6 @@
 <div class="main-container">
   <app-side-nav
     [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
-    *ngIf="sideNavIsVisible"
     [userChannels]="userChannels"
     (channelSelected)="onChannelSelected($event)"
   >
