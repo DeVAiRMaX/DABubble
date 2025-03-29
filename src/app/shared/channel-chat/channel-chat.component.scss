@@ -164,6 +164,7 @@
 
 .channel-chat-message-container-left {
   display: flex;
+  position: relative;
   flex-direction: row;
   align-items: flex-start;
   gap: 30px;
@@ -175,6 +176,8 @@
       background-color: #ffffff;
     }
   }
+
+
 }
 
 .channel-chat-message-container-left-message-container-header {
@@ -269,6 +272,10 @@
  >.reactionMenu{
   top: -10px;
   right: 45px;
+
+  >.editMsg{
+    display: none;
+  }
  }
 }
 
