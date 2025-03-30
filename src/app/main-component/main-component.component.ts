@@ -11,15 +11,16 @@ import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
 import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { userData } from '../../app/shared/interfaces/user'
 
-interface User {
-  avatar: string;
-  channelKeys: string[];
-  displayName: string;
-  email: string;
-  password: string;
-  uid: string;
-}
+// interface User {
+//   avatar: string;
+//   channelKeys: string[];
+//   displayName: string;
+//   email: string;
+//   password: string;
+//   uid: string;
+// }
 
 @Component({
   selector: 'app-main-component',
@@ -62,7 +63,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   userChannels: ChannelWithKey[] = [];
   selectedChannel: ChannelWithKey | undefined = undefined;
   userIdFromUrl: any;
-  userData: User | null = null;
+  userData: userData | null = null;
 
   private subService: SubService = inject(SubService);
   private authService: AuthService = inject(AuthService);
@@ -113,7 +114,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   renderUserDate(userIdFromUrl: string) {
     this.firebaseService.resiveUserData(userIdFromUrl)
       .then(userData => {
-        this.userData = userData as User;
+        this.userData = userData as userData;
         console.log(this.userData);
       })
       .catch(error => {
