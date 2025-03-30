@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject, inject } from '@angular/core';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   trigger,
   state,
@@ -7,6 +7,7 @@ import {
   animate,
   transition,
 } from '@angular/animations';
+
 
 @Component({
   selector: 'app-profil-dialog',
@@ -42,13 +43,14 @@ export class ProfilDialogComponent {
 
   profilDialogAnimation: 'open' | 'close' = 'close';
 
-  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<ProfilDialogComponent>) {
+  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<ProfilDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {
   }
 
   ngOnInit() {
     setTimeout(() => {
       this.startAnimation();
     }, 10);
+    
   }
 
   startAnimation() {

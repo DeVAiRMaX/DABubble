@@ -2,7 +2,7 @@ import { Component, input, Input } from '@angular/core';
 import { SharedModule } from './../../shared';
 import { DialogComponent } from '../header-dialog-profil/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { userData } from '../interfaces/user';
+
 
 @Component({
   selector: 'app-header',
@@ -29,7 +29,8 @@ export class HeaderComponent {
   }
 
   openDialog() {
-    this.dialog.open(DialogComponent);
+    this.dialog.open(DialogComponent, {
+      data: this.user});
   }
 }
 

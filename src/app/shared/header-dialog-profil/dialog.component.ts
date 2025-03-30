@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, Inject, inject } from '@angular/core';
 import { SharedModule } from './../../shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ProfilDialogComponent } from '../user-profil/profil-dialog/profil-dialog.component';
@@ -9,6 +9,7 @@ import {
   animate,
   transition,
 } from '@angular/animations';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-dialog',
@@ -44,11 +45,14 @@ export class DialogComponent {
 
   dialogAnimation: 'open' | 'close' = 'close';
 
-  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<DialogComponent>) {
+
+
+  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<DialogComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {
   }
 
   ngOnInit() {
     this.startAnimation();
+    JSON.stringify(this.data);
   }
 
 
@@ -59,8 +63,9 @@ export class DialogComponent {
   }
 
   openProfilDialog() {
-      this.dialog.open(ProfilDialogComponent);
-      this.dialogRef.close(DialogComponent);
+    this.dialog.open(ProfilDialogComponent, {
+      data: this.data
+    })
   }
 
   closeDialog() {
