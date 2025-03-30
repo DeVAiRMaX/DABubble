@@ -10,6 +10,16 @@ import { FirebaseService } from '../shared/services/firebase.service';
 import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
 import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+
+interface User {
+  avatar: string;
+  channelKeys: string[];
+  displayName: string;
+  email: string;
+  password: string;
+  uid: string;
+}
 
 @Component({
   selector: 'app-main-component',
@@ -20,6 +30,7 @@ import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
     ChannelChatComponent,
     ThreadComponent,
     CommonModule,
+    RouterLink
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.scss',
@@ -50,11 +61,14 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   channelKeys: string[] = [];
   userChannels: ChannelWithKey[] = [];
   selectedChannel: ChannelWithKey | undefined = undefined;
+  userIdFromUrl: any;
+  userData: User | null = null;
 
   private subService: SubService = inject(SubService);
   private authService: AuthService = inject(AuthService);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private variableService: VariablesService = inject(VariablesService);
+  private readonly route = inject(ActivatedRoute);
 
   constructor() {
     this.variableService.sideNavIsVisible$.subscribe((value) => {
@@ -90,6 +104,21 @@ export class MainComponentComponent implements OnInit, OnDestroy {
         }
       })
     );
+    this.userIdFromUrl = this.route.snapshot.paramMap.get('id');
+
+    this.renderUserDate(this.userIdFromUrl);
+
+  }
+
+  renderUserDate(userIdFromUrl: string) {
+    this.firebaseService.resiveUserData(userIdFromUrl)
+      .then(userData => {
+        this.userData = userData as User;
+        console.log(this.userData);
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+      });
   }
 
   loadUserSpecificData(uid: string): void {

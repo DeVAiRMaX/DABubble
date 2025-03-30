@@ -51,8 +51,9 @@ export class SelectAvatarComponent {
     this.id = this.route.snapshot.paramMap.get('id');
     
     this.firebaseService.resiveUserData(this.id)
-      .then(displayName => {
-        this.displayName = displayName;
+      .then(userData => {
+        this.displayName = userData.displayName;
+        console.log(userData.displayName);
       })
       .catch(error => {
         console.error('Error fetching user data:', error);

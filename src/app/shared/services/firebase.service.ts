@@ -356,14 +356,15 @@ export class FirebaseService {
       });
   }
 
-  resiveUserData(id: string): Promise<string | null> {
+  resiveUserData(id: string): Promise<any> {
     const userRef = ref(this.database, `users/${id}`);
 
     return get(userRef)
       .then((snapshot) => {
         if (snapshot.exists()) {
           const displayName = snapshot.val().displayName;
-          return displayName;
+          const userData = snapshot.val();
+          return userData;
         } else {
           console.log('No user data found');
           return null;
