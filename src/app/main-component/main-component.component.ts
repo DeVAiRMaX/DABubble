@@ -13,15 +13,6 @@ import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { userData } from '../../app/shared/interfaces/user'
 
-// interface User {
-//   avatar: string;
-//   channelKeys: string[];
-//   displayName: string;
-//   email: string;
-//   password: string;
-//   uid: string;
-// }
-
 @Component({
   selector: 'app-main-component',
   standalone: true,
@@ -115,7 +106,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     this.firebaseService.resiveUserData(userIdFromUrl)
       .then(userData => {
         this.userData = userData as userData;
-        console.log(this.userData);
+
       })
       .catch(error => {
         console.error('Error fetching user data:', error);
@@ -129,7 +120,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       this.firebaseService.getUserChannelKeys(uid).subscribe({
         next: (keys) => {
           this.channelKeys = keys;
-          console.log('Channel Keys:', this.channelKeys);
+          // console.log('Channel Keys:', this.channelKeys);
           this.loadChannels(uid);
         },
         error: (err) => {

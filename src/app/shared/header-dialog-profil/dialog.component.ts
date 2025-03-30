@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { SharedModule } from './../../shared';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ProfilDialogComponent } from '../user-profil/profil-dialog/profil-dialog.component';
@@ -41,6 +41,7 @@ import {
 })
 export class DialogComponent {
 
+
   dialogAnimation: 'open' | 'close' = 'close';
 
   constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<DialogComponent>) {
@@ -49,6 +50,7 @@ export class DialogComponent {
   ngOnInit() {
     this.startAnimation();
   }
+
 
   startAnimation() {
     setTimeout(() => {
