@@ -108,8 +108,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   toggleThread() {
-    if (this.variableService['isClosedSubject']?.value) {
+    const value = this.variableService['isClosedSubject']?.value;
+    console.log(value);
+  
+    if (value !== undefined && value !== null) {
       this.variableService.toggleThread();
+      console.log('thread sollte getoggelt werden');
     }
   }
 
