@@ -67,4 +67,17 @@ export class VariablesService {
       this.getStoredValue('sideNavIsVisible', true)
     );
   }
+
+  private nameToFilterSubject = new BehaviorSubject<string>('');
+  nameToFilter$ = this.nameToFilterSubject.asObservable();
+
+
+  setNameToFilter(newName: string){
+    this.nameToFilterSubject.next(newName);
+    console.log(this.nameToFilterSubject.value);
+  }
+
+  getNameToFilter(){
+    return this.nameToFilterSubject.value;
+  }
 }

@@ -48,6 +48,6 @@ body {
     height: unset !important;
   }
 
-  ::ng-deep .transparentBackdrop .cdk-overlay-backdrop{
+  ::ng-deep .cdk-overlay-backdrop.transparentBackdrop{
     background: transparent !important;
   }

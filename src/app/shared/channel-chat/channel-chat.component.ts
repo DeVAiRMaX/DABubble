@@ -1,6 +1,7 @@
 import {
   Component,
   inject,
+  input,
   Input,
   OnChanges,
   OnInit,
@@ -35,6 +36,8 @@ import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-
 })
 export class ChannelChatComponent implements OnInit, OnChanges {
   addUserToChannelOverlayIsVisible: boolean = false;
+  lastInputValue: string = '';
+  
   @Input() channel!: ChannelWithKey;
   private variableService: VariablesService = inject(VariablesService);
 
@@ -163,13 +166,19 @@ export class ChannelChatComponent implements OnInit, OnChanges {
 
   openTagPeopleDialog(){
     const targetElement = document.querySelector('.input-container-wrapper');
+    const inputfield = document.querySelector('.textForMessageInput') as HTMLInputElement;
+    const inputValue = inputfield?.value || '';
 
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect(); // Position des Buttons ermitteln
 
       const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
-        position: { bottom: `${rect.top - 20 + window.scrollY}px` , left: `${rect.left + 20 + window.scrollX}px`},
-        panelClass: ['tagging-dialog', 'transparentBackdrop'], 
+        position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
+         left: `${rect.left + 20 + window.scrollX}px`},
+        panelClass: ['tagging-dialog'], 
+        backdropClass: 'transparentBackdrop',
+        autoFocus: false,
+       
        
       });
       
@@ -192,12 +201,26 @@ export class ChannelChatComponent implements OnInit, OnChanges {
           
         }
       }, 10);
+      setTimeout(() => {
+        const inputField = document.querySelector('.textForMessageInput') as HTMLElement;
+        if(inputField){
+          inputField.focus();
+          console.log('focus back on it')
+        }
+      }, 400);
     }
-
+   
   }
   
   
-  
+  checkForMention(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement.value.includes('@') && !this.lastInputValue.includes('@')) {
+      this.openTagPeopleDialog();
+    }
+    this.lastInputValue = inputElement.value; // Speichert den aktuellen Wert des gesamten Inputfelds
+   this.variableService.setNameToFilter(this.lastInputValue);
+  }
   
   
 }

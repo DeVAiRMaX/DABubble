@@ -140,7 +140,12 @@
 
   <div class="input-container">
     <div class="input-container-wrapper">
-      <input type="text" placeholder="Nachricht an #Entwicklerteam" />
+      <input
+        class="textForMessageInput"
+        type="text"
+        placeholder="Nachricht an #Entwicklerteam"
+        (input)="checkForMention($event)"
+      />
       <div class="icons">
         <div>
           <span
