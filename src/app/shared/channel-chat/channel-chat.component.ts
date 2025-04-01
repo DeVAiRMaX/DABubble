@@ -28,7 +28,7 @@ import { SubService } from '../services/sub.service';
   selector: 'app-channel-chat',
   standalone: true,
   imports: [
-    AddUserToChannelOverlayComponent,
+   
     CommonModule,
     MatDialogModule,
     SharedModule,
@@ -104,16 +104,15 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   toggleAddUserToChannelOverlay() {
     this.variableService.toggleAddUserToChannelOverlay();
-    console.log(this.addUserToChannelOverlayIsVisible);
   }
 
   toggleThread() {
     const value = this.variableService['isClosedSubject']?.value;
-    console.log(value);
+   
   
     if (value !== undefined && value !== null) {
       this.variableService.toggleThread();
-      console.log('thread sollte getoggelt werden');
+    
     }
   }
 
@@ -220,7 +219,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         const inputField = document.querySelector('.textForMessageInput') as HTMLElement;
         if(inputField){
           inputField.focus();
-          console.log('focus back on it')
+         
         }
       }, 400);
     }
@@ -235,6 +234,16 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.lastInputValue = inputElement.value; // Speichert den aktuellen Wert des gesamten Inputfelds
    this.variableService.setNameToFilter(this.lastInputValue);
+  }
+
+  openTaggingPerClick(event: Event){
+    const inputElement = event.target as HTMLInputElement;
+    if(inputElement){
+      inputElement.value = '@';
+      this.openTagPeopleDialog();
+    }
+    this.lastInputValue = inputElement.value;
+    this.variableService.setNameToFilter(this.lastInputValue);
   }
   
   

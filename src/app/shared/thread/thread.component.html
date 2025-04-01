@@ -105,11 +105,21 @@
   </div>
 
   <div class="input-container">
-    <div class="input-container-wrapper">
-      <input type="text" placeholder="Antworten..." />
+    <div class="input-container-wrapper threadwrapper">
+      <input
+        (input)="checkForMention($event)"
+        class="textForThreadInput"
+        type="text"
+        placeholder="Antworten..."
+      />
       <div class="icons">
         <div>
-          <span class="material-symbols-outlined"> alternate_email </span>
+          <span
+            (click)="openTaggingPerClick($event)"
+            class="material-symbols-outlined"
+          >
+            alternate_email
+          </span>
           <span class="material-symbols-outlined"> sentiment_satisfied </span>
         </div>
         <img src="./assets/img/icons/send.png" class="send-btn" alt="send" />

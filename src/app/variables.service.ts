@@ -82,7 +82,6 @@ export class VariablesService {
 
   setNameToFilter(newName: string){
     this.nameToFilterSubject.next(newName);
-    console.log(this.nameToFilterSubject.value);
   }
 
   getNameToFilter(){

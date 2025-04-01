@@ -30,7 +30,7 @@ export class TaggingPersonsDialogComponent implements OnInit {
     this.variableService.nameToFilter$.subscribe((value) => {
      
       this.nametoFilter = value;
-      console.log('aktueller name' + this.nametoFilter);
+     
 
 
       if(this.nametoFilter === ''){
