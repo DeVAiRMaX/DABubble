@@ -5,6 +5,7 @@ import {
   Input,
   OnChanges,
   OnInit,
+  OnDestroy,
   SimpleChanges,
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
@@ -21,6 +22,7 @@ import {
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
 import { ChannelWithKey } from '../interfaces/channel';
 import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-persons-dialog.component';
+import { SubService } from '../services/sub.service';
 
 @Component({
   selector: 'app-channel-chat',
@@ -34,14 +36,17 @@ import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
 })
-export class ChannelChatComponent implements OnInit, OnChanges {
+export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
   
   @Input() channel!: ChannelWithKey;
   private variableService: VariablesService = inject(VariablesService);
+  private subService: SubService = inject(SubService);
+  private dialog: MatDialog = inject(MatDialog);
+  private readonly SUB_GROUP_NAME = 'channelChatSubs';
 
-  constructor(private dialog: MatDialog) {
+  constructor() {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
       (value) => {
         this.addUserToChannelOverlayIsVisible = value;
@@ -82,6 +87,19 @@ export class ChannelChatComponent implements OnInit, OnChanges {
         'ChannelChatComponent ngOnInit - Channel war bei ngOnInit noch nicht verfügbar.'
       );
     }
+
+    const overlayVisibilitySub =
+      this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
+        (value) => {
+          this.addUserToChannelOverlayIsVisible = value;
+        }
+      );
+
+    this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
+  }
+
+  ngOnDestroy(): void {
+    this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
   }
 
   toggleAddUserToChannelOverlay() {
@@ -90,27 +108,27 @@ export class ChannelChatComponent implements OnInit, OnChanges {
   }
 
   toggleThread() {
-    if (this.variableService['isClosedSubject'].value) {
+    if (this.variableService['isClosedSubject']?.value) {
       this.variableService.toggleThread();
     }
   }
 
   openEditChannelDialog() {
-    this.dialog.open(EditChannelComponent, {
+    const dialogRef = this.dialog.open(EditChannelComponent, {
       maxWidth: 'none',
       panelClass: 'custom-dialog-container',
+      data: { channelKey: this.channel?.key },
     });
   }
 
   openAddUserToChannelDialog() {
     const targetElement = document.querySelector('.add_btn_user');
-
     if (targetElement) {
-      const rect = targetElement.getBoundingClientRect(); // Position des Buttons ermitteln
-
+      const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(AddUserToChannelOverlayComponent, {
         position: { top: `${rect.bottom + 20 + window.scrollY}px` },
-        panelClass: 'custom-dialog', // 20px Abstand nach unten
+        panelClass: 'custom-dialog',
+        data: { channelKey: this.channel?.key },
       });
 
       setTimeout(() => {
@@ -120,7 +138,6 @@ export class ChannelChatComponent implements OnInit, OnChanges {
         if (dialogElement) {
           const dialogRect = dialogElement.getBoundingClientRect();
           const newLeft = rect.right - dialogRect.width + window.scrollX;
-
           dialogElement.style.left = `${newLeft}px`;
           dialogElement.style.position = 'absolute';
           dialogElement.style.maxWidth = '515px';
@@ -134,18 +151,20 @@ export class ChannelChatComponent implements OnInit, OnChanges {
     const targetElement = document.querySelector(
       '.channel-chat-header-right-user-container'
     );
-
     if (targetElement) {
-      const rect = targetElement.getBoundingClientRect(); // Position des Buttons ermitteln
-
+      const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
-        position: { top: `${rect.bottom + 20 + window.scrollY}px` }, 
-        panelClass: ['custom-dialog', 'memberOverlay'] , // 20px Abstand nach unten
+        position: { top: `${rect.bottom + 20 + window.scrollY}px` },
+        panelClass: ['custom-dialog', 'memberOverlay'],
+        data: { channelKey: this.channel?.key },
       });
+      const childEventSub = dialogRef.componentInstance.childEvent.subscribe(
+        () => {
+          this.openAddUserToChannelDialog();
+        }
+      );
 
-      dialogRef.componentInstance.childEvent.subscribe(() => {
-        this.openAddUserToChannelDialog();
-      });
+      this.subService.add(childEventSub, this.SUB_GROUP_NAME);
 
       setTimeout(() => {
         const dialogElement = document.querySelector(
@@ -154,24 +173,22 @@ export class ChannelChatComponent implements OnInit, OnChanges {
         if (dialogElement) {
           const dialogRect = dialogElement.getBoundingClientRect();
           const newLeft = rect.right - dialogRect.width + window.scrollX;
-
           dialogElement.style.left = `${newLeft}px`;
           dialogElement.style.position = 'absolute';
           dialogElement.style.maxWidth = '415px';
           dialogElement.style.height = '700px';
         }
-      }, 20); 
+      }, 20);
     }
   }
 
-  openTagPeopleDialog(){
+  openTagPeopleDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
     const inputfield = document.querySelector('.textForMessageInput') as HTMLInputElement;
     const inputValue = inputfield?.value || '';
 
     if (targetElement) {
-      const rect = targetElement.getBoundingClientRect(); // Position des Buttons ermitteln
-
+      const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
         position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
          left: `${rect.left + 20 + window.scrollX}px`},
@@ -181,46 +198,20 @@ export class ChannelChatComponent implements OnInit, OnChanges {
        
        
       });
-      
-      
-     
-      
+
       setTimeout(() => {
         const dialogElement = document.querySelector(
           'mat-dialog-container'
         ) as HTMLElement;
         if (dialogElement) {
           const dialogRect = dialogElement.getBoundingClientRect();
-          
 
-          
           dialogElement.style.position = 'absolute';
           dialogElement.style.width = '350px';
-          
+
           dialogElement.style.borderBottomLeftRadius = '0px';
-          
         }
       }, 10);
-      setTimeout(() => {
-        const inputField = document.querySelector('.textForMessageInput') as HTMLElement;
-        if(inputField){
-          inputField.focus();
-          console.log('focus back on it')
-        }
-      }, 400);
     }
-   
   }
-  
-  
-  checkForMention(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    if (inputElement.value.includes('@') && !this.lastInputValue.includes('@')) {
-      this.openTagPeopleDialog();
-    }
-    this.lastInputValue = inputElement.value; // Speichert den aktuellen Wert des gesamten Inputfelds
-   this.variableService.setNameToFilter(this.lastInputValue);
-  }
-  
-  
 }

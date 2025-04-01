@@ -1,21 +1,10 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  Database,
-  ref,
-  set,
-  get,
-  push,
-  child,
-  query,
-  orderByChild,
-  equalTo,
-} from '@angular/fire/database';
-import { user, User } from '@angular/fire/auth';
+import { Database, ref, set, get, push, child } from '@angular/fire/database';
+import { User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
 import { Router } from '@angular/router';
-import { where } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -26,28 +15,46 @@ export class FirebaseService {
   private router = inject(Router);
 
   saveUserData(user: User): Observable<null> {
-    if (!user) {
+    if (!user || !user.uid) {
+      console.error('[saveUserData] Ungültiges User-Objekt übergeben:', user);
       return throwError(
-        () => new Error(`saveUserData: Benutzerobjekt darf nicht ${user} sein.`)
+        () =>
+          new Error(
+            `saveUserData: Gültiges Benutzerobjekt mit UID erforderlich.`
+          )
       );
     }
-
     const userRef = ref(this.database, `users/${user.uid}`);
 
-    // MARK: - User Data Functions
-
-    return from(
-      set(userRef, {
-        uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        channelKeys: ['-OMHiw5zKaBgMPOxnzaC', '-OMIPeYGF4ha3FjUK4xH'],
-      })
-    ).pipe(
-      map(() => null),
+    return from(get(userRef)).pipe(
+      switchMap((snapshot) => {
+        if (snapshot.exists()) {
+          return of(null);
+        } else {
+          const initialUserData = {
+            uid: user.uid,
+            displayName:
+              user.displayName || user.email?.split('@')[0] || 'Neuer Benutzer',
+            email: user.email,
+            channelKeys: [],
+          };
+          return from(set(userRef, initialUserData));
+        }
+      }),
+      map(() => {
+        return null;
+      }),
       catchError((error) => {
-        console.error('Fehler beim Speichern der Benutzerdaten:', error);
-        return throwError(() => error);
+        console.error(
+          `saveUserData() Fehler Prüfen/Speichern der UID ${user.uid}:`,
+          error
+        );
+        return throwError(
+          () =>
+            new Error(
+              'Fehler beim Speichern der Benutzerdaten: ' + error.message
+            )
+        );
       })
     );
   }
@@ -85,13 +92,14 @@ export class FirebaseService {
     );
   }
 
-  // MARK: - Channel Functions
-
   createChannel(
     channelName: string,
     description: string,
     channelCreatorUid: string
   ): Observable<string> {
+    console.log(
+      `[createChannel] Attempting creation by user ${channelCreatorUid} for channel "${channelName}"`
+    );
     if (!channelName || !channelCreatorUid) {
       return throwError(
         () =>
@@ -100,7 +108,6 @@ export class FirebaseService {
           )
       );
     }
-
     const channelsRef = ref(this.database, 'channels');
     const newChannelRef = push(channelsRef);
     const channelKey = newChannelRef.key;
@@ -111,48 +118,49 @@ export class FirebaseService {
           new Error('createChannel: Channel Key konnte nicht generiert werden.')
       );
     }
+    console.log(`[createChannel] Generated new channel key: ${channelKey}`);
 
-    let timestamp = Date.now();
-    // const formattedTime = this.getTime(timestamp);
-
+    const timestamp = Date.now();
     const newChannel: Channel = {
       channelName: channelName,
-      members: [`${channelCreatorUid}`],
-      description: `${description}`,
+      members: [channelCreatorUid],
+      description: description,
       messages: [
         {
-          message: `Welcome to ${channelName}`,
-          reactions: ['U+1F973'],
+          message: `Welcome to #${channelName}`,
+          reactions: [],
           sender: `DABubble`,
           time: timestamp,
         },
       ],
       private: false,
     };
-
     const createChannelOperation = from(set(newChannelRef, newChannel));
 
     return createChannelOperation.pipe(
       tap(() =>
         console.log(
-          `[createChannel] Operation 1 (set channel ${channelKey}) erfolgreich.`
+          `[createChannel] Step 1: Channel data set for key ${channelKey}.`
         )
       ),
       switchMap(() => {
         console.log(
-          `[createChannel] Rufe Operation 2 (addChannelKeyToUser) für User ${channelCreatorUid}, Key ${channelKey} auf.`
+          `[createChannel] Step 2: Adding channel key ${channelKey} to creator ${channelCreatorUid}.`
         );
         return this.addChannelKeyToUser(channelCreatorUid, channelKey);
       }),
       map(() => {
         console.log(
-          `[createChannel] Operation 2 (addChannelKeyToUser) erfolgreich abgeschlossen.`
+          `[createChannel] Step 3: Successfully added key to user. Returning channel key ${channelKey}.`
         );
         return channelKey;
       }),
       catchError((error) => {
-        console.error('[createChannel] Fehler im Verkettungsprozess:', error);
-        return throwError(() => error);
+        console.error(
+          `[createChannel] Error during channel creation process for "${channelName}":`,
+          error
+        );
+        return throwError(() => new Error('Channel creation failed: ' + error));
       })
     );
   }
@@ -182,7 +190,6 @@ export class FirebaseService {
   }
 
   getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
-    // Rückgabetyp angepasst
     if (!uid) {
       return throwError(
         () => new Error('getChannelsForUser: UID darf nicht leer sein.')
@@ -196,31 +203,26 @@ export class FirebaseService {
           userData.channelKeys &&
           userData.channelKeys.length > 0
         ) {
-          // Erstelle Observables, die Channel holen UND den Key hinzufügen
           const channelObservables = userData.channelKeys.map((channelKey) =>
             this.getChannel(channelKey).pipe(
               map((channelData) => {
                 if (channelData) {
-                  // Füge den Key zum Channel-Objekt hinzu
                   return { ...channelData, key: channelKey } as ChannelWithKey;
                 }
-                return null; // Behalte null bei, falls Channel nicht gefunden wurde
+                return null;
               })
             )
           );
 
-          // Kombiniere die Ergebnisse
           return combineLatest(channelObservables).pipe(
             map(
               (channelsWithPossibleNulls) =>
-                // Filtere null-Werte heraus
                 channelsWithPossibleNulls.filter(
                   (channel) => channel !== null
                 ) as ChannelWithKey[]
             )
           );
         } else {
-          // Keine Channel-Keys gefunden, leeres Array zurückgeben
           return of([]);
         }
       }),
@@ -252,32 +254,53 @@ export class FirebaseService {
   }
 
   addChannelKeyToUser(uid: string, channelKey: string): Observable<void> {
+    console.log(
+      `[addChannelKeyToUser] Attempting to add key ${channelKey} to user ${uid}`
+    );
     if (!uid || !channelKey) {
       return throwError(
         () =>
           new Error('addChannelKeyToUser: uid and channelKey must be provided.')
       );
     }
+    const userChannelKeysRef = ref(this.database, `users/${uid}/channelKeys`);
 
-    const userRef = ref(this.database, `users/${uid}`);
+    return from(get(userChannelKeysRef)).pipe(
+      switchMap((snapshot) => {
+        const currentKeys: string[] = snapshot.exists() ? snapshot.val() : [];
+        console.log(
+          `[addChannelKeyToUser] User ${uid} current keys:`,
+          currentKeys
+        );
 
-    return this.getUserData(uid).pipe(
-      switchMap((userData) => {
-        const currentKeys =
-          userData && userData.channelKeys ? userData.channelKeys : [];
         if (currentKeys.includes(channelKey)) {
-          return of(null);
+          console.log(
+            `[addChannelKeyToUser] Key ${channelKey} already exists for user ${uid}. Skipping add.`
+          );
+          return of(void 0);
+        } else {
+          const updatedKeys: string[] = [...currentKeys, channelKey];
+          console.log(
+            `[addChannelKeyToUser] Key ${channelKey} is new. Updating keys for user ${uid} to:`,
+            updatedKeys
+          );
+          return from(set(userChannelKeysRef, updatedKeys));
         }
-
-        const updatedKeys: string[] = [...currentKeys, channelKey];
-        return from(set(child(userRef, 'channelKeys'), updatedKeys));
       }),
       map(() => {
+        console.log(
+          `[addChannelKeyToUser] Operation completed for user ${uid}, key ${channelKey}.`
+        );
         return;
       }),
       catchError((error) => {
-        console.error('Error adding channel key to user:', error);
-        return throwError(() => error);
+        console.error(
+          `[addChannelKeyToUser] Error adding channel key ${channelKey} to user ${uid}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Failed to add channel key to user: ' + error)
+        );
       })
     );
   }
@@ -324,8 +347,8 @@ export class FirebaseService {
       const userData = {
         ...newUser,
         uid: userId,
-        channelKeys: ['PLACEHOLDER'], // Beispiel Channelkey
-        avatar: './assets/img/character/PLACEHOLDER', // Beispiel Avatar
+        channelKeys: ['PLACEHOLDER'],
+        avatar: './assets/img/character/PLACEHOLDER',
       };
 
       return set(newUserRef, userData)

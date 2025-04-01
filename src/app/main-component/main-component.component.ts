@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { HeaderComponent } from '../shared/header/header.component';
 import { SideNavComponent } from '../shared/side-nav/side-nav.component';
 import { ChannelChatComponent } from '../shared/channel-chat/channel-chat.component';
@@ -11,7 +17,7 @@ import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
 import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
 import { RouterLink, ActivatedRoute } from '@angular/router';
-import { userData } from '../../app/shared/interfaces/user'
+import { userData } from '../../app/shared/interfaces/user';
 
 @Component({
   selector: 'app-main-component',
@@ -22,7 +28,7 @@ import { userData } from '../../app/shared/interfaces/user'
     ChannelChatComponent,
     ThreadComponent,
     CommonModule,
-    RouterLink
+    RouterLink,
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.scss',
@@ -61,107 +67,148 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private variableService: VariablesService = inject(VariablesService);
   private readonly route = inject(ActivatedRoute);
+  private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
 
-  constructor() {
-    this.variableService.sideNavIsVisible$.subscribe((value) => {
-      this.sideNavIsVisible = value;
-    });
-    this.variableService.threadIsClosed$.subscribe((value) => {
-      this.threadIsVisible = value;
-    });
-  }
+  private readonly GRP_UI_STATE = 'uiState';
+  private readonly GRP_AUTH = 'auth';
+  private readonly GRP_CHANNEL_CREATED = 'channelCreatedListener';
+  private readonly GRP_DATA_KEYS = 'dataLoadKeys';
+  private readonly GRP_DATA_CHANNELS = 'dataLoadChannels';
+  private readonly GRP_USER_DATA = 'mainUserData';
+  constructor() {}
 
   ngOnInit(): void {
-    this.subService.add(
-      this.variableService.sideNavIsVisible$.subscribe((value) => {
-        this.sideNavIsVisible = value;
-      })
+    const sideNavSub = this.variableService.sideNavIsVisible$.subscribe(
+      (isVisibleValue) => {
+        if (this.sideNavIsVisible !== isVisibleValue) {
+          this.sideNavIsVisible = isVisibleValue;
+          this.cdRef.markForCheck();
+        }
+      }
     );
-
-    this.subService.add(
-      this.variableService.threadIsClosed$.subscribe((value) => {
-        this.threadIsVisible = value;
-      })
+    const threadSub = this.variableService.threadIsClosed$.subscribe(
+      (isClosedValue) => {
+        const newVisibility = !isClosedValue;
+        if (this.threadIsVisible !== newVisibility) {
+          this.threadIsVisible = newVisibility;
+          this.cdRef.markForCheck();
+        }
+      }
     );
+    this.subService.add(sideNavSub, this.GRP_UI_STATE);
+    this.subService.add(threadSub, this.GRP_UI_STATE);
 
-    this.subService.add(
-      this.authService.user$.subscribe((user) => {
-        if (user) {
+    const authSub = this.authService.user$.subscribe((user) => {
+      if (user) {
+        if (this.uid !== user.uid) {
           this.uid = user.uid;
+          this.subService.unsubscribeGroup(this.GRP_DATA_KEYS);
+          this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
           this.loadUserSpecificData(this.uid);
         } else {
-          this.uid = null;
-          this.channelKeys = [];
-          this.userChannels = [];
         }
-      })
+      } else {
+        this.uid = null;
+        this.channelKeys = [];
+        this.userChannels = [];
+        this.selectedChannel = undefined;
+        this.subService.unsubscribeGroup(this.GRP_DATA_KEYS);
+        this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
+        this.subService.unsubscribeGroup(this.GRP_USER_DATA);
+        this.userData = null;
+      }
+    });
+    this.subService.add(authSub, this.GRP_AUTH);
+
+    const channelCreatedSub = this.variableService.channelCreated$.subscribe(
+      () => {
+        if (this.uid) {
+          this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
+          this.loadChannels(this.uid);
+        } else {
+          // keine uid
+        }
+      }
     );
+    this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
     this.userIdFromUrl = this.route.snapshot.paramMap.get('id');
-
-    this.renderUserDate(this.userIdFromUrl);
-
+    if (this.userIdFromUrl) {
+      this.renderUserDate(this.userIdFromUrl);
+    } else {
+    }
   }
 
   renderUserDate(userIdFromUrl: string) {
-    this.firebaseService.resiveUserData(userIdFromUrl)
-      .then(userData => {
-        this.userData = userData as userData;
-
+    this.subService.unsubscribeGroup(this.GRP_USER_DATA);
+    this.firebaseService
+      .resiveUserData(userIdFromUrl)
+      .then((uData) => {
+        this.userData = uData as userData;
+        this.cdRef.detectChanges();
       })
-      .catch(error => {
-        console.error('Error fetching user data:', error);
+      .catch((error) => {
+        this.userData = null;
+        this.cdRef.detectChanges();
       });
   }
 
   loadUserSpecificData(uid: string): void {
-    this.subService.unsubscribeAll();
-
-    this.subService.add(
-      this.firebaseService.getUserChannelKeys(uid).subscribe({
-        next: (keys) => {
-          this.channelKeys = keys;
-          // console.log('Channel Keys:', this.channelKeys);
-          this.loadChannels(uid);
-        },
-        error: (err) => {
-          console.error('Fehler beim Laden der Channel Keys:', err);
-          this.channelKeys = [];
-        },
-      })
-    );
+    const keysSub = this.firebaseService.getUserChannelKeys(uid).subscribe({
+      next: (keys) => {
+        this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
+        this.loadChannels(uid);
+      },
+      error: (err) => {
+        /*...*/
+      },
+    });
+    this.subService.add(keysSub, this.GRP_DATA_KEYS);
   }
 
   loadChannels(uid: string): void {
+    this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
+
     const channelSub = this.firebaseService.getChannelsForUser(uid).subscribe({
       next: (channels) => {
+        const oldSelectedKey = this.selectedChannel?.key;
         this.userChannels = [...channels];
+
         if (this.userChannels.length > 0) {
-          if (
-            !this.selectedChannel ||
-            !this.userChannels.some((c) => c.key === this.selectedChannel!.key)
-          ) {
-            this.selectedChannel = { ...this.userChannels[0] };
-          } else {
-            const updatedSelected = this.userChannels.find(
-              (c) => c.key === this.selectedChannel!.key
+          let newSelectedChannel: ChannelWithKey | undefined = undefined;
+
+          if (oldSelectedKey) {
+            newSelectedChannel = this.userChannels.find(
+              (c) => c.key === oldSelectedKey
             );
-            if (updatedSelected) {
-              this.selectedChannel = { ...updatedSelected };
+          }
+
+          if (!newSelectedChannel) {
+            newSelectedChannel = this.userChannels[0];
+          }
+          if (newSelectedChannel && newSelectedChannel.key) {
+            if (
+              !this.selectedChannel ||
+              this.selectedChannel.key !== newSelectedChannel.key
+            ) {
+              this.selectedChannel = { ...newSelectedChannel };
             } else {
-              this.selectedChannel = undefined;
+              // myb trotzdem laden
             }
+          } else {
+            this.selectedChannel = undefined;
           }
         } else {
           this.selectedChannel = undefined;
         }
+        this.cdRef.detectChanges();
       },
       error: (err) => {
-        console.error('Fehler beim Laden der Channels:', err);
         this.userChannels = [];
         this.selectedChannel = undefined;
+        this.cdRef.detectChanges();
       },
     });
-    this.subService.add(channelSub);
+    this.subService.add(channelSub, this.GRP_DATA_CHANNELS);
   }
 
   onChannelSelected(channel: ChannelWithKey): void {
