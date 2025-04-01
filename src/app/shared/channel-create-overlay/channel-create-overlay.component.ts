@@ -13,11 +13,11 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { SharedModule } from '../../shared';
 import { FirebaseService } from '../../shared/services/firebase.service';
 import { AuthService } from '../services/auth.service';
-
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-channel-create-overlay',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, SharedModule],
+  imports: [CommonModule, MatDialogModule, SharedModule, FormsModule],
   templateUrl: './channel-create-overlay.component.html',
   styleUrl: './channel-create-overlay.component.scss',
   animations: [
@@ -52,13 +52,12 @@ export class ChannelCreateOverlayComponent {
 
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
+  private variableService: VariablesService = inject(VariablesService);
+  private dialogRef = inject(MatDialogRef<ChannelCreateOverlayComponent>);
 
   channelCreateOverlayAnimation: 'open' | 'close' = 'close';
 
-  constructor(
-    private variableService: VariablesService,
-    private dialogRef: MatDialogRef<ChannelCreateOverlayComponent>
-  ) {}
+  constructor() {}
 
   ngOnInit() {
     setTimeout(() => {
@@ -76,12 +75,12 @@ export class ChannelCreateOverlayComponent {
             console.log('Channel erstellt mit Key:', channelKey);
           },
           error: (error) => {
-            console.error('Fehler beim Erstellen des Channels:', error);
+            // errror
           },
         });
-        this.closeDialog();
+      this.closeDialog();
     } else {
-      console.error('Kein Benutzer eingeloggt, kann keinen Channel erstellen.');
+      // ohne anmeldung keinen channel erstellen
     }
   }
 
@@ -92,11 +91,7 @@ export class ChannelCreateOverlayComponent {
   closeDialog() {
     this.channelCreateOverlayAnimation = 'close';
     setTimeout(() => {
-      this.dialogRef.close(ChannelCreateOverlayComponent);
+      this.dialogRef.close();
     }, 100);
-  }
-
-  closeAddChannelOverlay() {
-    this.variableService.toggleAddChannelOverlay();
   }
 }

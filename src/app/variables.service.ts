@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -30,6 +30,9 @@ export class VariablesService {
   addChannelOverlayIsVisible$ =
     this.addChannelOverlayIsVisibleSubject.asObservable();
 
+  private channelCreatedSource = new Subject<void>();
+  channelCreated$ = this.channelCreatedSource.asObservable();
+
   toggleAddUserToChannelOverlay() {
     const newValue = !this.addUserToChannelOverlayIsVisibleSubject.value;
     this.addUserToChannelOverlayIsVisibleSubject.next(newValue);
@@ -50,6 +53,11 @@ export class VariablesService {
     const newValue = !this.isClosedSubject.value;
     this.isClosedSubject.next(newValue);
     this.saveToStorage('isClosed', newValue);
+  }
+
+  notifyChannelCreated(): void {
+    this.channelCreatedSource.next();
+    console.log('VariablesService: Channel creation notified.');
   }
 
   private saveToStorage(key: string, value: boolean) {

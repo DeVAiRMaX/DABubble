@@ -5,17 +5,41 @@ import { Subscription } from 'rxjs';
   providedIn: 'root',
 })
 export class SubService implements OnDestroy {
-  private subscriptions: Subscription[] = [];
+  private groupedSubscriptions: Map<string, Subscription[]> = new Map();
+  private readonly DEFAULT_GROUP = '__default__';
 
   constructor() {}
 
-  add(subscription: Subscription): void {
-    this.subscriptions.push(subscription);
+  add(subscription: Subscription, groupName?: string): void {
+    const key = groupName || this.DEFAULT_GROUP;
+    const subscriptionsInGroup = this.groupedSubscriptions.get(key) || [];
+    subscriptionsInGroup.push(subscription);
+    this.groupedSubscriptions.set(key, subscriptionsInGroup);
+  }
+
+  unsubscribeGroup(groupName: string): void {
+    if (this.groupedSubscriptions.has(groupName)) {
+      const subscriptions = this.groupedSubscriptions.get(groupName);
+      subscriptions?.forEach((sub) => {
+        if (sub && !sub.closed) {
+          sub.unsubscribe();
+        }
+      });
+      this.groupedSubscriptions.delete(groupName);
+    } else {
+      // fehlermeldung
+    }
   }
 
   unsubscribeAll(): void {
-    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
-    this.subscriptions = [];
+    this.groupedSubscriptions.forEach((subscriptions, groupName) => {
+      subscriptions.forEach((sub) => {
+        if (sub && !sub.closed) {
+          sub.unsubscribe();
+        }
+      });
+    });
+    this.groupedSubscriptions.clear();
   }
 
   ngOnDestroy(): void {
