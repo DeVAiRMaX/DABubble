@@ -212,6 +212,27 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
           dialogElement.style.borderBottomLeftRadius = '0px';
         }
       }, 10);
+      setTimeout(() => {
+        const inputField = document.querySelector('.textForMessageInput') as HTMLElement;
+        if(inputField){
+          inputField.focus();
+          console.log('focus back on it')
+        }
+      }, 400);
     }
+   
   }
-}
+  
+  
+  checkForMention(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement.value.includes('@') && !this.lastInputValue.includes('@')) {
+      this.openTagPeopleDialog();
+    }
+    this.lastInputValue = inputElement.value; // Speichert den aktuellen Wert des gesamten Inputfelds
+   this.variableService.setNameToFilter(this.lastInputValue);
+  }
+  
+  
+    }
+  
