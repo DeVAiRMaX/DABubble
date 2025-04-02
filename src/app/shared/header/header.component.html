@@ -1,19 +1,34 @@
-<div class="header-container">
-  <div class="header-logo">
-    <img src="./assets/img/logo.png" alt="logo" />
-    <h2>DABubble</h2>
-  </div>
-  <div class="header-search">
-    <input type="text" placeholder="Devspace durchsuchen" />
-  </div>
-  <div class="header-user" (click)="openDialog()">
-    <div class="header-user-name">
-      <h2>{{ user?.displayName }}</h2>
+<ng-container *ngIf="user$ | async as user; else loggedOutHeader">
+  <div class="header-container">
+    <div class="header-logo">
+      <img src="./assets/img/logo.png" alt="logo" />
+      <h2>DABubble</h2>
     </div>
-    <div class="header-user-avatar">
-      <div class="header-user-avatar-status"></div>
-      <img src="{{ user?.avatar }}" alt="user" />
+    <div class="header-search">
+      <input type="text" placeholder="Devspace durchsuchen" />
     </div>
-    <mat-icon>keyboard_arrow_down</mat-icon>
+    <div class="header-user" (click)="openDialog()">
+      <div class="header-user-name">
+        <h2>{{ user.displayName }}</h2>
+      </div>
+      <div class="header-user-avatar">
+        <div class="header-user-avatar-status"></div>
+        <img [src]="user.avatar" alt="user" />
+        <img src="{{ user.avatar }}" alt="user" />
+      </div>
+      <mat-icon>keyboard_arrow_down</mat-icon>
+    </div>
   </div>
-</div>
+</ng-container>
+
+<ng-template #loggedOutHeader>
+  <div class="header-container">
+    <div class="header-logo">
+      <img src="./assets/img/logo.png" alt="logo" />
+      <h2>DABubble</h2>
+    </div>
+    <div class="header-login">
+      <button mat-button routerLink="/login">Login</button>
+    </div>
+  </div>
+</ng-template>

@@ -1,8 +1,8 @@
 export interface User {
   avatar?: string;
   uid: string;
-  displayName: string;
-  email: string;
+  displayName: string | null;
+  email: string | null;
   channelKeys?: string[];
 }
 
