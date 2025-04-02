@@ -87,4 +87,16 @@ export class VariablesService {
   getNameToFilter(){
     return this.nameToFilterSubject.value;
   }
+
+
+  private taggedContactsFromChatSubject = new BehaviorSubject<{name: string, img: string}[]>([]);
+  taggedContactsInCha$ = this.taggedContactsFromChatSubject.asObservable();
+
+  setTaggedContactsFromChat(contacts: {name:string;img:string}[]){
+    this.taggedContactsFromChatSubject.next(contacts);
+  }
+
+  getTaggedContactsFromChat(){
+    return this.taggedContactsFromChatSubject.getValue();
+  }
 }

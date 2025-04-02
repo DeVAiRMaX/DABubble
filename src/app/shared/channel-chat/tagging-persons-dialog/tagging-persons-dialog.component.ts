@@ -24,11 +24,18 @@ export class TaggingPersonsDialogComponent implements OnInit {
     { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' }
   ];
 
-  filteredContacts = [...this.allContacts];
+  taggedContacts: {name: string; img: string;}[] = [];
+
+  filteredContacts : {name: string; img: string}[] = [];
 
   ngOnInit() {
+
+this.taggedContacts = this.variableService.getTaggedContactsFromChat();
+
+this.updateFilteredContacts();
+console.log(this.taggedContacts);
+
     this.variableService.nameToFilter$.subscribe((value) => {
-     
       this.nametoFilter = value;
      
 
@@ -39,7 +46,7 @@ export class TaggingPersonsDialogComponent implements OnInit {
       }
 
       if(this.nametoFilter === '@'){
-        this.filteredContacts = [...this.allContacts];
+       this.updateFilteredContacts();
         return;
       }
 
@@ -48,21 +55,33 @@ export class TaggingPersonsDialogComponent implements OnInit {
         : this.nametoFilter.trim();
 
 
-        this.filteredContacts = this.allContacts.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
-
-      // Falls filterText nicht leer ist, wird gefiltert
-      // if (filterText) {
-      //   this.filteredContacts = this.allContacts.filter(contact =>
-      //     contact.name.toLowerCase().includes(filterText.toLowerCase())
-      //   );
-      // } else {
-      //   this.filteredContacts = [...this.allContacts]; // Zeigt alle Kontakte an, wenn das Feld leer ist
-       
-      // }
+        this.filteredContacts = this.filteredContacts.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
     });
   }
 
-  closeDiaglog(){
-    this.dialogRef.close();
+  closeDiaglog(){this.dialogRef.close();}
+
+
+  addContactToChat(contact: any){
+
+    const nameToRemove = this.filteredContacts.findIndex((c) => c.name === contact.name);
+    
+    
+    if(nameToRemove !== -1){
+      
+      const removedContact = this.filteredContacts.splice(nameToRemove, 1)[0];
+      this.taggedContacts.push(removedContact);
+      this.variableService.setTaggedContactsFromChat(this.taggedContacts);
+      this.updateFilteredContacts();
+      
+
+    }
+
+  }
+
+  updateFilteredContacts() {
+    this.filteredContacts = this.allContacts.filter(
+      (contact) => !this.taggedContacts.some((tagged) => tagged.name === contact.name)
+    );
   }
 }

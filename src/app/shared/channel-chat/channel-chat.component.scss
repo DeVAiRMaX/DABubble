@@ -516,4 +516,64 @@
   right: 0px;
 }
 
+.textForMessageInput{
+  width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    min-height: 40px;
+    color: #333;
+    font-size: 18px;
+    font-family: 'Nunito';
+
+}
+
+.taggedPersonsDiv{
+  display: flex;
+  width: fit-content;
+}
+
+.taggedPerson{
+  
+  height: 40px;
+  border-radius: 35px;
+  box-sizing: border-box;
+  padding: 3px 10px 3px 10px;
+  display: flex;
+  gap: 15px;
+  background-color: #ECEEFE;
+  align-items: center;
+  width: fit-content;
+
+
+
+  &:hover{
+    cursor: pointer;
+  }
+
+  >span{
+    font-family: 'Nunito';
+font-weight: 400;
+font-size: 18px;
+line-height: 100%;
+letter-spacing: 0%;
+
+  }
+
+  >.taggedImage{
+    width: 34px;
+    height: 34px;
+    border-radius: 100px;
+  }
+
+  >.closeTaggedPerson{
+    width: 30px;
+    height: 30px;
+    background: url('/assets/img/closeMenu.png');
+    background-position: center;
+    
+    background-repeat: no-repeat;
+  }
+}
+
 

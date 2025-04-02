@@ -1,5 +1,9 @@
 <div class="wholeDialog">
-  <div *ngFor="let contact of filteredContacts" class="singleContact">
+  <div
+    *ngFor="let contact of filteredContacts"
+    class="singleContact"
+    (click)="addContactToChat(contact)"
+  >
     <img [src]="contact.img" />
     <span>{{ contact.name }}</span>
   </div>

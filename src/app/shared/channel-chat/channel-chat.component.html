@@ -140,12 +140,29 @@
 
   <div class="input-container">
     <div class="input-container-wrapper">
-      <input
+      <div
         class="textForMessageInput"
         type="text"
         placeholder="Nachricht an #Entwicklerteam"
         (input)="checkForMention($event)"
-      />
+        contenteditable="true"
+      >
+        <div class="taggedPersonsDiv">
+          <div
+            aria-readonly="true"
+            class="taggedPerson"
+            (mousedown)="preventEdit($event)"
+            *ngFor="let person of taggedPersonsInChat"
+          >
+            <img class="taggedImage" src="{{ person.img }}" />
+            <span> {{ person.name }}</span>
+            <span
+              (click)="removePersonFromTagged()"
+              class="closeTaggedPerson"
+            ></span>
+          </div>
+        </div>
+      </div>
       <div class="icons">
         <div>
           <span

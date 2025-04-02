@@ -46,12 +46,17 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private dialog: MatDialog = inject(MatDialog);
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
 
+  taggedPersonsInChat = this.variableService.getTaggedContactsFromChat();
+taggedPerson: any;
+
   constructor() {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
       (value) => {
         this.addUserToChannelOverlayIsVisible = value;
       }
     );
+
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -187,8 +192,8 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   openTagPeopleDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
-    const inputfield = document.querySelector('.textForMessageInput') as HTMLInputElement;
-    const inputValue = inputfield?.value || '';
+    const inputfield = document.querySelector('.textForMessageInput') as HTMLElement;
+    const inputValue = inputfield?.innerText.trim() || '';
 
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
@@ -228,12 +233,15 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   
   
   checkForMention(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    if (inputElement.value.includes('@') && !this.lastInputValue.includes('@')) {
+    const inputElement = event.target as HTMLElement;
+    const inputText = inputElement.innerText.trim();
+    if (inputText.includes('@') && !this.lastInputValue.includes('@') && inputElement.innerText !== '') {
       this.openTagPeopleDialog();
     }
-    this.lastInputValue = inputElement.value; // Speichert den aktuellen Wert des gesamten Inputfelds
+    this.lastInputValue = inputText; // Speichert den aktuellen Wert des gesamten Inputfelds
    this.variableService.setNameToFilter(this.lastInputValue);
+   console.log(this.taggedPersonsInChat);
+   console.log(inputElement.innerText);
   }
 
   openTaggingPerClick(event: Event){
@@ -244,6 +252,16 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.lastInputValue = inputElement.value;
     this.variableService.setNameToFilter(this.lastInputValue);
+  }
+
+  preventEdit(event: Event){
+    event.preventDefault();
+    event.stopPropagation();
+
+  }
+
+  removePersonFromTagged(){
+    console.log('person removed');
   }
   
   
