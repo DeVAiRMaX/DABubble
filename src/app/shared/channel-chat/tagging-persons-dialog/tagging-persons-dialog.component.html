@@ -1,32 +1,10 @@
 <div class="wholeDialog">
-  <div class="singleContact">
-    <img src="/assets/img/character/3.png" />
-    <span>Frederik Beck (Du)</span>
+  <div *ngFor="let contact of filteredContacts" class="singleContact">
+    <img [src]="contact.img" />
+    <span>{{ contact.name }}</span>
   </div>
 
-  <div class="singleContact">
-    <img src="/assets/img/character/2.png" />
-    <span>Sofia Müller</span>
-  </div>
-  <div class="singleContact">
-    <img src="/assets/img/character/1.png" />
-    <span>Noah Braun</span>
-  </div>
-  <div class="singleContact">
-    <img src="/assets/img/character/4.png" />
-    <span>Elise Roth</span>
-  </div>
-  <div class="singleContact">
-    <img src="/assets/img/character/5.png" />
-    <span>Elias Neumann</span>
-  </div>
-  <div class="singleContact">
-    <img src="/assets/img/character/6.png" />
-    <span>Steffen Hoffmann</span>
-  </div>
-
-  <div class="singleContact">
-    <img src="/assets/img/character/1.png" />
-    <span>Steffen Hoffmann</span>
+  <div *ngIf="filteredContacts.length === 0" class="no-results">
+    <p>Kein Kontakt gefunden</p>
   </div>
 </div>

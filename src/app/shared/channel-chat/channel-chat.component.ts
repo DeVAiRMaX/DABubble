@@ -1,6 +1,7 @@
 import {
   Component,
   inject,
+  input,
   Input,
   OnChanges,
   OnInit,
@@ -27,7 +28,7 @@ import { SubService } from '../services/sub.service';
   selector: 'app-channel-chat',
   standalone: true,
   imports: [
-    AddUserToChannelOverlayComponent,
+   
     CommonModule,
     MatDialogModule,
     SharedModule,
@@ -37,6 +38,8 @@ import { SubService } from '../services/sub.service';
 })
 export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
+  lastInputValue: string = '';
+  
   @Input() channel!: ChannelWithKey;
   private variableService: VariablesService = inject(VariablesService);
   private subService: SubService = inject(SubService);
@@ -110,12 +113,15 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   toggleAddUserToChannelOverlay() {
     this.variableService.toggleAddUserToChannelOverlay();
-    console.log(this.addUserToChannelOverlayIsVisible);
   }
 
   toggleThread() {
-    if (this.variableService['isClosedSubject']?.value) {
+    const value = this.variableService['isClosedSubject']?.value;
+   
+  
+    if (value !== undefined && value !== null) {
       this.variableService.toggleThread();
+    
     }
   }
 
@@ -190,15 +196,19 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   openTagPeopleDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
+    const inputfield = document.querySelector('.textForMessageInput') as HTMLInputElement;
+    const inputValue = inputfield?.value || '';
+
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
-        position: {
-          bottom: `${window.innerHeight - rect.top + 20}px`,
-          left: `${rect.left + 20 + window.scrollX}px`,
-        },
-        panelClass: ['tagging-dialog', 'transparentBackdrop'],
-        data: { channelKey: this.channel?.key },
+        position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
+         left: `${rect.left + 20 + window.scrollX}px`},
+        panelClass: ['tagging-dialog'], 
+        backdropClass: 'transparentBackdrop',
+        autoFocus: false,
+       
+       
       });
 
       setTimeout(() => {
@@ -214,6 +224,37 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
           dialogElement.style.borderBottomLeftRadius = '0px';
         }
       }, 10);
+      setTimeout(() => {
+        const inputField = document.querySelector('.textForMessageInput') as HTMLElement;
+        if(inputField){
+          inputField.focus();
+         
+        }
+      }, 400);
     }
+   
   }
-}
+  
+  
+  checkForMention(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement.value.includes('@') && !this.lastInputValue.includes('@')) {
+      this.openTagPeopleDialog();
+    }
+    this.lastInputValue = inputElement.value; // Speichert den aktuellen Wert des gesamten Inputfelds
+   this.variableService.setNameToFilter(this.lastInputValue);
+  }
+
+  openTaggingPerClick(event: Event){
+    const inputElement = event.target as HTMLInputElement;
+    if(inputElement){
+      inputElement.value = '@';
+      this.openTagPeopleDialog();
+    }
+    this.lastInputValue = inputElement.value;
+    this.variableService.setNameToFilter(this.lastInputValue);
+  }
+  
+  
+    }
+  
