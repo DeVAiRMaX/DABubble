@@ -44,11 +44,11 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
 
   constructor() {
-    this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
-      (value) => {
-        this.addUserToChannelOverlayIsVisible = value;
-      }
-    );
+    // this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
+    //   (value) => {
+    //     this.addUserToChannelOverlayIsVisible = value;
+    //   }
+    // );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,6 +84,15 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         'ChannelChatComponent ngOnInit - Channel war bei ngOnInit noch nicht verfügbar.'
       );
     }
+
+    // const threadIsClosed = this.variableService.sideNavIsVisible$.subscribe(
+    //   (isVisibleValue) => {
+    //     if (this.variableService.threadIsClosed$ === false) {
+    //       this.threadIsClosed = isVisibleValue;
+    //       this.threadIsClosed.toggleThread();
+    //     }
+    //   }
+    // );
 
     const overlayVisibilitySub =
       this.variableService.addUserToChannelOverlayIsVisible$.subscribe(

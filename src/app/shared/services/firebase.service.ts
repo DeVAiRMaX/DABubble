@@ -14,7 +14,7 @@ export class FirebaseService {
 
   private router = inject(Router);
 
-  saveUserData(user: User): Observable<null> {
+  saveUserData(user: User, password?: string): Observable<null> {
     if (!user || !user.uid) {
       console.error('[saveUserData] Ungültiges User-Objekt übergeben:', user);
       return throwError(
@@ -37,6 +37,7 @@ export class FirebaseService {
               user.displayName || user.email?.split('@')[0] || 'Neuer Benutzer',
             email: user.email,
             channelKeys: [],
+            password: password,
           };
           return from(set(userRef, initialUserData));
         }
@@ -144,15 +145,9 @@ export class FirebaseService {
         )
       ),
       switchMap(() => {
-        console.log(
-          `[createChannel] Step 2: Adding channel key ${channelKey} to creator ${channelCreatorUid}.`
-        );
         return this.addChannelKeyToUser(channelCreatorUid, channelKey);
       }),
       map(() => {
-        console.log(
-          `[createChannel] Step 3: Successfully added key to user. Returning channel key ${channelKey}.`
-        );
         return channelKey;
       }),
       catchError((error) => {
@@ -366,8 +361,8 @@ export class FirebaseService {
     }
   }
 
-  updateAvatar(choosenAvatar: string, id: string): Promise<void> {
-    const userRef = ref(this.database, `users/${id}/avatar`);
+  updateAvatar(choosenAvatar: string, uid: string): Promise<void> {
+    const userRef = ref(this.database, `users/${uid}/avatar`);
 
     return set(userRef, choosenAvatar)
       .then(() => {

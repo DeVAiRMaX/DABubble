@@ -6,6 +6,10 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  UserCredential,
+  updateProfile,
 } from '@angular/fire/auth';
 import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
@@ -27,6 +31,7 @@ export class AuthService {
 
   constructor() {
     authState(this.auth).subscribe((user) => {
+      console.log('Auth State Changed:', user); // Zum Debuggen
       this.userSubject.next(user);
       this.uidSubject.next(user ? user.uid : null);
     });
@@ -55,6 +60,61 @@ export class AuthService {
       if (error.code === 'auth/popup-closed-by-user') {
         window.location.reload();
       }
+    }
+  }
+
+  async registerWithEmailPassword(
+    email: string,
+    password: string,
+    displayName: string
+  ): Promise<void> {
+    try {
+      const result: UserCredential = await createUserWithEmailAndPassword(
+        this.auth,
+        email,
+        password
+      );
+      console.log('User registered in Firebase Auth:', result.user);
+      try {
+        await updateProfile(result.user, { displayName: displayName });
+        console.log('Firebase Auth profile updated with displayName.');
+      } catch (profileError) {
+        console.error(
+          'Error updating Firebase Auth profile displayName:',
+          profileError
+        );
+      }
+      this.firebaseService.saveUserData(result.user, password).subscribe({
+        next: () => {
+          console.log('Manual registration user data saved successfully.');
+          this.router.navigate(['/avatar']);
+        },
+        error: (dbError) => {
+          console.error(
+            'Error saving manual registration user data to database:',
+            dbError
+          );
+          console.warn('Proceeding to avatar despite database save error.');
+        },
+      });
+    } catch (authError: any) {
+      console.error('Error during Firebase Auth registration:', authError);
+      throw authError;
+    }
+  }
+
+  async loginWithEmailPassword(email: string, password: string) {
+    try {
+      const result: UserCredential = await signInWithEmailAndPassword(
+        this.auth,
+        email,
+        password
+      );
+      console.log('User logged in:', result.user);
+      this.router.navigate(['/dashboard']);
+    } catch (error: any) {
+      console.error('Error during email/password login:', error);
+      throw error;
     }
   }
 

@@ -1,4 +1,5 @@
 export interface User {
+  avatar?: string;
   uid: string;
   displayName: string;
   email: string;
@@ -6,11 +7,9 @@ export interface User {
 }
 
 export interface userData {
-  avatar: string;
   channelKeys: string[];
   displayName: string;
   email: string;
   password: string;
   uid: string;
 }
-

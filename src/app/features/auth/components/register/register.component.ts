@@ -1,33 +1,46 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
-import { newUserData } from '../../../../classes/register.class'
+// import { newUserData } from '../../../../classes/register.class';
 import { SharedModule } from '../../../../shared';
-import { FirebaseService } from '../../../../shared/services/firebase.service';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../../../shared/services/auth.service';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [RouterLink, SharedModule, ReactiveFormsModule],
+  imports: [
+    RouterLink,
+    SharedModule,
+    ReactiveFormsModule,
+    CommonModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
   registerForm: FormGroup;
-  newUserData = new newUserData();
+  // newUserData = new newUserData();
+  registrationError: string | null = null;
+  isLoading: boolean = false;
 
-  isLoading:boolean = false;
-
-  private firebase: FirebaseService = inject(FirebaseService);
+  private authService: AuthService = inject(AuthService);
   private fb = inject(FormBuilder);
-  private router = inject(Router);
+  // private router = inject(Router);
 
   constructor() {
     this.registerForm = this.fb.group({
       displayName: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      privacyPolicy: [false, Validators.requiredTrue]
+      privacyPolicy: [false, Validators.requiredTrue],
     });
   }
 
@@ -35,27 +48,33 @@ export class RegisterComponent {
     return this.registerForm.controls;
   }
 
-  registNewUser() {
-    if (this.registerForm.valid) {
-      this.isLoading = true;
-      this.newUserData.displayName = this.registerForm.value.displayName;
-      this.newUserData.email = this.registerForm.value.email;
-      this.newUserData.password = this.registerForm.value.password;
-      const newUser = this.newUserData.toJson();
-  
-      this.firebase.creatNewUser(newUser)
-        .then(userId => {
-          console.log('User successfully registered, navigating to avatar page');
-          this.router.navigate([`/avatar/${userId}`]);
-        })
-        .catch(error => {
-          console.error('Fehler bei der Registrierung:', error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
+  async registNewUser() {
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+    this.registrationError = null;
+    const { displayName, email, password } = this.registerForm.value;
+
+    try {
+      await this.authService.registerWithEmailPassword(
+        email,
+        password,
+        displayName
+      );
+      console.log(this.authService.getCurrentUser());
+    } catch (error: any) {
+      console.error('Fehler bei der Registrierung:', error);
+      if (error.code === 'auth/email-already-in-use') {
+        this.registrationError = 'Diese E-Mail-Adresse wird bereits verwendet.';
+      } else {
+        this.registrationError =
+          'Ein Fehler ist bei der Registrierung aufgetreten. Bitte versuchen Sie es erneut.';
+      }
+    } finally {
+      this.isLoading = false;
     }
   }
-  
-  
 }
