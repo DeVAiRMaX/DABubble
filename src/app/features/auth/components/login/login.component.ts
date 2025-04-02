@@ -150,25 +150,6 @@ export class LoginComponent implements OnInit {
   }
 
   login(userEmail: string, userPassword: string) {
-    // Gastlogin ergänzen!!
-    this.database.checkIfUserExists(userEmail, userPassword)
-      .then(result => {
-        if (result.userExists) {
-          console.log('✅ User successfully logged in!');
-          console.log('User Key:', result.userKey);
-          // Token noch im Localestorage speichern!!!
-          this.router.navigate([`/dashboard/${result.userKey}`])
-        } else {
-          console.log('❌ Login failed! Incorrect email or password');
-        }
-      })
-      .catch(error => {
-        console.error('🚨 Error during login:', error);
-      });
+    this.authService.loginWithEmailPassword(userEmail, userPassword);
   }
-  
-  
-
-
-
 }

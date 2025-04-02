@@ -1,36 +1,34 @@
-import { Component, input, Input } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { SharedModule } from './../../shared';
 import { DialogComponent } from '../header-dialog-profil/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-
+import { AuthService } from '../services/auth.service';
+import { User } from '../interfaces/user';
+import { Observable } from 'rxjs';
+import { AsyncPipe, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [SharedModule],
+  imports: [SharedModule, AsyncPipe, NgIf],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-
-  @Input() user!: { displayName: string; avatar: string };
-
+  private authService: AuthService = inject(AuthService);
+  user$: Observable<User | null>;
 
   constructor(public dialog: MatDialog) {
-    
-  }
-
-  ngOnInit(){
-    this.toJSON();
-  }
-
-  toJSON(){
-    JSON.stringify(this.user);
+    this.user$ = this.authService.user$;
   }
 
   openDialog() {
-    this.dialog.open(DialogComponent, {
-      data: this.user});
+    if (this.authService.getCurrentUser()) {
+      this.dialog.open(DialogComponent, {});
+    } else {
+      console.log(
+        'Dialog kann nicht geöffnet werden, kein Benutzer eingeloggt.'
+      );
+    }
   }
 }
-

@@ -93,6 +93,15 @@ taggedPerson: any;
       );
     }
 
+    // const threadIsClosed = this.variableService.sideNavIsVisible$.subscribe(
+    //   (isVisibleValue) => {
+    //     if (this.variableService.threadIsClosed$ === false) {
+    //       this.threadIsClosed = isVisibleValue;
+    //       this.threadIsClosed.toggleThread();
+    //     }
+    //   }
+    // );
+
     const overlayVisibilitySub =
       this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
         (value) => {

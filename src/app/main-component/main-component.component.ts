@@ -86,6 +86,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
         }
       }
     );
+
     const threadSub = this.variableService.threadIsClosed$.subscribe(
       (isClosedValue) => {
         const newVisibility = !isClosedValue;
@@ -133,12 +134,12 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
     this.userIdFromUrl = this.route.snapshot.paramMap.get('id');
     if (this.userIdFromUrl) {
-      this.renderUserDate(this.userIdFromUrl);
+      this.renderUserData(this.userIdFromUrl);
     } else {
     }
   }
 
-  renderUserDate(userIdFromUrl: string) {
+  renderUserData(userIdFromUrl: string) {
     this.subService.unsubscribeGroup(this.GRP_USER_DATA);
     this.firebaseService
       .resiveUserData(userIdFromUrl)
