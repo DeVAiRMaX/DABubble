@@ -27,19 +27,14 @@ import { SubService } from '../services/sub.service';
 @Component({
   selector: 'app-channel-chat',
   standalone: true,
-  imports: [
-   
-    CommonModule,
-    MatDialogModule,
-    SharedModule,
-  ],
+  imports: [CommonModule, MatDialogModule, SharedModule],
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
 })
 export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
-  
+
   @Input() channel!: ChannelWithKey;
   private variableService: VariablesService = inject(VariablesService);
   private subService: SubService = inject(SubService);
@@ -47,7 +42,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
 
   taggedPersonsInChat = this.variableService.getTaggedContactsFromChat();
-taggedPerson: any;
+  taggedPerson: any;
 
   constructor() {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
@@ -55,8 +50,6 @@ taggedPerson: any;
         this.addUserToChannelOverlayIsVisible = value;
       }
     );
-
-
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -122,11 +115,9 @@ taggedPerson: any;
 
   toggleThread() {
     const value = this.variableService['isClosedSubject']?.value;
-   
-  
+
     if (value !== undefined && value !== null) {
       this.variableService.toggleThread();
-    
     }
   }
 
@@ -201,19 +192,21 @@ taggedPerson: any;
 
   openTagPeopleDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
-    const inputfield = document.querySelector('.textForMessageInput') as HTMLElement;
+    const inputfield = document.querySelector(
+      '.textForMessageInput'
+    ) as HTMLElement;
     const inputValue = inputfield?.innerText.trim() || '';
 
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
-        position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
-         left: `${rect.left + 20 + window.scrollX}px`},
-        panelClass: ['tagging-dialog'], 
+        position: {
+          bottom: `${rect.top - 20 + window.scrollY}px`,
+          left: `${rect.left + 20 + window.scrollX}px`,
+        },
+        panelClass: ['tagging-dialog'],
         backdropClass: 'transparentBackdrop',
         autoFocus: false,
-       
-       
       });
 
       setTimeout(() => {
@@ -230,32 +223,35 @@ taggedPerson: any;
         }
       }, 10);
       setTimeout(() => {
-        const inputField = document.querySelector('.textForMessageInput') as HTMLElement;
-        if(inputField){
+        const inputField = document.querySelector(
+          '.textForMessageInput'
+        ) as HTMLElement;
+        if (inputField) {
           inputField.focus();
-         
         }
       }, 400);
     }
-   
   }
-  
-  
+
   checkForMention(event: Event) {
     const inputElement = event.target as HTMLElement;
     const inputText = inputElement.innerText.trim();
-    if (inputText.includes('@') && !this.lastInputValue.includes('@') && inputElement.innerText !== '') {
+    if (
+      inputText.includes('@') &&
+      !this.lastInputValue.includes('@') &&
+      inputElement.innerText !== ''
+    ) {
       this.openTagPeopleDialog();
     }
     this.lastInputValue = inputText; // Speichert den aktuellen Wert des gesamten Inputfelds
-   this.variableService.setNameToFilter(this.lastInputValue);
-   console.log(this.taggedPersonsInChat);
-   console.log(inputElement.innerText);
+    this.variableService.setNameToFilter(this.lastInputValue);
+    console.log(this.taggedPersonsInChat);
+    console.log(inputElement.innerText);
   }
 
-  openTaggingPerClick(event: Event){
+  openTaggingPerClick(event: Event) {
     const inputElement = event.target as HTMLInputElement;
-    if(inputElement){
+    if (inputElement) {
       inputElement.value = '@';
       this.openTagPeopleDialog();
     }
@@ -263,17 +259,12 @@ taggedPerson: any;
     this.variableService.setNameToFilter(this.lastInputValue);
   }
 
-  preventEdit(event: Event){
+  preventEdit(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-
   }
 
-  removePersonFromTagged(){
+  removePersonFromTagged() {
     console.log('person removed');
-    console.log('hallo Test');
   }
-  
-  
-    }
-  
+}
