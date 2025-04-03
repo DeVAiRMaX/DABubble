@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import {
   Auth,
   authState,
-  User,
+  User as AuthUser,
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
@@ -11,9 +11,11 @@ import {
   UserCredential,
   updateProfile,
 } from '@angular/fire/auth';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, catchError, map, of, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { FirebaseService } from './firebase.service';
+import { Database, ref, objectVal } from '@angular/fire/database';
+import { User } from '../interfaces/user';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +24,7 @@ export class AuthService {
   private auth: Auth = inject(Auth);
   private router: Router = inject(Router);
   private firebaseService: FirebaseService = inject(FirebaseService);
+  private database: Database = inject(Database);
 
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
@@ -30,11 +33,46 @@ export class AuthService {
   uid$ = this.uidSubject.asObservable();
 
   constructor() {
-    authState(this.auth).subscribe((user) => {
-      console.log('Auth State Changed:', user); // Zum Debuggen
-      this.userSubject.next(user);
-      this.uidSubject.next(user ? user.uid : null);
-    });
+    authState(this.auth)
+      .pipe(
+        tap((authUser) => console.log('Auth State Changed:', authUser)),
+        switchMap((authUser: AuthUser | null) => {
+          if (authUser) {
+            const userRef = ref(this.database, `users/${authUser.uid}`);
+            return objectVal<User>(userRef).pipe(
+              map((dbUser) => {
+                return {
+                  uid: authUser.uid,
+                  email: authUser.email,
+                  displayName: dbUser?.displayName ?? authUser.displayName,
+                  avatar: dbUser?.avatar,
+                  channelKeys: dbUser?.channelKeys ?? [],
+                } as User;
+              }),
+              catchError((error) => {
+                console.error(
+                  'Fehler beim Abrufen der User-Daten aus Realtime DB:',
+                  error
+                );
+                return of({
+                  uid: authUser.uid,
+                  email: authUser.email,
+                  displayName: authUser.displayName,
+                  avatar: undefined,
+                  channelKeys: [],
+                } as User);
+              })
+            );
+          } else {
+            return of(null);
+          }
+        }),
+        tap((finalUser) => console.log('Final Combined User:', finalUser))
+      )
+      .subscribe((user) => {
+        this.userSubject.next(user);
+        this.uidSubject.next(user ? user.uid : null);
+      });
   }
 
   async loginWithGoogle() {

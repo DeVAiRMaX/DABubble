@@ -7,6 +7,7 @@ export interface User {
 }
 
 export interface userData {
+  avatar?: string;
   channelKeys: string[];
   displayName: string;
   email: string;
