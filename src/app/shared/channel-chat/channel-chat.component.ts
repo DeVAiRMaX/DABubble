@@ -271,6 +271,7 @@ taggedPerson: any;
 
   removePersonFromTagged(){
     console.log('person removed');
+    console.log('hallo Test');
   }
   
   
