@@ -333,34 +333,6 @@ export class FirebaseService {
     );
   }
 
-  creatNewUser(newUser: User): Promise<string> {
-    const userRef = ref(this.database, `users/`);
-    const newUserRef = push(userRef);
-    const userId = newUserRef.key;
-
-    if (userId) {
-      const userData = {
-        ...newUser,
-        uid: userId,
-        channelKeys: ['PLACEHOLDER'],
-        avatar: './assets/img/character/PLACEHOLDER',
-      };
-
-      return set(newUserRef, userData)
-        .then(() => {
-          console.log('User created successfully');
-          return userId;
-        })
-        .catch((error) => {
-          console.error('Error creating user:', error);
-          return Promise.reject(error);
-        });
-    } else {
-      console.error('Failed to create user ID');
-      return Promise.reject('Failed to create user ID');
-    }
-  }
-
   updateAvatar(choosenAvatar: string, uid: string): Promise<void> {
     const userRef = ref(this.database, `users/${uid}/avatar`);
 
@@ -371,54 +343,6 @@ export class FirebaseService {
       .catch((error) => {
         console.error('Error updating avatar:', error);
         return Promise.reject(error);
-      });
-  }
-
-  resiveUserData(id: string): Promise<any> {
-    const userRef = ref(this.database, `users/${id}`);
-
-    return get(userRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const displayName = snapshot.val().displayName;
-          const userData = snapshot.val();
-          return userData;
-        } else {
-          console.log('No user data found');
-          return null;
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching user data:', error);
-        return null;
-      });
-  }
-
-  checkIfUserExists(
-    userEmail: string,
-    userPassword: string
-  ): Promise<{ userExists: boolean; userKey?: string }> {
-    const accountsRef = ref(this.database, '/users');
-
-    return get(accountsRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const users = snapshot.val();
-          for (const key in users) {
-            if (
-              users[key].email === userEmail &&
-              users[key].password === userPassword
-            ) {
-              return { userExists: true, userKey: key };
-            }
-          }
-          return { userExists: false };
-        } else {
-          return { userExists: false };
-        }
-      })
-      .catch((error) => {
-        return { userExists: false };
       });
   }
 }

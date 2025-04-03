@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
-// import { newUserData } from '../../../../classes/register.class';
 import { SharedModule } from '../../../../shared';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -27,14 +26,12 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 })
 export class RegisterComponent {
   registerForm: FormGroup;
-  // newUserData = new newUserData();
   registrationError: string | null = null;
   isLoading: boolean = false;
   userExists: boolean = false;
 
   private authService: AuthService = inject(AuthService);
   private fb = inject(FormBuilder);
-  // private router = inject(Router);
 
   constructor() {
     this.registerForm = this.fb.group({
