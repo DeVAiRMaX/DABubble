@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import avatars from './avatars.json';
 import { SharedModule } from '../../../../../shared';
@@ -11,8 +11,9 @@ import {
   transition,
   animate,
 } from '@angular/animations';
-import { newUserData } from '../../../../../classes/register.class';
+import { User } from '../../../../../shared/interfaces/user';
 import { AuthService } from '../../../../../shared/services/auth.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-select-avatar',
@@ -45,29 +46,23 @@ export class SelectAvatarComponent {
   id: any = '';
   displayName: string | null = null;
 
-  private readonly route = inject(ActivatedRoute);
   private router = inject(Router);
   private firebaseService = inject(FirebaseService);
   private authService = inject(AuthService);
+  user$: Observable<User | null>;
+
+  constructor() {
+    this.user$ = this.authService.user$;
+  }
 
   ngOnInit() {
     this.avatars = avatars.avatarimg;
-    // this.renderUserData();
+    this.renderData();
   }
 
-  // renderUserData() {
-  //   this.id = this.route.snapshot.paramMap.get('id');
-
-  //   this.firebaseService
-  //     .resiveUserData(this.id)
-  //     .then((userData) => {
-  //       this.displayName = userData.displayName;
-  //       console.log(userData.displayName);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error fetching user data:', error);
-  //     });
-  // }
+  renderData() {
+    let currentUser = this.authService.getCurrentUser();
+  }
 
   updateAvatar(choosenAvatar: string) {
     let uid = this.authService.getCurrentUserUID();

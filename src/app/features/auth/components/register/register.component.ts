@@ -30,6 +30,7 @@ export class RegisterComponent {
   // newUserData = new newUserData();
   registrationError: string | null = null;
   isLoading: boolean = false;
+  userExists: boolean = false;
 
   private authService: AuthService = inject(AuthService);
   private fb = inject(FormBuilder);
@@ -68,6 +69,7 @@ export class RegisterComponent {
     } catch (error: any) {
       console.error('Fehler bei der Registrierung:', error);
       if (error.code === 'auth/email-already-in-use') {
+        this.userExists = true;
         this.registrationError = 'Diese E-Mail-Adresse wird bereits verwendet.';
       } else {
         this.registrationError =
