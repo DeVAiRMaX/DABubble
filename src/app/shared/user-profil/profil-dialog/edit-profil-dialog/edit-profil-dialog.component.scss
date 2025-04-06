@@ -1,0 +1,130 @@
+.dialog-edit-profil-container {
+  position: fixed;
+  top: 102px;
+  right: 16px;
+  width: 500px;
+  //   height: 600px;
+  background-color: #fff;
+  border-radius: 16px 0 16px 16px;
+  padding: 45px 40px;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 45px;
+}
+
+.dialog-edit-profil-container-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .close-btn {
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 10px;
+    transition: all 0.1s ease-in-out;
+    &:hover {
+      background-color: #eceefe;
+      color: #535af1;
+    }
+  }
+}
+
+.dialog-edit-profil-container-avatar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+  }
+}
+
+.dialog-edit-profil-container-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dialog-edit-profil-container-content-name {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px;
+  p {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  span {
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+  }
+}
+
+.edit-profil-input {
+  width: 100%;
+  border-radius: 30px;
+  padding: 15px 20px;
+  border: 1px solid #ADB0D9;
+  color: #686868;
+  font-size: 18px;
+  font-weight: 500;
+  &:focus {
+    outline: none;
+    border: 1px solid #939aff;
+  }
+  &::placeholder {
+    color: #686868;
+    font-size: 18px;
+    font-weight: 500;
+  }
+}
+
+.edit-profil-btn-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  .cancel {
+    padding: 12px 25px;
+    border: 1px solid #444df2;
+    border-radius: 50px;
+    color: #444df2;
+    font-family: "Nunito", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    &:hover {
+      background-color: #444df2;
+      color: #fff;
+    }
+  }
+  .safe {
+    padding: 12px 25px;
+    border: 1px solid transparent;
+    border-radius: 50px;
+    color: #fff;
+    font-family: "Nunito", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    background-color: #444df2;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    &:hover {
+      background-color: #797ef3;
+    }
+  }
+}

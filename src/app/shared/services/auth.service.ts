@@ -14,8 +14,9 @@ import {
 import { BehaviorSubject, catchError, map, of, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { FirebaseService } from './firebase.service';
-import { Database, ref, objectVal } from '@angular/fire/database';
+import { Database, ref, objectVal, update } from '@angular/fire/database';
 import { User } from '../interfaces/user';
+import { set } from 'firebase/database';
 
 @Injectable({
   providedIn: 'root',
@@ -35,7 +36,11 @@ export class AuthService {
   constructor() {
     authState(this.auth)
       .pipe(
-        tap((authUser) => console.log('Auth State Changed:', authUser)),
+        tap((authUser) =>
+          console.log(
+            // 'Auth State Changed:', authUser
+          )
+        ),
         switchMap((authUser: AuthUser | null) => {
           if (authUser) {
             const userRef = ref(this.database, `users/${authUser.uid}`);
@@ -67,7 +72,9 @@ export class AuthService {
             return of(null);
           }
         }),
-        tap((finalUser) => console.log('Final Combined User:', finalUser))
+        tap((finalUser) => console.log(
+          // 'Final Combined User:', finalUser
+        ))
       )
       .subscribe((user) => {
         this.userSubject.next(user);
@@ -171,5 +178,10 @@ export class AuthService {
 
   getCurrentUserUID(): string | null {
     return this.uidSubject.value;
+  }
+
+  updateUserName(currentUser: string, displayName: string) {
+    const userRef = ref(this.database, `users/${currentUser}/displayName`);
+    return set(userRef, displayName);
   }
 }

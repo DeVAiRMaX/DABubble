@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 import { User } from '../../interfaces/user';
 import { Observable } from 'rxjs';
 import { SharedModule } from '../../../shared';
+import { EditProfilDialogComponent } from './edit-profil-dialog/edit-profil-dialog.component';
 
 @Component({
   selector: 'app-profil-dialog',
@@ -68,5 +69,9 @@ export class ProfilDialogComponent {
     setTimeout(() => {
       this.dialogRef.close(ProfilDialogComponent);
     }, 100);
+  }
+
+  openEditProfilDialog() {
+      this.dialog.open(EditProfilDialogComponent, {});
   }
 }
