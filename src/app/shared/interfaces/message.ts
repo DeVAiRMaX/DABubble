@@ -1,6 +1,9 @@
 export interface Message {
+  key?: string;
   message: string;
-  reactions?: string[];
-  sender: string;
+  senderUid: string;
+  senderDisplayName: string;
+  senderAvatar?: string;
   time: number;
+  reactions?: any[];
 }

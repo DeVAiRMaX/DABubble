@@ -1,18 +1,30 @@
 import { inject, Injectable } from '@angular/core';
-import { Database, ref, set, get, push, child } from '@angular/fire/database';
+import {
+  Database,
+  ref,
+  set,
+  get,
+  push,
+  child,
+  listVal,
+  orderByChild,
+  query,
+} from '@angular/fire/database';
 import { User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
+import { Message } from '../interfaces/message';
 import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
-  constructor(private database: Database) {}
-
+  private database: Database = inject(Database);
   private router = inject(Router);
+
+  constructor() {}
 
   saveUserData(user: User, password?: string): Observable<null> {
     if (!user || !user.uid) {
@@ -344,5 +356,82 @@ export class FirebaseService {
         console.error('Error updating avatar:', error);
         return Promise.reject(error);
       });
+  }
+
+  sendMessage(
+    channelKey: string,
+    messageText: string,
+    senderUid: string,
+    senderDisplayName: string,
+    senderAvatar?: string // Optional
+  ): Observable<void> {
+    if (!channelKey || !senderUid || !messageText) {
+      return throwError(
+        () =>
+          new Error(
+            'sendMessage: channelKey, senderUid und messageText dürfen nicht leer sein.'
+          )
+      );
+    }
+
+    const messagesRef = ref(this.database, `channels/${channelKey}/messages`);
+    const newMessageRef = push(messagesRef);
+
+    const newMessage: Message = {
+      message: messageText,
+      senderUid: senderUid,
+      senderDisplayName: senderDisplayName,
+      senderAvatar: senderAvatar || 'assets/img/character/4.png',
+      time: Date.now(),
+      reactions: [],
+    };
+
+    console.log(
+      `[sendMessage] Sende Nachricht zu Channel ${channelKey}:`,
+      newMessage
+    );
+
+    return from(set(newMessageRef, newMessage)).pipe(
+      map(() => void 0), // Konvertiere zu Observable<void>
+      catchError((error) => {
+        console.error(
+          `[sendMessage] Fehler beim Senden der Nachricht an Channel ${channelKey}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Nachricht senden fehlgeschlagen: ' + error.message)
+        );
+      })
+    );
+  }
+
+  getMessagesForChannel(channelKey: string): Observable<Message[]> {
+    if (!channelKey) {
+      console.warn(
+        '[getMessagesForChannel] channelKey ist leer, gebe leeres Array zurück.'
+      );
+      return of([]);
+    }
+
+    const messagesRef = ref(this.database, `channels/${channelKey}/messages`);
+    const messagesQuery = query(messagesRef, orderByChild('time'));
+
+    return listVal<Message>(messagesQuery, { keyField: 'key' }).pipe(
+      tap((messages) =>
+        console.log(
+          `[getMessagesForChannel] Nachrichten für ${channelKey} empfangen:`,
+          messages.length
+        )
+      ),
+      map((messages) => messages || []),
+      catchError((error) => {
+        console.error(
+          `[getMessagesForChannel] Fehler beim Abrufen der Nachrichten für Channel ${channelKey}:`,
+          error
+        );
+
+        return of([]);
+      })
+    );
   }
 }
