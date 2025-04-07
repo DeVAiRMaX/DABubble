@@ -305,7 +305,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
           dialogElement.style.position = 'absolute';
           dialogElement.style.width = '350px';
-
           dialogElement.style.borderBottomLeftRadius = '0px';
         }
       }, 10);
@@ -335,30 +334,47 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   openTaggingPerClick(event: Event) {
-    const targetIcon = event.target as HTMLElement;
-    const inputDiv = this.messageInput.nativeElement;
-
-    inputDiv.innerText += '@';
-
-    inputDiv.focus();
-    const range = document.createRange();
-    const sel = window.getSelection();
-    range.selectNodeContents(inputDiv);
-    range.collapse(false);
-    sel?.removeAllRanges();
-    sel?.addRange(range);
-
-    this.lastInputValue = inputDiv.innerText;
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = '@';
+      this.openTagPeopleDialog();
+    }
+    this.lastInputValue = inputElement.value;
     this.variableService.setNameToFilter(this.lastInputValue);
-    this.openTagPeopleDialog();
   }
 
-  preventEdit(event: Event) {
+  preventEdit(event: MouseEvent) {
     event.preventDefault();
-    event.stopPropagation();
+
+    const textInput = document.querySelector(
+      '.textForMessageInput'
+    ) as HTMLElement;
+    if (!textInput) return;
+
+    textInput.focus();
+
+    const range = document.createRange();
+    const selection = window.getSelection();
+
+    if (textInput.lastChild) {
+      range.setStartAfter(textInput.lastChild);
+    } else {
+      range.setStart(textInput, textInput.childNodes.length);
+    }
+
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   }
 
-  removePersonFromTagged() {
-    console.log('person removed');
+  removePersonFromTagged(name: string) {
+    const index = this.taggedPersonsInChat.findIndex((e) => e.name === name);
+
+    if (index !== -1) {
+      this.taggedPersonsInChat.splice(index, 1);
+      console.log(`Person ${name} entfernt.`);
+    } else {
+      console.log(`Person ${name} nicht gefunden.`);
+    }
   }
 }

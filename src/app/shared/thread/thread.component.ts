@@ -96,7 +96,7 @@ export class ThreadComponent {
     ) {
       this.openTagPeopleDialog();
     }
-    this.lastInputValue = inputElement.value; // Speichert den aktuellen Wert des gesamten Inputfelds
+    this.lastInputValue = inputElement.value;
     this.variableService.setNameToFilter(this.lastInputValue);
   }
 

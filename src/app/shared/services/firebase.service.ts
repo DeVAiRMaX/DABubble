@@ -49,7 +49,7 @@ export class FirebaseService {
               user.displayName || user.email?.split('@')[0] || 'Neuer Benutzer',
             email: user.email,
             channelKeys: [],
-            password: password,
+            password: password || '',
           };
           return from(set(userRef, initialUserData));
         }

@@ -345,33 +345,6 @@
   }
 }
 
-// .msg-reaction-container {
-//   display: flex;
-//   flex-direction: row;
-//   align-items: center;
-//   justify-content: flex-end;
-//   gap: 10px;
-//   position: relative;
-// }
-
-// .reaction {
-//   max-height: 36px;
-//   background-color: #fff !important;
-//   display: flex;
-//   flex-direction: row;
-//   align-items: center;
-//   padding: 5px 10px;
-//   border-radius: 30px;
-//   border: 1px solid #adb0d9;
-//   gap: 10px;
-//   position: relative;
-//   &:hover {
-//     .reaction-information-overlay {
-//       display: block;
-//     }
-//   }
-// }
-
 .reaction-information-overlay {
   display: none;
   width: max-content;
@@ -536,17 +509,17 @@
 .msg-left {
   border-radius: 0 20px 20px 20px;
   background-color: #eceefe;
-  align-self: flex-start; // Stellt sicher, dass es links bleibt
+  align-self: flex-start;
   p {
-    color: #212529; // Dunkler Text
+    color: #212529;
   }
 }
 
 .msg-right {
-  border-radius: 20px 0 20px 20px; // Evtl. etwas kleinerer Radius
-  background-color: #797ef3; // Dein lila
-  color: white; // Textfarbe für eigene Bubble
-  align-self: flex-end; // WICHTIG: Schiebt die Bubble im Wrapper nach rechts
+  border-radius: 20px 0 20px 20px;
+  background-color: #797ef3;
+  color: white;
+  align-self: flex-end;
   p {
     color: white;
   }
@@ -610,7 +583,7 @@
     height: 16px;
   }
   p {
-    font-size: 12px; // Kleinere Zahl?
+    font-size: 14px;
     font-weight: 600;
     color: #495057;
   }
@@ -684,12 +657,27 @@
   border-top: 1px solid #dee2e6;
   box-shadow: none;
   border-radius: 0 0 30px 30px;
+  height: 100%;
+}
+
+.icons {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  > div {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
 }
 
 .input-container-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-direction: column !important;
   width: 100%;
   gap: 40px;
   border: 1px solid #adb0d9;
@@ -697,7 +685,6 @@
   padding: 20px;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
 }
 
 .textForMessageInput {

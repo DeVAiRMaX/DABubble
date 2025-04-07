@@ -74,6 +74,11 @@
           <div class="reactionMenu">
             <button class="reactionMenuBtn reactionSmile"></button>
             <button class="reactionMenuBtn commentReact"></button>
+            <!-- <button class="reactionMenuBtn check"></button>
+            <button class="reactionMenuBtn thumb"></button>
+            <button class="reactionMenuBtn reactionSmile"></button>
+            <button class="reactionMenuBtn commentReact"></button>
+            <button class="reactionMenuBtn editMsg"></button> -->
           </div>
         </div>
 
@@ -144,7 +149,7 @@
             <img class="taggedImage" [src]="person.img" />
             <span> {{ person.name }}</span>
             <span
-              (click)="removePersonFromTagged()"
+              (click)="removePersonFromTagged(person.name)"
               class="closeTaggedPerson"
             ></span>
           </div>

@@ -36,11 +36,7 @@ export class AuthService {
   constructor() {
     authState(this.auth)
       .pipe(
-        tap((authUser) =>
-          console.log(
-            // 'Auth State Changed:', authUser
-          )
-        ),
+        tap((authUser) => console.log('Auth State Changed:', authUser)),
         switchMap((authUser: AuthUser | null) => {
           if (authUser) {
             const userRef = ref(this.database, `users/${authUser.uid}`);
@@ -72,9 +68,12 @@ export class AuthService {
             return of(null);
           }
         }),
-        tap((finalUser) => console.log(
-          // 'Final Combined User:', finalUser
-        ))
+        tap((finalUser) =>
+          console
+            .log
+            // 'Final Combined User:', finalUser
+            ()
+        )
       )
       .subscribe((user) => {
         this.userSubject.next(user);
