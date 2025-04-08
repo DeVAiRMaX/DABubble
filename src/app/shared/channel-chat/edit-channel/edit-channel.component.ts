@@ -26,16 +26,17 @@ import { User } from '../../interfaces/user';
         opacity: 0,
       })),
       transition('close => open', [
+        // Starte mit dem "close"-Style:
         style({ transform: 'scale(0)', opacity: 0 }),
-        animate('0.2s ease-out')
+        // Animieren zum "open"-Style:
+        animate('0.2s ease-out', style({ transform: 'scale(1)', opacity: 1 }))
       ]),
       transition('open => close', [
-        animate('0.2s ease-out',
-          style({ transform: 'scale(0)', opacity: 0 })
-        )
+        animate('0.2s ease-out', style({ transform: 'scale(0)', opacity: 0 }))
       ])
     ])
   ]
+  
 })
 export class EditChannelComponent {
 
@@ -64,10 +65,14 @@ export class EditChannelComponent {
   }
 
   ngOnInit() {
-    setTimeout(() => {
+    this.dialogRef.afterOpened().subscribe(() => {
       this.startAnimation();
-    }, 10);
+    });
     this.getChannelData();
+  }
+
+  startAnimation() {
+    this.editChannelAnimation = 'open';
   }
 
   getChannelData() {
@@ -87,15 +92,13 @@ export class EditChannelComponent {
     }
   }
 
-  startAnimation() {
-    this.editChannelAnimation = 'open';
-  }
-
-  closeDialog() {
-    this.editChannelAnimation = 'close';
-    setTimeout(() => {
-      this.dialogRef.close();
-    }, 150);
+  onToggleOrSaveChannelDescription(): void {
+    if (!this.editChannelDescription) {
+      this.saveChannelDescription();
+      this.editChannelDescription = false;
+    } else {
+      this.editChannelDescription = true;
+    }
   }
 
   async saveChannelName() {
@@ -124,14 +127,10 @@ export class EditChannelComponent {
     }
   }
 
-  onToggleOrSaveChannelDescription(): void {
-    if (!this.editChannelDescription) {
-      this.saveChannelDescription();
-      this.editChannelDescription = false;
-    } else {
-      this.editChannelDescription = true;
-    }
+  closeDialog() {
+    this.editChannelAnimation = 'close';
+    setTimeout(() => {
+      this.dialogRef.close();
+    }, 150);
   }
-
-
 }
