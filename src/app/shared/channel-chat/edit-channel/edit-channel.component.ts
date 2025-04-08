@@ -40,6 +40,11 @@ import { User } from '../../interfaces/user';
 export class EditChannelComponent {
 
   editChannelAnimation: 'open' | 'close' = 'close';
+  editChannelName: boolean = false;
+  editChannelDescription: boolean = false;
+
+  channelName: string = '';
+  channelDescription: string = '';
 
   channelData: string = '';
 
@@ -53,22 +58,27 @@ export class EditChannelComponent {
   private authService: AuthService = inject(AuthService);
 
   constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<EditChannelComponent>, @Inject(MAT_DIALOG_DATA) public data: { channelKey: string }) {
-    this.channel$ = this.databaseService.getChannel(this.data.channelKey);
     this.user$ = this.authService.user$;
+    this.channel$ = this.databaseService.getChannel(this.data.channelKey);
+
+  }
+
+  ngOnInit() {
+    setTimeout(() => {
+      this.startAnimation();
+    }, 10);
     this.getChannelData();
-    console.log(this.channelCreator);
-    
   }
 
   getChannelData() {
     this.databaseService.getChannel(this.data.channelKey)
-    .subscribe(channel => {
-      const channelDataJson = channel as Channel;
-      this.findUser(channelDataJson.members[0]);
-    });
+      .subscribe(channel => {
+        const channelDataJson = channel as Channel;
+        this.findUser(channelDataJson.members[0]);
+      });
   }
 
-  async findUser(channelCreatorUid: string) {   
+  async findUser(channelCreatorUid: string) {
     try {
       const displayName = await this.databaseService.findUser(channelCreatorUid);
       this.channelCreator = displayName;
@@ -76,13 +86,6 @@ export class EditChannelComponent {
       console.error("Fehler:", error);
     }
   }
-
-  ngOnInit() {
-    setTimeout(() => {
-      this.startAnimation();
-    }, 10);
-  }
-
 
   startAnimation() {
     this.editChannelAnimation = 'open';
@@ -93,6 +96,41 @@ export class EditChannelComponent {
     setTimeout(() => {
       this.dialogRef.close();
     }, 150);
+  }
+
+  async saveChannelName() {
+    if (this.data.channelKey) {
+      try {
+        await this.authService.updateChannel(this.data.channelKey, 'channelName', this.channelName);
+        this.channel$ = this.databaseService.getChannel(this.data.channelKey);
+      } catch (error) {
+        console.error('Error updating channel name:', error);
+      }
+    } else {
+      console.error('Current channel not found.');
+    }
+  }
+
+  async saveChannelDescription() {
+    if (this.data.channelKey) {
+      try {
+        await this.authService.updateChannel(this.data.channelKey, 'description', this.channelDescription);
+        this.channel$ = this.databaseService.getChannel(this.data.channelKey);
+      } catch (error) {
+        console.error('Error updating channel name:', error);
+      }
+    } else {
+      console.error('Current channel not found.');
+    }
+  }
+
+  onToggleOrSaveChannelDescription(): void {
+    if (!this.editChannelDescription) {
+      this.saveChannelDescription();
+      this.editChannelDescription = false;
+    } else {
+      this.editChannelDescription = true;
+    }
   }
 
 

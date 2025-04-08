@@ -25,7 +25,7 @@ export class AuthService {
   private auth: Auth = inject(Auth);
   private router: Router = inject(Router);
   private firebaseService: FirebaseService = inject(FirebaseService);
-  private database: Database = inject(Database);
+  public database: Database = inject(Database);
 
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
@@ -182,5 +182,10 @@ export class AuthService {
   updateUserName(currentUser: string, displayName: string) {
     const userRef = ref(this.database, `users/${currentUser}/displayName`);
     return set(userRef, displayName);
+  }
+
+  updateChannel(currentChannel: string, field: string, value: string): Promise<void> {
+    const channelRef = ref(this.database, `channels/${currentChannel}`);
+    return update(channelRef, { [field]: value });
   }
 }
