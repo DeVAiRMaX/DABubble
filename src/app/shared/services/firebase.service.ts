@@ -24,7 +24,7 @@ export class FirebaseService {
   private database: Database = inject(Database);
   private router = inject(Router);
 
-  constructor() {}
+  constructor() { }
 
   saveUserData(user: User, password?: string): Observable<null> {
     if (!user || !user.uid) {
@@ -358,6 +358,23 @@ export class FirebaseService {
       });
   }
 
+  async findUser(channelCreatorUid: string): Promise<string | null> {   
+    const userRef = ref(this.database, `users/${channelCreatorUid}`);
+    try {
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const userData = snapshot.val() as User;
+        return userData.displayName;
+      } else {
+        throw new Error(`Der User mit der ID ${channelCreatorUid} wurde nicht gefunden.`);
+      }
+    } catch (error) {
+      console.error("Fehler beim Laden der Nutzerdaten:", error);
+      throw error;
+    }
+  }
+  
+
   sendMessage(
     channelKey: string,
     messageText: string,
@@ -434,4 +451,6 @@ export class FirebaseService {
       })
     );
   }
+
+
 }

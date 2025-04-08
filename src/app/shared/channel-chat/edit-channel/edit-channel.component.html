@@ -1,10 +1,16 @@
-<div class="dialog-profil-container" [@editChannelAnimation]="editChannelAnimation">
+<div
+  class="dialog-profil-container"
+  [@editChannelAnimation]="editChannelAnimation"
+  *ngIf="channel$ | async as channel"
+>
   <div class="dialog-profil-container-header">
     <div>
       <span class="material-symbols-outlined"> tag </span>
-      <h2>Entwicklerteam</h2>
+      <h2>{{ channel.channelName }}</h2>
     </div>
-    <span class="material-symbols-outlined close-btn" (click)="closeDialog()"> close </span>
+    <span class="material-symbols-outlined close-btn" (click)="closeDialog()">
+      close
+    </span>
   </div>
 
   <div class="channel-card">
@@ -14,7 +20,7 @@
     </div>
     <div class="channel-team-container">
       <span class="material-symbols-outlined"> tag </span>
-      <p>Entwicklerteam</p>
+      <p>{{ channel.channelName }}</p>
     </div>
   </div>
 
@@ -24,19 +30,16 @@
       <a href="">Bearbeiten</a>
     </div>
     <p>
-      Dieser Channel ist für alles rund um #dfsdf vorgesehen. Hier kannst du
-      zusammen mit deinem Team Meetings abhalten, Dokumente teilen und
-      Entscheidungen treffen.
+      {{ channel.description }}
     </p>
     <div class="channel-card-separator"></div>
     <div class="channel-information-content">
       <h3>Erstellt von</h3>
-      <p>Noah Braun</p>
+      <p>{{ channelCreator }}</p>
     </div>
   </div>
 
   <div class="btn-container">
     <button>Channel verlassen</button>
   </div>
-
 </div>
