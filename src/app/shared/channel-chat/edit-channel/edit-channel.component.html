@@ -13,70 +13,87 @@
     </span>
   </div>
 
-  <div class="channel-card-name"
-     [ngClass]="{
-       'channel-card-name-edit': editChannelName,
-       'channel-card-name-default': !editChannelName
-     }">
-  <div class="channel-information">
-    <ng-container *ngIf="!editChannelName; else editNameMode">
-      <h2>Channel-Name</h2>
-      <a (click)="editChannelName = !editChannelName">Bearbeiten</a>
-    </ng-container>
-    <ng-template #editNameMode>
-      <div class="edit-channel-name-headline">
+  <div
+    class="channel-card-name"
+    [ngClass]="{
+      'channel-card-name-edit': editChannelName,
+      'channel-card-name-default': !editChannelName
+    }"
+  >
+    <div class="channel-information-name">
+      <ng-container *ngIf="!editChannelName; else editNameMode">
         <h2>Channel-Name</h2>
-        <a (click)="editChannelName = !editChannelName; saveChannelName()">Speichern</a>
+        <a (click)="editChannelName = !editChannelName">Bearbeiten</a>
+      </ng-container>
+      <ng-template #editNameMode>
+        <div class="edit-channel-name-headline">
+          <h2>Channel-Name</h2>
+          <a (click)="saveChannelName()">Speichern</a>
+        </div>
+      </ng-template>
+    </div>
+
+    <ng-container *ngIf="!editChannelName; else inputMode">
+      <div class="channel-team-container">
+        <span class="material-symbols-outlined"> tag </span>
+        <p>{{ channel.channelName }}</p>
+      </div>
+    </ng-container>
+    <ng-template #inputMode>
+      <div class="edit-channel-name-input">
+        <span class="material-symbols-outlined edit-hashtag"> tag </span>
+        <input
+          [(ngModel)]="channelName"
+          type="text"
+          placeholder="{{ channel.channelName }}"
+        />
+        <div class="channel-name-empty-msg" *ngIf="channelNameEmpty">
+          <p>Channel-Name darf nicht leer sein!</p>
+        </div>
       </div>
     </ng-template>
   </div>
 
-  <ng-container *ngIf="!editChannelName; else inputMode">
-    <div class="channel-team-container">
-      <span class="material-symbols-outlined"> tag </span>
-      <p>{{ channel.channelName }}</p>
+  <div
+    class="channel-card-description"
+    [ngClass]="{
+      'channel-card-description-edit': editChannelDescription,
+      'channel-card-description-default': !editChannelDescription
+    }"
+  >
+    <div class="channel-information-description">
+      <div class="edit-channel-description-headline">
+        <h2>Beschreibung</h2>
+        <a
+          (click)="onToggleOrSaveChannelDescription()"
+        >
+          {{ editChannelDescription ? "Speichern" : "Bearbeiten" }}
+        </a>
+      </div>
+      <!-- <div class="channel-description-empty-msg" *ngIf="channelDescriptionEmpty">
+        <p>Channel-Beschreibung darf nicht leer sein!</p>
+      </div> -->
     </div>
-  </ng-container>
-  <ng-template #inputMode>
-    <div class="edit-channel-name-input">
-      <span class="material-symbols-outlined edit-hashtag"> tag </span>
-      <input [(ngModel)]="channelName" type="text" placeholder="{{ channel.channelName }}" />
+
+    
+
+    <ng-container *ngIf="!editChannelDescription; else editMode">
+      <p>{{ channel.description }}</p>
+    </ng-container>
+    <ng-template #editMode>
+      <input
+        class="edit-channel-description-input"
+        type="text"
+        [(ngModel)]="channelDescription"
+        placeholder="{{ channel.description }}"
+      />
+    </ng-template>
+    <div class="channel-card-separator"></div>
+    <div class="channel-information-content">
+      <h3>Erstellt von</h3>
+      <p>{{ channelCreator }}</p>
     </div>
-  </ng-template>
-</div>
-
-
-<div class="channel-card-description"
-     [ngClass]="{
-       'channel-card-description-edit': editChannelDescription,
-       'channel-card-description-default': !editChannelDescription
-     }">
-  <div class="channel-information">
-    <h2>Beschreibung</h2>
-    <a (click)="editChannelDescription = !editChannelDescription; onToggleOrSaveChannelDescription()">
-      {{ editChannelDescription ? 'Speichern' : 'Bearbeiten' }}
-    </a>
   </div>
-
-  <ng-container *ngIf="!editChannelDescription; else editMode">
-    <p>{{ channel.description }}</p>
-  </ng-container>
-  <ng-template #editMode>
-    <input class="edit-channel-description-input"
-           type="text"
-           [(ngModel)]="channelDescription"
-           placeholder="{{ channel.description }}" />
-  </ng-template>
-
-  <div class="channel-card-separator"></div>
-  <div class="channel-information-content">
-    <h3>Erstellt von</h3>
-    <p>{{ channelCreator }}</p>
-  </div>
-</div>
-
-
-
 
   <div class="btn-container">
     <button (click)="closeDialog()">Channel verlassen</button>
