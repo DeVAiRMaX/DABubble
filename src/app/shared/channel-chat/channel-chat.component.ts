@@ -7,6 +7,7 @@ import {
   OnInit,
   OnDestroy,
   SimpleChanges,
+  CUSTOM_ELEMENTS_SCHEMA
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
@@ -23,18 +24,20 @@ import { ChannelMembersOverlayComponent } from './channel-members-overlay/channe
 import { ChannelWithKey } from '../interfaces/channel';
 import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-persons-dialog.component';
 import { SubService } from '../services/sub.service';
+import { SmileyKeyboardComponent } from "./smiley-keyboard/smiley-keyboard.component";
 
 @Component({
   selector: 'app-channel-chat',
   standalone: true,
   imports: [
-   
     CommonModule,
     MatDialogModule,
     SharedModule,
-  ],
+    SmileyKeyboardComponent
+],
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
@@ -263,16 +266,81 @@ taggedPerson: any;
     this.variableService.setNameToFilter(this.lastInputValue);
   }
 
-  preventEdit(event: Event){
-    event.preventDefault();
-    event.stopPropagation();
-
+  preventEdit(event: MouseEvent) {
+    event.preventDefault(); 
+    
+    const textInput = document.querySelector('.textForMessageInput') as HTMLElement;
+    if (!textInput) return;
+  
+    textInput.focus();
+  
+    
+    const range = document.createRange();
+    const selection = window.getSelection();
+    
+    
+    if (textInput.lastChild) {
+      range.setStartAfter(textInput.lastChild);
+    } else {
+      range.setStart(textInput, textInput.childNodes.length);
+    }
+  
+    range.collapse(true); 
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   }
+  
+  
 
-  removePersonFromTagged(){
-    console.log('person removed');
-    console.log('hallo Test');
+  removePersonFromTagged(name: string) {
+   
+    const index = this.taggedPersonsInChat.findIndex(e => e.name === name);
+  
+    
+    if (index !== -1) {
+      
+      this.taggedPersonsInChat.splice(index, 1);
+      console.log(`Person ${name} entfernt.`);
+    } else {
+      console.log(`Person ${name} nicht gefunden.`);
+    }
   }
+  
+
+
+  openAddSmileyToChannelDialog() {
+    const targetElement = document.querySelector('.input-container-wrapper');
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+        panelClass: '',
+        backdropClass: 'transparentBackdrop',
+        position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
+        left: `${rect.left + 20 + window.scrollX}px`},
+        data: { channelKey: this.channel?.key },
+      });
+  
+      setTimeout(() => {
+        const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
+        if (dialogElement) {
+          const dialogRect = dialogElement.getBoundingClientRect();
+  
+          // Positioniere den Dialog über dem Input
+          const newTop = rect.top - dialogRect.height + window.scrollY;
+          const newLeft = rect.right - dialogRect.width + window.scrollX;
+  
+          dialogElement.style.position = 'absolute';
+      
+          
+          dialogElement.style.height = 'fit-content';
+          dialogElement.style.width = 'fit-content';
+        }
+      }, 0);
+    }
+  }
+  
+
+ 
   
   
     }

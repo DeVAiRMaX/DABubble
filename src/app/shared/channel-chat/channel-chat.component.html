@@ -146,21 +146,23 @@
         placeholder="Nachricht an #Entwicklerteam"
         (input)="checkForMention($event)"
         contenteditable="true"
-      >
-        <div class="taggedPersonsDiv">
-          <div
+      ></div>
+      <div contenteditable="true" class="taggedPersonsDiv">
+        <div
+          contenteditable="false"
+          aria-readonly="true"
+          class="taggedPerson"
+          (mousedown)="preventEdit($event)"
+          *ngFor="let person of taggedPersonsInChat"
+        >
+          <img class="taggedImage" src="{{ person.img }}" />
+          <span contenteditable="false"> {{ person.name }}</span>
+          <label
+            contenteditable="false"
             aria-readonly="true"
-            class="taggedPerson"
-            (mousedown)="preventEdit($event)"
-            *ngFor="let person of taggedPersonsInChat"
-          >
-            <img class="taggedImage" src="{{ person.img }}" />
-            <span> {{ person.name }}</span>
-            <span
-              (click)="removePersonFromTagged()"
-              class="closeTaggedPerson"
-            ></span>
-          </div>
+            (click)="removePersonFromTagged(person.name)"
+            class="closeTaggedPerson"
+          ></label>
         </div>
       </div>
       <div class="icons">
@@ -171,7 +173,12 @@
           >
             alternate_email
           </span>
-          <span class="material-symbols-outlined"> sentiment_satisfied </span>
+          <span
+            (click)="openAddSmileyToChannelDialog()"
+            class="material-symbols-outlined add-smiley-button"
+          >
+            sentiment_satisfied
+          </span>
         </div>
         <img src="./assets/img/icons/send.png" class="send-btn" alt="send" />
       </div>

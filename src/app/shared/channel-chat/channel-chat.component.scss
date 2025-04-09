@@ -500,6 +500,7 @@
 
 .input-container-wrapper {
   display: flex;
+  position: relative;
   align-items: center;
   justify-content: space-between;
   gap: 40px;
@@ -531,6 +532,12 @@
 .taggedPersonsDiv{
   display: flex;
   width: fit-content;
+  position: absolute;
+  bottom: 22px;
+  left: 120px;
+  max-width: 550px;
+  overflow-y: hidden;
+  overflow-x: scroll;
 }
 
 .taggedPerson{
@@ -573,7 +580,41 @@ letter-spacing: 0%;
     background-position: center;
     
     background-repeat: no-repeat;
+
+    &:hover{
+      cursor: pointer;
+    }
   }
+
+
 }
+
+.cursor-placeholder{
+  display: inline-block;
+  width: 1px;
+  min-width: 1px;
+  visibility: hidden;
+}
+
+.add-smiley-button{
+  position: relative;
+
+  &:hover emoji-picker {
+    opacity: 1 !important;
+    // display: flex !important;
+  }
+
+  
+}
+
+emoji-picker{
+  position: absolute;
+  bottom: 55px;
+  opacity: 0;
+  // display: none;
+  font-family: 'Nunito';
+}
+
+
 
 
