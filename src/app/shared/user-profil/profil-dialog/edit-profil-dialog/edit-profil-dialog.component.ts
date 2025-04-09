@@ -19,6 +19,8 @@ export class EditProfilDialogComponent {
 
   displayName: string = '';
 
+  emptyUserName: boolean = false;
+
   constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<EditProfilDialogComponent>) {
     this.user$ = this.authService.user$;
   }
@@ -30,6 +32,10 @@ export class EditProfilDialogComponent {
   saveProfil() {
     const currentUser = this.authService.getCurrentUserUID();
 
+    if(this.displayName == ''){
+      this.emptyUserName = true;
+      return
+    }
     if (currentUser) {
       this.authService.updateUserName(currentUser, this.displayName);
     } else {
