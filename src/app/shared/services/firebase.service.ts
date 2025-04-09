@@ -45,8 +45,7 @@ export class FirebaseService {
         } else {
           const initialUserData = {
             uid: user.uid,
-            displayName:
-              user.displayName || user.email?.split('@')[0] || 'Neuer Benutzer',
+            displayName: user.displayName || user.email?.split('@')[0],
             email: user.email,
             channelKeys: [],
             password: password || '',
@@ -363,7 +362,7 @@ export class FirebaseService {
     messageText: string,
     senderUid: string,
     senderDisplayName: string,
-    senderAvatar?: string // Optional
+    senderAvatar?: string
   ): Observable<void> {
     if (!channelKey || !senderUid || !messageText) {
       return throwError(
@@ -392,7 +391,7 @@ export class FirebaseService {
     );
 
     return from(set(newMessageRef, newMessage)).pipe(
-      map(() => void 0), // Konvertiere zu Observable<void>
+      map(() => void 0),
       catchError((error) => {
         console.error(
           `[sendMessage] Fehler beim Senden der Nachricht an Channel ${channelKey}:`,
@@ -434,4 +433,6 @@ export class FirebaseService {
       })
     );
   }
+
+  createThread() {}
 }

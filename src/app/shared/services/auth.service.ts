@@ -46,7 +46,8 @@ export class AuthService {
                   uid: authUser.uid,
                   email: authUser.email,
                   displayName: dbUser?.displayName ?? authUser.displayName,
-                  avatar: dbUser?.avatar,
+                  avatar:
+                    dbUser.avatar || 'assets/img/character/bsp-avatar.png',
                   channelKeys: dbUser?.channelKeys ?? [],
                 } as User;
               }),
