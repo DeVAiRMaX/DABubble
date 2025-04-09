@@ -12,7 +12,7 @@
         (ngModelChange)="onSearchChange()"
       />
 
-      <div class="search-Results" *ngIf="searchResults && searchResults.length" >
+      <div class="search-Results" *ngIf="searchResultsState" >
         <div class="result-container" *ngFor="let result of searchResults" (click)="openResult(result)">
           <ng-container *ngIf="result.type === 'User'">
             <img [src]="result.data.avatar" alt="User Avatar" />
