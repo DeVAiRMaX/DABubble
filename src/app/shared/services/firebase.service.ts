@@ -1,18 +1,30 @@
 import { inject, Injectable } from '@angular/core';
-import { Database, ref, set, get, push, child } from '@angular/fire/database';
+import {
+  Database,
+  ref,
+  set,
+  get,
+  push,
+  child,
+  listVal,
+  orderByChild,
+  query,
+} from '@angular/fire/database';
 import { User } from '@angular/fire/auth';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
+import { Message } from '../interfaces/message';
 import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseService {
-  constructor(private database: Database) {}
-
+  private database: Database = inject(Database);
   private router = inject(Router);
+
+  constructor() { }
 
   saveUserData(user: User, password?: string): Observable<null> {
     if (!user || !user.uid) {
@@ -37,7 +49,7 @@ export class FirebaseService {
               user.displayName || user.email?.split('@')[0] || 'Neuer Benutzer',
             email: user.email,
             channelKeys: [],
-            password: password,
+            password: password || '',
           };
           return from(set(userRef, initialUserData));
         }
@@ -333,34 +345,6 @@ export class FirebaseService {
     );
   }
 
-  creatNewUser(newUser: User): Promise<string> {
-    const userRef = ref(this.database, `users/`);
-    const newUserRef = push(userRef);
-    const userId = newUserRef.key;
-
-    if (userId) {
-      const userData = {
-        ...newUser,
-        uid: userId,
-        channelKeys: ['PLACEHOLDER'],
-        avatar: './assets/img/character/PLACEHOLDER',
-      };
-
-      return set(newUserRef, userData)
-        .then(() => {
-          console.log('User created successfully');
-          return userId;
-        })
-        .catch((error) => {
-          console.error('Error creating user:', error);
-          return Promise.reject(error);
-        });
-    } else {
-      console.error('Failed to create user ID');
-      return Promise.reject('Failed to create user ID');
-    }
-  }
-
   updateAvatar(choosenAvatar: string, uid: string): Promise<void> {
     const userRef = ref(this.database, `users/${uid}/avatar`);
 
@@ -374,51 +358,99 @@ export class FirebaseService {
       });
   }
 
-  resiveUserData(id: string): Promise<any> {
-    const userRef = ref(this.database, `users/${id}`);
+  async findUser(channelCreatorUid: string): Promise<string | null> {   
+    const userRef = ref(this.database, `users/${channelCreatorUid}`);
+    try {
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const userData = snapshot.val() as User;
+        return userData.displayName;
+      } else {
+        throw new Error(`Der User mit der ID ${channelCreatorUid} wurde nicht gefunden.`);
+      }
+    } catch (error) {
+      console.error("Fehler beim Laden der Nutzerdaten:", error);
+      throw error;
+    }
+  }
+  
 
-    return get(userRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const displayName = snapshot.val().displayName;
-          const userData = snapshot.val();
-          return userData;
-        } else {
-          console.log('No user data found');
-          return null;
-        }
+  sendMessage(
+    channelKey: string,
+    messageText: string,
+    senderUid: string,
+    senderDisplayName: string,
+    senderAvatar?: string // Optional
+  ): Observable<void> {
+    if (!channelKey || !senderUid || !messageText) {
+      return throwError(
+        () =>
+          new Error(
+            'sendMessage: channelKey, senderUid und messageText dürfen nicht leer sein.'
+          )
+      );
+    }
+
+    const messagesRef = ref(this.database, `channels/${channelKey}/messages`);
+    const newMessageRef = push(messagesRef);
+
+    const newMessage: Message = {
+      message: messageText,
+      senderUid: senderUid,
+      senderDisplayName: senderDisplayName,
+      senderAvatar: senderAvatar || 'assets/img/character/4.png',
+      time: Date.now(),
+      reactions: [],
+    };
+
+    console.log(
+      `[sendMessage] Sende Nachricht zu Channel ${channelKey}:`,
+      newMessage
+    );
+
+    return from(set(newMessageRef, newMessage)).pipe(
+      map(() => void 0), // Konvertiere zu Observable<void>
+      catchError((error) => {
+        console.error(
+          `[sendMessage] Fehler beim Senden der Nachricht an Channel ${channelKey}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Nachricht senden fehlgeschlagen: ' + error.message)
+        );
       })
-      .catch((error) => {
-        console.error('Error fetching user data:', error);
-        return null;
-      });
+    );
   }
 
-  checkIfUserExists(
-    userEmail: string,
-    userPassword: string
-  ): Promise<{ userExists: boolean; userKey?: string }> {
-    const accountsRef = ref(this.database, '/users');
+  getMessagesForChannel(channelKey: string): Observable<Message[]> {
+    if (!channelKey) {
+      console.warn(
+        '[getMessagesForChannel] channelKey ist leer, gebe leeres Array zurück.'
+      );
+      return of([]);
+    }
 
-    return get(accountsRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const users = snapshot.val();
-          for (const key in users) {
-            if (
-              users[key].email === userEmail &&
-              users[key].password === userPassword
-            ) {
-              return { userExists: true, userKey: key };
-            }
-          }
-          return { userExists: false };
-        } else {
-          return { userExists: false };
-        }
+    const messagesRef = ref(this.database, `channels/${channelKey}/messages`);
+    const messagesQuery = query(messagesRef, orderByChild('time'));
+
+    return listVal<Message>(messagesQuery, { keyField: 'key' }).pipe(
+      tap((messages) =>
+        console.log(
+          `[getMessagesForChannel] Nachrichten für ${channelKey} empfangen:`,
+          messages.length
+        )
+      ),
+      map((messages) => messages || []),
+      catchError((error) => {
+        console.error(
+          `[getMessagesForChannel] Fehler beim Abrufen der Nachrichten für Channel ${channelKey}:`,
+          error
+        );
+
+        return of([]);
       })
-      .catch((error) => {
-        return { userExists: false };
-      });
+    );
   }
+
+
 }

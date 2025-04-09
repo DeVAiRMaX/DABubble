@@ -19,7 +19,7 @@
       <div class="select-avatar-box-content">
         <div class="select-avatar-preview">
           <img [src]="selectedAvatar" alt="person" />
-          <h3>{{ displayName }}</h3>
+          <h3 *ngIf="user$ | async as user">{{ user.displayName }}</h3>
         </div>
         <div class="select-avatar-box-content-item">
           <p>Aus der Liste wählen</p>

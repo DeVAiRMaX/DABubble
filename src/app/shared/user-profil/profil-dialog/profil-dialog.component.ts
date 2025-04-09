@@ -7,12 +7,16 @@ import {
   animate,
   transition,
 } from '@angular/animations';
-
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../interfaces/user';
+import { Observable } from 'rxjs';
+import { SharedModule } from '../../../shared';
+import { EditProfilDialogComponent } from './edit-profil-dialog/edit-profil-dialog.component';
 
 @Component({
   selector: 'app-profil-dialog',
   standalone: true,
-  imports: [],
+  imports: [SharedModule],
   templateUrl: './profil-dialog.component.html',
   styleUrl: './profil-dialog.component.scss',
   animations: [
@@ -41,16 +45,19 @@ import {
 })
 export class ProfilDialogComponent {
 
-  profilDialogAnimation: 'open' | 'close' = 'close';
+  private authService: AuthService = inject(AuthService);
 
-  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<ProfilDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {
+  profilDialogAnimation: 'open' | 'close' = 'close';
+  user$: Observable<User | null>;
+
+  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<ProfilDialogComponent>) {
+    this.user$ = this.authService.user$;
   }
 
   ngOnInit() {
     setTimeout(() => {
       this.startAnimation();
     }, 10);
-    
   }
 
   startAnimation() {
@@ -62,5 +69,9 @@ export class ProfilDialogComponent {
     setTimeout(() => {
       this.dialogRef.close(ProfilDialogComponent);
     }, 100);
+  }
+
+  openEditProfilDialog() {
+      this.dialog.open(EditProfilDialogComponent, {});
   }
 }

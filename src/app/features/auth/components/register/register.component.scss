@@ -62,7 +62,6 @@
   border-radius: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
-  
 }
 
 .register-box-header {
@@ -314,4 +313,16 @@
 .error-message {
   color: #dc3545;
   font-size: 14px;
+}
+
+.userExists-msg-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  p {
+    color: #dc3545;
+    font-size: 16px;
+    font-weight: 600;
+  }
 }

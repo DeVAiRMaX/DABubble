@@ -57,6 +57,11 @@
           </div>
         </div>
         <mat-progress-bar mode="query" *ngIf="isLoading"></mat-progress-bar>
+
+        <div class="userExists-msg-container" *ngIf="userExists">
+          <p>Die eingegebene E-Mail existiert bereits!</p>
+        </div>
+
         
         <div class="register-actions">
           <button class="register-btn" (click)="registNewUser()" [disabled]="registerForm.invalid">Weiter</button>

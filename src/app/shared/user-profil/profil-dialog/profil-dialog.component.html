@@ -1,17 +1,23 @@
-<div class="dialog-profil-container" [@profilDialogAnimation]="profilDialogAnimation">
+<div
+  class="dialog-profil-container"
+  [@profilDialogAnimation]="profilDialogAnimation"
+  *ngIf="user$ | async as user"
+>
   <div class="dialog-profil-container-header">
     <h2>Profil</h2>
-    <span class="material-symbols-outlined close-btn" (click)="closeDialog()"> close </span>
+    <span class="material-symbols-outlined close-btn" (click)="closeDialog()">
+      close
+    </span>
   </div>
 
   <div class="dialog-profil-container-avatar">
-    <img src="{{data.avatar}}" alt="avatar" />
+    <img src="{{ user.avatar }}" alt="avatar" />
   </div>
 
   <div class="dialog-profil-container-content">
     <div class="dialog-profil-container-content-name">
-      <h2>{{data.displayName}}</h2>
-      <a>Bearbeiten</a>
+      <h2>{{ user.displayName }}</h2>
+      <a (click)="openEditProfilDialog()">Bearbeiten</a>
     </div>
     <div class="user-online-status">
       <div class="user-online-status-icon"></div>
@@ -20,15 +26,13 @@
   </div>
 
   <div class="dialog-profil-container-content-description">
-
     <div class="profil-mail">
       <span class="material-symbols-outlined"> mail </span>
     </div>
 
     <div class="profil-mail-content">
       <h3>E-Mail-Adresse</h3>
-      <p>{{data.email}}</p>
+      <p>{{ user.email }}</p>
     </div>
-
   </div>
 </div>

@@ -132,25 +132,6 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       }
     );
     this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
-    this.userIdFromUrl = this.route.snapshot.paramMap.get('id');
-    if (this.userIdFromUrl) {
-      this.renderUserData(this.userIdFromUrl);
-    } else {
-    }
-  }
-
-  renderUserData(userIdFromUrl: string) {
-    this.subService.unsubscribeGroup(this.GRP_USER_DATA);
-    this.firebaseService
-      .resiveUserData(userIdFromUrl)
-      .then((uData) => {
-        this.userData = uData as userData;
-        this.cdRef.detectChanges();
-      })
-      .catch((error) => {
-        this.userData = null;
-        this.cdRef.detectChanges();
-      });
   }
 
   loadUserSpecificData(uid: string): void {

@@ -1,12 +1,14 @@
 import {
   Component,
   inject,
-  input,
   Input,
   OnChanges,
   OnInit,
   OnDestroy,
   SimpleChanges,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
   CUSTOM_ELEMENTS_SCHEMA
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
@@ -22,8 +24,13 @@ import {
 } from '@angular/material/dialog';
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
 import { ChannelWithKey } from '../interfaces/channel';
+import { Message } from '../interfaces/message';
 import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-persons-dialog.component';
 import { SubService } from '../services/sub.service';
+import { FirebaseService } from '../services/firebase.service';
+import { AuthService } from '../services/auth.service';
+import { Observable, of, Subscription } from 'rxjs';
+import { User } from '../interfaces/user';
 import { SmileyKeyboardComponent } from "./smiley-keyboard/smiley-keyboard.component";
 
 @Component({
@@ -42,15 +49,25 @@ import { SmileyKeyboardComponent } from "./smiley-keyboard/smiley-keyboard.compo
 export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
-  
+
   @Input() channel!: ChannelWithKey;
+  @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
+
   private variableService: VariablesService = inject(VariablesService);
   private subService: SubService = inject(SubService);
   private dialog: MatDialog = inject(MatDialog);
+  private firebaseService: FirebaseService = inject(FirebaseService);
+  private authService: AuthService = inject(AuthService);
+  private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
+
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
+  private readonly SUB_MESSAGES = 'channelMessages';
 
   taggedPersonsInChat = this.variableService.getTaggedContactsFromChat();
-taggedPerson: any;
+  taggedPerson: any;
+
+  messages$: Observable<Message[]> = of([]); // Observable für Nachrichten
+  currentUser: User | null = null;
 
   constructor() {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
@@ -58,52 +75,18 @@ taggedPerson: any;
         this.addUserToChannelOverlayIsVisible = value;
       }
     );
-
-
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['channel'] && changes['channel'].currentValue) {
-      const currentChannel = changes['channel'].currentValue as ChannelWithKey;
-      console.log(
-        'ChannelChatComponent ngOnChanges - Channel erhalten:',
-        currentChannel.channelName,
-        'mit Key:',
-        currentChannel.key
-      );
-    } else if (
-      changes['channel'] &&
-      !changes['channel'].currentValue &&
-      !changes['channel'].firstChange
-    ) {
-      console.warn(
-        'ChannelChatComponent ngOnChanges - Channel wurde entfernt oder ist undefined.'
-      );
-    }
   }
 
   ngOnInit(): void {
-    if (this.channel) {
-      console.log(
-        'ChannelChatComponent ngOnInit - Channel war bereits verfügbar:',
-        this.channel.channelName,
-        'mit Key:',
-        this.channel.key
-      );
-    } else {
-      console.warn(
-        'ChannelChatComponent ngOnInit - Channel war bei ngOnInit noch nicht verfügbar.'
-      );
-    }
-
-    // const threadIsClosed = this.variableService.sideNavIsVisible$.subscribe(
-    //   (isVisibleValue) => {
-    //     if (this.variableService.threadIsClosed$ === false) {
-    //       this.threadIsClosed = isVisibleValue;
-    //       this.threadIsClosed.toggleThread();
-    //     }
-    //   }
-    // );
+    const authSub = this.authService.user$.subscribe((user) => {
+      this.currentUser = user;
+      // console.log('[ChannelChat] Current user set:', this.currentUser?.uid);
+      this.cdRef.markForCheck();
+      if (this.channel?.key && user) {
+        this.loadMessages(this.channel.key);
+      }
+    });
+    this.subService.add(authSub, this.SUB_GROUP_NAME);
 
     const overlayVisibilitySub =
       this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
@@ -115,8 +98,98 @@ taggedPerson: any;
     this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['channel'] && changes['channel'].currentValue) {
+      const currentChannel = changes['channel'].currentValue as ChannelWithKey;
+      // console.log(
+      //   'ChannelChatComponent ngOnChanges - Channel erhalten:',
+      //   currentChannel.channelName,
+      //   'mit Key:',
+      //   currentChannel.key
+      // );
+      if (currentChannel.key) {
+        this.loadMessages(currentChannel.key);
+      } else {
+        console.warn(
+          '[ChannelChat] Channel hat keinen Key, Nachrichten können nicht geladen werden.'
+        );
+        this.messages$ = of([]);
+      }
+    } else if (
+      changes['channel'] &&
+      !changes['channel'].currentValue &&
+      !changes['channel'].firstChange
+    ) {
+      console.warn(
+        'ChannelChatComponent ngOnChanges - Channel wurde entfernt oder ist undefined.'
+      );
+
+      this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+      this.messages$ = of([]);
+      this.cdRef.markForCheck();
+    }
+  }
+
+  loadMessages(channelKey: string): void {
+    // console.log(`[ChannelChat] Lade Nachrichten für Channel: ${channelKey}`);
+    this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+
+    this.messages$ = this.firebaseService.getMessagesForChannel(channelKey);
+  }
+
   ngOnDestroy(): void {
     this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
+    this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+  }
+
+  sendMessage(): void {
+    const messageText = this.messageInput.nativeElement.innerText.trim();
+
+    if (
+      !messageText ||
+      !this.channel?.key ||
+      !this.currentUser?.uid ||
+      !this.currentUser?.displayName
+    ) {
+      console.warn('[sendMessage] Senden nicht möglich. Fehlende Daten:', {
+        messageText,
+        channelKey: this.channel?.key,
+        currentUserUid: this.currentUser?.uid,
+        currentUserDisplayName: this.currentUser?.displayName,
+      });
+      return;
+    }
+
+    this.firebaseService
+      .sendMessage(
+        this.channel.key,
+        messageText,
+        this.currentUser.uid,
+        this.currentUser.displayName,
+        this.currentUser.avatar
+      )
+      .subscribe({
+        next: () => {
+          // console.log('[sendMessage] Nachricht erfolgreich gesendet.');
+          this.messageInput.nativeElement.innerText = '';
+          this.lastInputValue = '';
+        },
+        error: (err) => {
+          console.error('[sendMessage] Fehler beim Senden:', err);
+        },
+      });
+  }
+
+  shouldShowDateDivider(
+    currentMessage: Message,
+    previousMessage: Message | null
+  ): boolean {
+    if (!previousMessage) return true;
+
+    const currentDate = new Date(currentMessage.time);
+    const previousDate = new Date(previousMessage.time);
+
+    return currentDate.toDateString() !== previousDate.toDateString();
   }
 
   toggleAddUserToChannelOverlay() {
@@ -125,19 +198,29 @@ taggedPerson: any;
 
   toggleThread() {
     const value = this.variableService['isClosedSubject']?.value;
-   
-  
+
     if (value !== undefined && value !== null) {
       this.variableService.toggleThread();
-    
     }
   }
 
+  handleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
+    }
+  }
+
+  isOwnMessage(message: Message): boolean {
+    return !!this.currentUser && message.senderUid === this.currentUser.uid;
+  }
+
   openEditChannelDialog() {
+    if (!this.channel?.key) return;
     const dialogRef = this.dialog.open(EditChannelComponent, {
       maxWidth: 'none',
       panelClass: 'custom-dialog-container',
-      data: { channelKey: this.channel?.key },
+      data: { channelKey: this.channel.key },
     });
   }
 
@@ -204,19 +287,21 @@ taggedPerson: any;
 
   openTagPeopleDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
-    const inputfield = document.querySelector('.textForMessageInput') as HTMLElement;
+    const inputfield = document.querySelector(
+      '.textForMessageInput'
+    ) as HTMLElement;
     const inputValue = inputfield?.innerText.trim() || '';
 
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
-        position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
-         left: `${rect.left + 20 + window.scrollX}px`},
-        panelClass: ['tagging-dialog'], 
+        position: {
+          bottom: `${rect.top - 20 + window.scrollY}px`,
+          left: `${rect.left + 20 + window.scrollX}px`,
+        },
+        panelClass: ['tagging-dialog'],
         backdropClass: 'transparentBackdrop',
         autoFocus: false,
-       
-       
       });
 
       setTimeout(() => {
@@ -228,37 +313,37 @@ taggedPerson: any;
 
           dialogElement.style.position = 'absolute';
           dialogElement.style.width = '350px';
-
           dialogElement.style.borderBottomLeftRadius = '0px';
         }
       }, 10);
       setTimeout(() => {
-        const inputField = document.querySelector('.textForMessageInput') as HTMLElement;
-        if(inputField){
+        const inputField = document.querySelector(
+          '.textForMessageInput'
+        ) as HTMLElement;
+        if (inputField) {
           inputField.focus();
-         
         }
       }, 400);
     }
-   
-  }
-  
-  
-  checkForMention(event: Event) {
-    const inputElement = event.target as HTMLElement;
-    const inputText = inputElement.innerText.trim();
-    if (inputText.includes('@') && !this.lastInputValue.includes('@') && inputElement.innerText !== '') {
-      this.openTagPeopleDialog();
-    }
-    this.lastInputValue = inputText; // Speichert den aktuellen Wert des gesamten Inputfelds
-   this.variableService.setNameToFilter(this.lastInputValue);
-   console.log(this.taggedPersonsInChat);
-   console.log(inputElement.innerText);
   }
 
-  openTaggingPerClick(event: Event){
+  checkForMention(event: Event) {
+    const inputElement = event.target as HTMLElement;
+    const inputText = inputElement.innerText;
+    if (
+      inputText.includes('@') &&
+      !this.lastInputValue.includes('@') &&
+      inputText !== ''
+    ) {
+      this.openTagPeopleDialog();
+    }
+    this.lastInputValue = inputText;
+    this.variableService.setNameToFilter(this.lastInputValue);
+  }
+
+  openTaggingPerClick(event: Event) {
     const inputElement = event.target as HTMLInputElement;
-    if(inputElement){
+    if (inputElement) {
       inputElement.value = '@';
       this.openTagPeopleDialog();
     }

@@ -7,7 +7,6 @@
         keyboard_arrow_down
       </span>
     </div>
-
     <div class="channel-chat-header-right">
       <div
         class="channel-chat-header-right-user-container"
@@ -18,151 +17,142 @@
           <img src="./assets/img/character/5.png" alt="user" />
           <img src="./assets/img/character/6.png" alt="user" />
         </div>
-        <p>3</p>
+        <p>{{ channel.members.length || 0 }}</p>
       </div>
       <div (click)="openAddUserToChannelDialog()" class="add_btn_user">
         <span class="material-symbols-outlined"> person_add </span>
       </div>
-
-      <!-- <app-add-user-to-channel-overlay
-        class="addUserToChannelOverlay"
-        *ngIf="addUserToChannelOverlayIsVisible"
-      ></app-add-user-to-channel-overlay> -->
     </div>
   </div>
 
   <div class="channel-chat-body">
-    <div class="date-divider">
-      <div class="divider-line"></div>
-      <span class="date-text">DATUM</span>
-      <div class="divider-line"></div>
-    </div>
+    <ng-container
+      *ngFor="
+        let message of messages$ | async;
+        let i = index;
+        let isFirst = first
+      "
+    >
+      <div class="date-divider" *ngIf="isFirst">
+        <div class="divider-line"></div>
+        <span class="date-text">{{
+          message.time | date : "EEEE, d. MMMM"
+        }}</span>
+        <div class="divider-line"></div>
+      </div>
 
-    <div class="channel-chat-message-container">
-      <div class="channel-chat-message-container-left othersMessage">
-        <div class="channel-chat-message-container-left-user-container">
-          <img src="./assets/img/character/6.png" alt="user" />
+      <div
+        class="channel-chat-message-container"
+        [ngClass]="{ 'own-message-container': isOwnMessage(message) }"
+      >
+        <div
+          class="message-layout other-message"
+          *ngIf="!isOwnMessage(message)"
+        >
+          <div class="message-avatar">
+            <img
+              [src]="
+                message.senderAvatar ||
+                './assets/img/character/avatar_default.png'
+              "
+              [alt]="message.senderDisplayName"
+            />
+          </div>
+          <div class="message-content-wrapper">
+            <div class="message-header">
+              <h3 class="msg-user-name">{{ message.senderDisplayName }}</h3>
+              <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+            </div>
+            <div class="msg-bubble msg-left">
+              <p>{{ message.message }}</p>
+            </div>
+            <div class="message-footer other-footer">
+              <a (click)="toggleThread()" class="msg-count">2 Antworten</a>
+              <p class="last-msg-time">Letzte Antwort 14:56</p>
+            </div>
+          </div>
+          <div class="reactionMenu">
+            <button class="reactionMenuBtn reactionSmile"></button>
+            <button class="reactionMenuBtn commentReact"></button>
+            <!-- <button class="reactionMenuBtn check"></button>
+            <button class="reactionMenuBtn thumb"></button>
+            <button class="reactionMenuBtn reactionSmile"></button>
+            <button class="reactionMenuBtn commentReact"></button>
+            <button class="reactionMenuBtn editMsg"></button> -->
+          </div>
         </div>
-        <div class="channel-chat-message-container-left-message-container">
-          <div
-            class="channel-chat-message-container-left-message-container-header"
-          >
-            <h3 class="msg-user-name">Noah Braun</h3>
-            <p class="msg-time">14:25</p>
+
+        <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
+          <div class="reactionMenu">
+            <button class="reactionMenuBtn reactionSmile"></button>
+            <button class="reactionMenuBtn commentReact"></button>
+            <button class="reactionMenuBtn editMsg"></button>
           </div>
-          <div class="msg-left">
-            <p>Welche Version ist aktuell von Angular?</p>
+          <div class="message-content-wrapper">
+            <div class="message-header own-header">
+              <h3 class="msg-user-name">Du</h3>
+              <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+            </div>
+            <div class="msg-bubble msg-right">
+              <p>{{ message.message }}</p>
+            </div>
+            <div
+              class="message-footer own-footer msg-reaction-container"
+              *ngIf="message.reactions && message.reactions.length > 0"
+            >
+              <div class="reaction">
+                <img src="./assets/img/icons/check.png" alt="check" />
+                <p>1</p>
+              </div>
+              <span class="material-symbols-outlined add_reaction_btn">
+                add_reaction
+              </span>
+            </div>
           </div>
-          <div
-            class="channel-chat-message-container-left-message-container-time"
-          >
-            <a (click)="toggleThread()" class="msg-count">2 Antworten</a>
-            <p class="last-msg-time">Letzte Antwort 14:56</p>
+          <div class="message-avatar">
+            <img
+              [src]="
+                currentUser?.avatar ||
+                './assets/img/character/avatar_default.png'
+              "
+              [alt]="currentUser?.displayName || 'Du'"
+            />
           </div>
-        </div>
-        <div class="reactionMenu">
-          <button class="reactionMenuBtn check"></button>
-          <button class="reactionMenuBtn thumb"></button>
-          <button class="reactionMenuBtn reactionSmile"></button>
-          <button class="reactionMenuBtn commentReact"></button>
-          <button class="reactionMenuBtn editMsg"></button>
         </div>
       </div>
-    </div>
+    </ng-container>
 
-    <div class="date-divider">
-      <div class="divider-line"></div>
-      <span class="date-text">Dienstag, 14 Januar</span>
-      <div class="divider-line"></div>
-    </div>
-
-    <div class="channel-chat-message-container">
-      <div class="channel-chat-message-container-right ownMessage">
-        <div class="channel-chat-message-container-left-user-container">
-          <img src="./assets/img/character/3.png" alt="user" />
-        </div>
-        <div class="channel-chat-message-container-right-message-container">
-          <div
-            class="channel-chat-message-container-right-message-container-header"
-          >
-            <h3 class="msg-user-name">Frederik Beck</h3>
-            <p class="msg-time">15:06 Uhr</p>
-          </div>
-          <div class="msg-right">
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Pellentesque blandit odio efficitur lectus vestibulum, quis
-              accumsan ante vulputate. Quisque tristique iaculis erat, eu
-              faucibus lacus iaculis ac.
-            </p>
-          </div>
-          <div class="msg-reaction-container">
-            <div class="reaction">
-              <div class="reaction-information-overlay">
-                <div class="reaction-overlay-item">
-                  <img src="./assets/img/icons/rocket.png" alt="check" />
-                  <h3>Du</h3>
-                  <p>Hast reagiert</p>
-                </div>
-              </div>
-
-              <img src="./assets/img/icons/rocket.png" alt="rocket" />
-              <p>1</p>
-            </div>
-
-            <div class="reaction">
-              <div class="reaction-information-overlay">
-                <div class="reaction-overlay-item">
-                  <img src="./assets/img/icons/check.png" alt="check" />
-                  <h3>Noah Braun</h3>
-                  <p>Hat reagiert</p>
-                </div>
-              </div>
-
-              <img src="./assets/img/icons/check.png" alt="check" />
-              <p>1</p>
-            </div>
-            <span class="material-symbols-outlined add_reaction_btn">
-              add_reaction
-            </span>
-          </div>
-        </div>
-        <div class="reactionMenu">
-          <button class="reactionMenuBtn check"></button>
-          <button class="reactionMenuBtn thumb"></button>
-          <button class="reactionMenuBtn reactionSmile"></button>
-          <button class="reactionMenuBtn commentReact"></button>
-          <button class="reactionMenuBtn editMsg"></button>
-        </div>
-      </div>
+    <div *ngIf="(messages$ | async)?.length === 0" class="no-messages">
+      <p>
+        Noch keine Nachrichten in #{{ channel.channelName }}. Sei der Erste!
+      </p>
     </div>
   </div>
-
-  <div class="input-container">
+  <div class="input-container" *ngIf="channel">
     <div class="input-container-wrapper">
       <div
+        #messageInput
         class="textForMessageInput"
         type="text"
-        placeholder="Nachricht an #Entwicklerteam"
+        [attr.placeholder]="'Nachricht an #' + (channel.channelName || '')"
         (input)="checkForMention($event)"
+        (keydown)="handleKeydown($event)"
         contenteditable="true"
-      ></div>
-      <div contenteditable="true" class="taggedPersonsDiv">
-        <div
-          contenteditable="false"
-          aria-readonly="true"
-          class="taggedPerson"
-          (mousedown)="preventEdit($event)"
-          *ngFor="let person of taggedPersonsInChat"
-        >
-          <img class="taggedImage" src="{{ person.img }}" />
-          <span contenteditable="false"> {{ person.name }}</span>
-          <label
-            contenteditable="false"
+      >
+        <div class="taggedPersonsDiv">
+          <div
             aria-readonly="true"
-            (click)="removePersonFromTagged(person.name)"
-            class="closeTaggedPerson"
-          ></label>
+            class="taggedPerson"
+            (mousedown)="preventEdit($event)"
+            *ngFor="let person of taggedPersonsInChat"
+          >
+            <img class="taggedImage" [src]="person.img" />
+            <span> {{ person.name }}</span>
+            <span
+              (click)="removePersonFromTagged(person.name)"
+              class="closeTaggedPerson"
+            ></span>
+          </div>
         </div>
       </div>
       <div class="icons">
@@ -170,17 +160,25 @@
           <span
             (click)="openTaggingPerClick($event)"
             class="material-symbols-outlined"
+            matTooltip="Person markieren"
           >
             alternate_email
           </span>
           <span
-            (click)="openAddSmileyToChannelDialog()"
-            class="material-symbols-outlined add-smiley-button"
+            class="material-symbols-outlined"
+            add-smiley-button
+            matTooltip="Emoji hinzufügen"
           >
             sentiment_satisfied
           </span>
         </div>
-        <img src="./assets/img/icons/send.png" class="send-btn" alt="send" />
+        <img
+          src="./assets/img/icons/send.png"
+          class="send-btn"
+          alt="send"
+          (click)="sendMessage()"
+          matTooltip="Senden (Enter)"
+        />
       </div>
     </div>
   </div>

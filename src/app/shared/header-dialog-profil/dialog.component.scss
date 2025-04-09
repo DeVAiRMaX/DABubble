@@ -24,6 +24,9 @@
     border-radius: 100px;
     transition: all 0.1s ease-in-out;
     cursor: pointer;
+    &:focus {
+      outline: none;
+    }
     &:hover {
         background-color: #797ef3;
         color: white;
