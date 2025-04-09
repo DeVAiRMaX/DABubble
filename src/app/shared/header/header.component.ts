@@ -29,46 +29,51 @@ export class HeaderComponent {
   }
 
   async onSearchChange(): Promise<void> {
-  
     // Alle Daten aus der Datenbank abrufen
     const data = await this.databaseService.getDatabaseData();
   
     if (this.searchValue.trim().length > 0) {
       const lowerSearchTerm = this.searchValue.toLowerCase();
   
-      const channels: any[] = data.channels 
-        ? Object.values(data.channels as Record<string, any>).filter((channel: any) =>
-            channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
-          )
+      // Channels filtern: Verwende Object.entries, damit du die id erhältst
+      const channels = data.channels
+        ? Object.entries(data.channels as Record<string, any>)
+            .filter(([id, channel]) =>
+              channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
+            )
+            .map(([id, channel]) => ({
+              id: id,                // Hier wird die ID zugewiesen
+              type: 'Channel',
+              data: channel,
+            }))
         : [];
   
-      const users: any[] = data.users 
-        ? Object.values(data.users as Record<string, any>).filter((user: any) =>
-            user.displayName && user.displayName.toLowerCase().includes(lowerSearchTerm)
-          )
+      // Users filtern: Analog auch hier mit Object.entries, um die id zu erhalten
+      const users = data.users
+        ? Object.entries(data.users as Record<string, any>)
+            .filter(([id, user]) =>
+              user.displayName && user.displayName.toLowerCase().includes(lowerSearchTerm)
+            )
+            .map(([id, user]) => ({
+              id: id,                // Hier wird die ID zugewiesen
+              type: 'User',
+              data: user,
+            }))
         : [];
-      
-      // messages filtern (wenn vorhanden)
-      // const messages: any[] = data.messages 
-      //   ? Object.values(data.users as Record<string, any>).filter((user: any) =>
-      //       user.displayName && user.displayName.toLowerCase().includes(lowerSearchTerm)
-      //     )
-      //   : [];
   
+      // Ergebnisse zusammenführen
       this.searchResults = [
-        ...channels.map((channel: any) => ({
-          type: 'Channel',
-          data: channel
-        })),
-        ...users.map((user: any) => ({
-          type: 'User',
-          data: user
-        }))
+        ...channels,
+        ...users,
       ];
-  
     } else {
       this.searchResults = [];
     }
+  }
+  
+
+  openResult(data: string) {
+    console.log('Channel selected:', data);
   }
 
   openDialog() {
