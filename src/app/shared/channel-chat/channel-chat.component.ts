@@ -72,7 +72,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     const authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
-      console.log('[ChannelChat] Current user set:', this.currentUser?.uid);
+      // console.log('[ChannelChat] Current user set:', this.currentUser?.uid);
       this.cdRef.markForCheck();
       if (this.channel?.key && user) {
         this.loadMessages(this.channel.key);
@@ -93,12 +93,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['channel'] && changes['channel'].currentValue) {
       const currentChannel = changes['channel'].currentValue as ChannelWithKey;
-      console.log(
-        'ChannelChatComponent ngOnChanges - Channel erhalten:',
-        currentChannel.channelName,
-        'mit Key:',
-        currentChannel.key
-      );
+      // console.log(
+      //   'ChannelChatComponent ngOnChanges - Channel erhalten:',
+      //   currentChannel.channelName,
+      //   'mit Key:',
+      //   currentChannel.key
+      // );
       if (currentChannel.key) {
         this.loadMessages(currentChannel.key);
       } else {
@@ -123,7 +123,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   loadMessages(channelKey: string): void {
-    console.log(`[ChannelChat] Lade Nachrichten für Channel: ${channelKey}`);
+    // console.log(`[ChannelChat] Lade Nachrichten für Channel: ${channelKey}`);
     this.subService.unsubscribeGroup(this.SUB_MESSAGES);
 
     this.messages$ = this.firebaseService.getMessagesForChannel(channelKey);
@@ -162,7 +162,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       )
       .subscribe({
         next: () => {
-          console.log('[sendMessage] Nachricht erfolgreich gesendet.');
+          // console.log('[sendMessage] Nachricht erfolgreich gesendet.');
           this.messageInput.nativeElement.innerText = '';
           this.lastInputValue = '';
         },
