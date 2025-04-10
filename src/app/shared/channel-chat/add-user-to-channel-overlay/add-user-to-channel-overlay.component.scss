@@ -1,131 +1,124 @@
-.add-user-to-channel-overlay{
-    background-color: white;
-    width: 515px;
-    height: 295px;
-    border-top-left-radius: 30px;
-    border-bottom-right-radius: 30px;
-    border-bottom-left-radius: 30px;
-    box-sizing: border-box;
-    padding: 40px;
+.add-user-to-channel-overlay {
+  background-color: white;
+  width: 515px;
+  height: 295px;
+  border-top-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+  border-bottom-left-radius: 30px;
+  box-sizing: border-box;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0px 6px 10px 0px #00000033;
+
+  > .card-title-div {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    box-shadow: 0px 6px 10px 0px #00000033;
 
+    > .title-div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-    >.card-title-div{
-        display: flex;
-        flex-direction: column;
+      > span {
+        font-family: "Nunito";
+        font-weight: 700;
+        font-size: 24px;
+        line-height: 100%;
+        letter-spacing: 0%;
+        color: black;
+      }
 
-        >.title-div{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            
-            >span{
-                font-family: 'Nunito';
-font-weight: 700;
-font-size: 24px;
-line-height: 100%;
-letter-spacing: 0%;
-color: black;
-
-            }
-
-            button{
-                width: 40px;
-                height: 40px;
-                background: url('/assets/img/closeMenu.png');
-                background-size: 24px 24px;
-    background-repeat: no-repeat;
-    background-position: center;
-    border: none;
-    border-radius: 100%;
-
-    &:hover{
-        cursor: pointer;
-        background: url('/assets/img/closeMenuPurple.png');
-        background-color: #ECEEFE;
+      button {
+        width: 40px;
+        height: 40px;
+        background: url("/assets/img/closeMenu.png");
         background-size: 24px 24px;
-    background-repeat: no-repeat;
-    background-position: center;
-    border: none;
-    border-radius: 100%;
-
-    }
-            }
-
-        }
-
-        >span{
-            font-family: 'Nunito';
-font-weight: 400;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-color: #797EF3;
-        }
-
-    }
-
-    >.user-name-input{
-        >input{
-            width: 100%;
-            box-sizing: border-box;
-            padding: 15px 20px;
-            border: 1px solid #ADB0D9;
-            border-radius: 30px;
-            color: #686868;
-            font-size: 18px;
-            font-family: 'Nunito';
-            font-weight: 400;
-
-            &:hover{
-                cursor: pointer;
-                border: 1px solid #535AF1;
-            }
-
-
-        }
-    }
-
-    .add-user-button{
-        width: 147px;
-        height: 50px;
-        box-sizing: border-box;
-        padding: 12px 25px;
+        background-repeat: no-repeat;
+        background-position: center;
         border: none;
-        border-radius: 25px;
-        color: white;
-        font-family: 'Nunito';
-font-weight: 700;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-background-color: #686868;
-align-self: flex-end;
+        border-radius: 100%;
 
-&:hover{
-    cursor: pointer;
-}
-
-
+        &:hover {
+          cursor: pointer;
+          background: url("/assets/img/closeMenuPurple.png");
+          background-color: #eceefe;
+          background-size: 24px 24px;
+          background-repeat: no-repeat;
+          background-position: center;
+          border: none;
+          border-radius: 100%;
+        }
+      }
     }
-}
 
-*{
-    user-select: none;
-}
-
-.btn-active{
-    background-color: #444DF2 !important;
-
-    &:hover{
-        background-color: #797EF3 !important;
+    > span {
+      font-family: "Nunito";
+      font-weight: 400;
+      font-size: 18px;
+      line-height: 100%;
+      letter-spacing: 0%;
+      color: #797ef3;
     }
+  }
+
+  > .user-name-input {
+    > input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 15px 20px;
+      border: 1px solid #adb0d9;
+      border-radius: 30px;
+      color: #686868;
+      font-size: 18px;
+      font-family: "Nunito";
+      font-weight: 400;
+        &:focus {
+            outline: none;
+        }
+      &:hover {
+        cursor: pointer;
+        border: 1px solid #535af1;
+      }
+    }
+  }
+
+  .add-user-button {
+    width: 147px;
+    height: 50px;
+    box-sizing: border-box;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-family: "Nunito";
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    background-color: #686868;
+    align-self: flex-end;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
 }
 
-:host ::ng-deep .mat-mdc-dialog-surface{
-    border-radius: 30px !important;
-    border-top-right-radius: 0px !important;
+* {
+  user-select: none;
+}
+
+.btn-active {
+  background-color: #444df2 !important;
+
+  &:hover {
+    background-color: #797ef3 !important;
+  }
+}
+
+:host ::ng-deep .mat-mdc-dialog-surface {
+  border-radius: 30px !important;
+  border-top-right-radius: 0px !important;
 }

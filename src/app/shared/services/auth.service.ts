@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
 import { FirebaseService } from './firebase.service';
 import { Database, ref, objectVal, update } from '@angular/fire/database';
 import { User } from '../interfaces/user';
-import { set } from 'firebase/database';
+import { get, set } from 'firebase/database';
 
 @Injectable({
   providedIn: 'root',
@@ -189,4 +189,23 @@ export class AuthService {
     const channelRef = ref(this.database, `channels/${currentChannel}`);
     return update(channelRef, { [field]: value });
   }
+
+  getMembersData(members: string[]): Promise<any[]> {
+    const promises = members.map(memberId => {
+      const memberRef = ref(this.database, `users/${memberId}`);
+      return get(memberRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const memberData = snapshot.val();
+          return memberData;
+        } else {
+          return null;
+        }
+      });
+    });
+  
+    return Promise.all(promises)
+      .then(results => results.filter(data => data !== null));
+  }
+  
+
 }

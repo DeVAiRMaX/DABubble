@@ -12,11 +12,9 @@
         class="channel-chat-header-right-user-container"
         (click)="openChannelMembersDialog()"
       >
-        <div class="profile-images-container">
-          <img src="./assets/img/character/3.png" alt="user" />
-          <img src="./assets/img/character/5.png" alt="user" />
-          <img src="./assets/img/character/6.png" alt="user" />
-        </div>
+      <div class="profile-images-container" *ngFor="let avatar of memberAvatars; let i = index">
+        <img [src]="avatar" alt="user" />
+      </div>
         <p>{{ channel.members.length || 0 }}</p>
       </div>
       <div (click)="openAddUserToChannelDialog()" class="add_btn_user">

@@ -50,6 +50,8 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
   activeThreadKey: string | null = null;
+  channelUsers: any = [];
+  channelMemberAvatars: any = [];
 
   @Input() channel!: ChannelWithKey;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
@@ -69,6 +71,10 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   messages$: Observable<Message[]> = of([]); // Observable für Nachrichten
   currentUser: User | null = null;
+  channelMember: User | null = null;
+  memberAvatars: string[] = [];
+
+
 
   constructor() {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
@@ -102,11 +108,47 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       );
 
     this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
+
+    this.getChannelMembers();
   }
+
+  getChannelMembers() {
+    this.firebaseService.getChannel(this.channel.key)
+      .subscribe(async user => {
+        if (user?.members && Array.isArray(user.members)) {
+          console.log('Member IDs:', user.members);
+          try {
+            // Abrufen der vollständigen Member-Daten
+            const membersData = await this.authService.getMembersData(user.members);
+
+            // Optional: Logge jeden Avatar in der Konsole
+            membersData.forEach(member => {
+              console.log(member.avatar);
+            });
+
+            // Speichere das gesamte Member-Array, falls du später weitere Daten benötigst
+            this.channel.members = membersData;
+
+            // Erzeuge ein Array mit den Avatar-URLs aus den Member-Daten
+            this.memberAvatars = membersData.map(member => member.avatar);
+
+          } catch (error) {
+            console.error("Fehler beim Abrufen der Mitglieder:", error);
+          }
+        } else {
+          console.log("Keine Mitglieder vorhanden oder ungültiges Format");
+          this.channel.members = [];
+          this.memberAvatars = [];
+        }
+      });
+  }
+
+
+
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['channel'] && changes['channel'].currentValue) {
-      
+
       const currentChannel = changes['channel'].currentValue as ChannelWithKey;
       if (currentChannel.key) {
         this.loadMessages(currentChannel.key);
@@ -250,7 +292,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  openChannelMembersDialog() {
+  async openChannelMembersDialog() {
+    const channelData = await this.firebaseService.getChannel(this.channel?.key)
+      .subscribe(user => {
+        this.channelUsers = user?.members;
+      });
+
     const targetElement = document.querySelector(
       '.channel-chat-header-right-user-container'
     );
@@ -259,7 +306,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
         position: { top: `${rect.bottom + 20 + window.scrollY}px` },
         panelClass: ['custom-dialog', 'memberOverlay'],
-        data: { channelKey: this.channel?.key },
+        data: { channelMember: this.channel.members },
       });
       const childEventSub = dialogRef.componentInstance.childEvent.subscribe(
         () => {
@@ -451,18 +498,18 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         },
         data: { channelKey: this.channel?.key },
       });
-  
-     // Listen for the emojiSelected event
-     const componentInstance = dialogRef.componentInstance as SmileyKeyboardComponent;
-     componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
-       this.insertEmojiAtCursor(selectedEmoji); // Insert the emoji at the cursor position
-     });
- 
-     // Optionally, handle dialog close if needed
-     dialogRef.afterClosed().subscribe(() => {
-       console.log('Smiley keyboard dialog closed');
-     });
-  
+
+      // Listen for the emojiSelected event
+      const componentInstance = dialogRef.componentInstance as SmileyKeyboardComponent;
+      componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
+        this.insertEmojiAtCursor(selectedEmoji); // Insert the emoji at the cursor position
+      });
+
+      // Optionally, handle dialog close if needed
+      dialogRef.afterClosed().subscribe(() => {
+        console.log('Smiley keyboard dialog closed');
+      });
+
       setTimeout(() => {
         const dialogElement = document.querySelector(
           'mat-dialog-container'
