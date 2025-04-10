@@ -1,0 +1,140 @@
+::ng-deep .custom-user-profil-container {
+    .mdc-dialog__container {
+      border-radius: 30px !important;
+    }
+    .mdc-dialog__surface {
+      border-radius: 30px !important;
+    }
+  }
+
+.user-card-container {
+  width: 500px;
+  padding: 40px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 45px;
+  border-radius: 30px;
+}
+
+.user-card-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close-btn {
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 10px;
+    transition: all 0.1s ease-in-out;
+    &:hover {
+      background-color: #eceefe;
+      color: #535af1;
+    }
+  }
+
+.user-card-avatar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+  }
+}
+
+.user-card-info {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 15px;
+  h2 {
+    font-size: 32px;
+    font-weight: 700;
+  }
+}
+
+.status-dot {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  p {
+    font-size: 20px;
+    font-weight: 400;
+    color: #92c83e;
+  }
+}
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #92c83e;
+}
+
+.user-card-contact {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
+}
+.mail-icon {
+  span {
+    font-size: 25px;
+  }
+}
+
+.mail-adress {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  a {
+    font-size: 18px;
+    font-weight: 400;
+    color: #1381ff;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    &:hover {
+      transform: translateY(-3px);
+    }
+  }
+}
+
+.send-msg-btn{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    button{
+        padding: 12px 25px;
+        border-radius: 50px;
+        background-color: #444DF2;
+        border: 1px solid transparent;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 500;
+        font-family: 'Nunito', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.1s ease-in-out;
+        span{
+            font-size: 20px;
+        }
+        &:hover{
+            background-color: #7d7bf2;
+        }
+    }
+}

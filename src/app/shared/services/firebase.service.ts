@@ -453,4 +453,20 @@ export class FirebaseService {
   }
 
   createThread() {}
+
+  async getDatabaseData(): Promise<any> {
+    const dbRef = ref(this.database);
+    const snapshot = await get(dbRef);
+  
+    if (snapshot.exists()) {
+      return snapshot.val();
+      
+      // return JSON.stringify(snapshot.val());
+    } else {
+      // Keine Daten gefunden, daher wird ein leeres Objekt zurückgegeben.
+      return {};
+    }
+  }
+  
 }
+

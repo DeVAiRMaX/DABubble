@@ -5,8 +5,28 @@
       <h2>DABubble</h2>
     </div>
     <div class="header-search">
-      <input type="text" placeholder="Devspace durchsuchen" />
+      <input
+        type="text"
+        placeholder="Devspace durchsuchen"
+        [(ngModel)]="searchValue"
+        (ngModelChange)="onSearchChange()"
+      />
+
+      <div class="search-Results" *ngIf="searchResultsState" >
+        <div class="result-container" *ngFor="let result of searchResults" (click)="openResult(result)">
+          <ng-container *ngIf="result.type === 'User'">
+            <img [src]="result.data.avatar" alt="User Avatar" />
+            <p>{{ result.data.displayName }}</p>
+          </ng-container>
+
+          <ng-container *ngIf="result.type === 'Channel'">
+              <mat-icon fontIcon="forum"></mat-icon>
+              <p>{{ result.data.channelName }}</p>
+          </ng-container>
+        </div>
+      </div>
     </div>
+
     <div class="header-user" (click)="openDialog()">
       <div class="header-user-name">
         <h2>{{ user.displayName }}</h2>
