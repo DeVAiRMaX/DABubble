@@ -59,7 +59,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
-
+private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
   private readonly SUB_MESSAGES = 'channelMessages';
 
@@ -78,6 +78,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit(): void {
+
+    const input = document.querySelector('.textForMessageInput') as HTMLElement;
+  if (input) {
+    input.addEventListener('mouseup', () => this.saveCursorPosition());
+    input.addEventListener('keyup', () => this.saveCursorPosition());
+  }
     const authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
       // console.log('[ChannelChat] Current user set:', this.currentUser?.uid);
@@ -405,6 +411,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         data: { channelKey: this.channel?.key },
       });
   
+      dialogRef.afterClosed().subscribe((selectedEmoji: string) => {
+        if (selectedEmoji) {
+          this.insertEmojiAtCursor(selectedEmoji);
+        }
+      });
+  
       setTimeout(() => {
         const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
         if (dialogElement) {
@@ -415,8 +427,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
           const newLeft = rect.right - dialogRect.width + window.scrollX;
   
           dialogElement.style.position = 'absolute';
-      
-          
           dialogElement.style.height = 'fit-content';
           dialogElement.style.width = 'fit-content';
         }
@@ -424,9 +434,96 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
   
+  
 
- 
+  insertEmojiAtCursor(emoji: string) {
+    const input = document.querySelector('.textForMessageInput') as HTMLElement;
   
-  
+    if (!input) {
+      console.error('Input field not found!');
+      return;
     }
   
+    if (!this.savedRange) {
+      console.error('No saved cursor position available.');
+      input.focus(); // Focus the input field if no range is saved
+      return;
+    }
+  
+    const selection = window.getSelection();
+    if (!selection) return;
+  
+    try {
+      // Restore the saved range
+      selection.removeAllRanges();
+      selection.addRange(this.savedRange);
+  
+      const range = selection.getRangeAt(0);
+      range.deleteContents(); // Delete content at the cursor position
+  
+      // Insert the emoji as a text node
+      const emojiNode = document.createTextNode(emoji);
+      range.insertNode(emojiNode);
+  
+      // Move the cursor after the inserted emoji
+      range.setStartAfter(emojiNode);
+      range.collapse(true); // Collapse the range to the end of the emoji
+  
+      // Save the updated range
+      this.savedRange = range.cloneRange();
+  
+      // Focus the input field for further typing
+      input.focus();
+    } catch (error) {
+      console.error('Error inserting emoji:', error);
+    }
+  }
+  
+  
+  saveCursorPosition() {
+    const input = document.querySelector('.textForMessageInput') as HTMLElement;
+
+    if (!input) {
+        console.error('Input field not found!');
+        return;
+    }
+
+   
+    input.focus();
+
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0).cloneRange();
+
+      
+        if (range.collapsed) {
+            console.log('Cursor position is collapsed, saving current position...');
+        } else {
+            console.log('Text range saved:', range);
+        }
+
+        
+        this.savedRange = range;
+
+     
+        const lastChild = input.lastChild;
+        if (lastChild) {
+            // Falls der letzte Knoten ein Textknoten ist, speichern wir seine Position
+            this.savedRange.setStart(lastChild, (lastChild as Text).length);
+            this.savedRange.setEnd(lastChild, (lastChild as Text).length);
+        }
+
+        console.log('Cursor position saved at end of input field or current position:', this.savedRange.endOffset);
+    } else {
+        console.warn('No selection range available to save.');
+    }
+
+    // Öffne den Emoji-Dialog (z. B. zum Hinzufügen eines Smileys)
+    this.openAddSmileyToChannelDialog();
+}
+
+
+  
+  
+  
+}
