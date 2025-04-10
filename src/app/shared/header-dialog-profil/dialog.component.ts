@@ -66,6 +66,7 @@ export class DialogComponent {
     this.dialog.open(ProfilDialogComponent, {
       data: this.data
     })
+    this.closeDialog();
   }
 
   closeDialog() {

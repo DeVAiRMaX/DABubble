@@ -22,6 +22,9 @@
         placeholder="{{ user.displayName }}"
         [(ngModel)]="displayName"
       />
+      <div class="empty-emptyUserName" *ngIf="emptyUserName">
+        <p>Name darf nicht leer sein!</p>
+      </div>
     </div>
   </div>
 

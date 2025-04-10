@@ -394,6 +394,9 @@
 .taggedPersonsDiv {
   display: flex;
   width: fit-content;
+  position: absolute;
+  top: 0;
+  height: max-content;
 }
 
 .taggedPerson {
@@ -654,7 +657,7 @@
 
 .input-container {
   padding: 15px 20px;
-  border-top: 1px solid #dee2e6;
+ 
   box-shadow: none;
   border-radius: 0 0 30px 30px;
   height: 100%;
@@ -663,13 +666,30 @@
 .icons {
   width: 100%;
   display: flex;
+  position: relative;
   justify-content: space-between;
   > div {
-    height: 100%;
+    
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
+
+    >span{
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &:hover{
+        cursor: pointer;
+        color:  #535AF1;
+        background-color: #ECEEFE;
+        border-radius: 100px;
+        background-size: 40px 40px;
+
+      }
+    }
   }
 }
 

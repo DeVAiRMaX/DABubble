@@ -43,10 +43,10 @@
 
       <div
         class="channel-chat-message-container"
-        [ngClass]="{ 'own-message-container': isOwnMessage(message) }"
+        [ngClass]="{ ownMessage: isOwnMessage(message) }"
       >
         <div
-          class="message-layout other-message"
+          class="message-layout othersMessage"
           *ngIf="!isOwnMessage(message)"
         >
           <div class="message-avatar">
@@ -84,17 +84,24 @@
               </p>
             </div>
           </div>
-          <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">
+          <div class="reactionMenu">
+            <!-- <button class="reactionMenuBtn reactionSmile"></button>
+            <button class="reactionMenuBtn commentReact"></button> -->
+            <button class="reactionMenuBtn check"></button>
+            <button class="reactionMenuBtn thumb"></button>
             <button class="reactionMenuBtn reactionSmile"></button>
-            <button
-              (click)="startOrOpenThread(message)"
-              class="reactionMenuBtn commentReact"
-            ></button>
+            <button class="reactionMenuBtn commentReact"></button>
+            <button class="reactionMenuBtn editMsg"></button>
           </div>
         </div>
 
         <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
           <div class="reactionMenu">
+            <!-- <button class="reactionMenuBtn reactionSmile"></button>
+            <button class="reactionMenuBtn commentReact"></button>
+            <button class="reactionMenuBtn editMsg"></button> -->
+            <button class="reactionMenuBtn check"></button>
+            <button class="reactionMenuBtn thumb"></button>
             <button class="reactionMenuBtn reactionSmile"></button>
             <button
               (click)="startOrOpenThread(message)"
@@ -159,9 +166,36 @@
         (input)="checkForMention($event)"
         (keydown)="handleKeydown($event)"
         contenteditable="true"
-      >
+      ></div>
+      <div class="icons">
+        <div>
+          <span
+            (click)="openTaggingPerClick($event)"
+            class="material-symbols-outlined"
+            matTooltip="Person markieren"
+          >
+            alternate_email
+          </span>
+          <span
+            (click)="saveCursorPosition()"
+            class="material-symbols-outlined add-smiley-button"
+            add-smiley-button
+            matTooltip="Emoji hinzufügen"
+          >
+            sentiment_satisfied
+          </span>
+        </div>
+        <img
+          src="./assets/img/icons/send.png"
+          class="send-btn"
+          alt="send"
+          (click)="sendMessage()"
+          matTooltip="Senden (Enter)"
+        />
+
         <div class="taggedPersonsDiv">
           <div
+            contenteditable="false"
             aria-readonly="true"
             class="taggedPerson"
             (mousedown)="preventEdit($event)"
@@ -175,27 +209,6 @@
             ></span>
           </div>
         </div>
-      </div>
-      <div class="icons">
-        <div>
-          <span
-            (click)="openTaggingPerClick($event)"
-            class="material-symbols-outlined"
-            matTooltip="Person markieren"
-          >
-            alternate_email
-          </span>
-          <span class="material-symbols-outlined" matTooltip="Emoji hinzufügen">
-            sentiment_satisfied
-          </span>
-        </div>
-        <img
-          src="./assets/img/icons/send.png"
-          class="send-btn"
-          alt="send"
-          (click)="sendMessage()"
-          matTooltip="Senden (Enter)"
-        />
       </div>
     </div>
   </div>
