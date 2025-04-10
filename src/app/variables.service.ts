@@ -33,6 +33,12 @@ export class VariablesService {
   private channelCreatedSource = new Subject<void>();
   channelCreated$ = this.channelCreatedSource.asObservable();
 
+  private threadOpenSubject = new BehaviorSubject<boolean>(false);
+  threadIsOpen$ = this.threadOpenSubject.asObservable();
+
+  private activeThreadKeySubject = new BehaviorSubject<string | null>(null);
+  activeThreadKey$ = this.activeThreadKeySubject.asObservable();
+
   toggleAddUserToChannelOverlay() {
     const newValue = !this.addUserToChannelOverlayIsVisibleSubject.value;
     this.addUserToChannelOverlayIsVisibleSubject.next(newValue);
@@ -79,24 +85,41 @@ export class VariablesService {
   private nameToFilterSubject = new BehaviorSubject<string>('');
   nameToFilter$ = this.nameToFilterSubject.asObservable();
 
-
-  setNameToFilter(newName: string){
+  setNameToFilter(newName: string) {
     this.nameToFilterSubject.next(newName);
   }
 
-  getNameToFilter(){
+  getNameToFilter() {
     return this.nameToFilterSubject.value;
   }
 
-
-  private taggedContactsFromChatSubject = new BehaviorSubject<{name: string, img: string}[]>([]);
+  private taggedContactsFromChatSubject = new BehaviorSubject<
+    { name: string; img: string }[]
+  >([]);
   taggedContactsInCha$ = this.taggedContactsFromChatSubject.asObservable();
 
-  setTaggedContactsFromChat(contacts: {name:string;img:string}[]){
+  setTaggedContactsFromChat(contacts: { name: string; img: string }[]) {
     this.taggedContactsFromChatSubject.next(contacts);
   }
 
-  getTaggedContactsFromChat(){
+  getTaggedContactsFromChat() {
     return this.taggedContactsFromChatSubject.getValue();
+  }
+
+  openThread(threadKey: string) {
+    this.activeThreadKeySubject.next(threadKey);
+    this.threadOpenSubject.next(true);
+  }
+
+  closeThread() {
+    this.threadOpenSubject.next(false);
+    this.activeThreadKeySubject.next(null);
+  }
+
+  toggleThreadVisibility() {
+    this.threadOpenSubject.next(!this.threadOpenSubject.value);
+    if (!this.threadOpenSubject.value) {
+      this.activeThreadKeySubject.next(null);
+    }
   }
 }

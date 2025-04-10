@@ -1,4 +1,4 @@
-<div *ngIf="isClosed" class="thread-container">
+<div *ngIf="isOpen" @slideInOut class="thread-container">
   <div class="thread-header">
     <div class="thread-header-left">
       <h3>Thread</h3>
@@ -7,7 +7,7 @@
     </div>
     <div class="thread-header-right">
       <span
-        (click)="toggleThread()"
+        (click)="closeThread()"
         class="material-symbols-outlined close-thread-button"
       >
         close
@@ -16,98 +16,122 @@
   </div>
 
   <div class="thread-body">
-    <div class="msg-left-container">
-      <div class="msg-container-user-img">
-        <img src="./assets/img/character/6.png" alt="user" />
-      </div>
-      <div class="msg-information">
-        <div class="msg-user-time">
-          <h3>Noah Braun</h3>
-          <p>14:25 Uhr</p>
+    <ng-container *ngIf="originalMessage$ | async as originalMsg">
+      <div class="msg-left-container original-message-container">
+        <div class="msg-container-user-img">
+          <img
+            [src]="
+              originalMsg.senderAvatar ||
+              './assets/img/character/avatar_default.png'
+            "
+            [alt]="originalMsg.senderDisplayName"
+          />
         </div>
-        <div class="msg-content-left">
-          <p>Welche Version ist aktuell von Angular?</p>
+        <div class="msg-information">
+          <div class="msg-user-time">
+            <h3>{{ originalMsg.senderDisplayName }}</h3>
+            <p>{{ originalMsg.time | date : "HH:mm" }} Uhr</p>
+          </div>
+          <div class="msg-content-left">
+            <p>{{ originalMsg.message }}</p>
+          </div>
+          <div
+            class="reaction-container"
+            *ngIf="originalMsg.reactions && originalMsg.reactions.length > 0"
+          ></div>
         </div>
       </div>
-    </div>
+    </ng-container>
 
-    <div class="count-answers">
-      <p>2 Antworten</p>
+    <div
+      class="count-answers"
+      *ngIf="(threadMessages$ | async)?.length as count"
+    >
+      <p>{{ count }} {{ count === 1 ? "Antwort" : "Antworten" }}</p>
       <div></div>
     </div>
 
-    <div class="msg-left-container">
-      <div class="msg-container-user-img">
-        <img src="./assets/img/character/5.png" alt="user" />
-      </div>
-      <div class="msg-information">
-        <div class="msg-user-time">
-          <h3>Sofia Müller</h3>
-          <p>14:30 Uhr</p>
+    <ng-container *ngFor="let threadMsg of threadMessages$ | async">
+      <div class="msg-left-container" *ngIf="!isOwnThreadMessage(threadMsg)">
+        <div class="msg-container-user-img">
+          <img
+            [src]="
+              threadMsg.senderAvatar ||
+              './assets/img/character/avatar_default.png'
+            "
+            [alt]="threadMsg.senderDisplayName"
+          />
         </div>
-        <div class="msg-content-left">
-          <p>
-            Ich habe die gleiche Frage. Ich habe gegoogelt und es scheint, dass
-            die aktuelle Version Angular 13 ist. Vielleicht weiß Frederik, ob es
-            wahr ist.
-          </p>
-        </div>
-        <div class="reaction-container">
-          <div class="reaction">
-            <div class="reaction-information-overlay">
-              <div class="reaction-overlay-item">
-                <img src="./assets/img/emoji.png" alt="check" />
-                <h3>Frederik Beck</h3>
-                <p>Hat reagiert</p>
-              </div>
-            </div>
-
-            <img src="./assets/img/emoji.png" alt="user" />
-            <p>1</p>
+        <div class="msg-information">
+          <div class="msg-user-time">
+            <h3>{{ threadMsg.senderDisplayName }}</h3>
+            <p>{{ threadMsg.time | date : "HH:mm" }} Uhr</p>
           </div>
-          <span class="material-symbols-outlined add_reaction_btn">
-            add_reaction
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div class="msg-right-container">
-      <div class="msg-container-user-img">
-        <img src="./assets/img/character/3.png" alt="user" />
-      </div>
-      <div class="msg-information">
-        <div class="msg-user-time">
-          <p>15:06 Uhr</p>
-          <h3>Frederik Beck</h3>
-        </div>
-        <div class="msg-content-right">
-          <p>Ja das ist es.</p>
-        </div>
-        <div class="reaction-container">
-          <div class="reaction">
-            <div class="reaction-information-overlay">
-              <div class="reaction-overlay-item">
-                <img src="./assets/img/thumb_up.png" alt="check" />
-                <h3>Noah Braun</h3>
-                <p>Hat reagiert</p>
-              </div>
-            </div>
-            <img src="./assets/img/thumb_up.png" alt="user" />
-            <p>1</p>
+          <div class="msg-content-left">
+            <p>{{ threadMsg.message }}</p>
           </div>
-          <span class="material-symbols-outlined add_reaction_btn">
-            add_reaction
-          </span>
+          <div
+            class="reaction-container"
+            *ngIf="threadMsg.reactions && threadMsg.reactions.length > 0"
+          >
+            <div class="reaction">
+              <img src="./assets/img/emoji.png" alt="reaction" />
+              <p>1</p>
+            </div>
+            <span class="material-symbols-outlined add_reaction_btn"
+              >add_reaction</span
+            >
+          </div>
         </div>
       </div>
+
+      <div class="msg-right-container" *ngIf="isOwnThreadMessage(threadMsg)">
+        <div class="msg-container-user-img">
+          <img
+            [src]="
+              currentUser?.avatar || './assets/img/character/avatar_default.png'
+            "
+            [alt]="currentUser?.displayName || 'Du'"
+          />
+        </div>
+        <div class="msg-information">
+          <div class="msg-user-time">
+            <p>{{ threadMsg.time | date : "HH:mm" }} Uhr</p>
+            <h3>Du</h3>
+          </div>
+          <div class="msg-content-right">
+            <p>{{ threadMsg.message }}</p>
+          </div>
+          <div
+            class="reaction-container"
+            *ngIf="threadMsg.reactions && threadMsg.reactions.length > 0"
+          >
+            <div class="reaction">
+              <img src="./assets/img/thumb_up.png" alt="reaction" />
+              <p>1</p>
+            </div>
+            <span class="material-symbols-outlined add_reaction_btn"
+              >add_reaction</span
+            >
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div
+      *ngIf="(threadMessages$ | async)?.length === 0"
+      class="no-thread-messages"
+    >
+      <p>Noch keine Antworten in diesem Thread.</p>
     </div>
   </div>
 
   <div class="input-container">
     <div class="input-container-wrapper threadwrapper">
       <input
-        (input)="checkForMention($event)"
+        [(ngModel)]="threadMessageText"
+        (ngModelChange)="checkForMention($event)"
+        (keydown.enter)="sendThreadMessage()"
         class="textForThreadInput"
         type="text"
         placeholder="Antworten..."
@@ -122,7 +146,12 @@
           </span>
           <span class="material-symbols-outlined"> sentiment_satisfied </span>
         </div>
-        <img src="./assets/img/icons/send.png" class="send-btn" alt="send" />
+        <img
+          (click)="sendThreadMessage()"
+          src="./assets/img/icons/send.png"
+          class="send-btn"
+          alt="send"
+        />
       </div>
     </div>
   </div>

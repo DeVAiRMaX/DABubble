@@ -9,7 +9,7 @@ import {
   ViewChild,
   ElementRef,
   ChangeDetectorRef,
-  CUSTOM_ELEMENTS_SCHEMA
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
@@ -31,7 +31,7 @@ import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
 import { Observable, of, Subscription } from 'rxjs';
 import { User } from '../interfaces/user';
-import { SmileyKeyboardComponent } from "./smiley-keyboard/smiley-keyboard.component";
+import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.component';
 
 @Component({
   selector: 'app-channel-chat',
@@ -40,15 +40,16 @@ import { SmileyKeyboardComponent } from "./smiley-keyboard/smiley-keyboard.compo
     CommonModule,
     MatDialogModule,
     SharedModule,
-    SmileyKeyboardComponent
-],
+    SmileyKeyboardComponent,
+  ],
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
+  activeThreadKey: string | null = null;
 
   @Input() channel!: ChannelWithKey;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
@@ -59,7 +60,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
-private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
+  private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
   private readonly SUB_MESSAGES = 'channelMessages';
 
@@ -78,12 +79,11 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
   }
 
   ngOnInit(): void {
-
     const input = document.querySelector('.textForMessageInput') as HTMLElement;
-  if (input) {
-    input.addEventListener('mouseup', () => this.saveCursorPosition());
-    input.addEventListener('keyup', () => this.saveCursorPosition());
-  }
+    if (input) {
+      input.addEventListener('mouseup', () => this.saveCursorPosition());
+      input.addEventListener('keyup', () => this.saveCursorPosition());
+    }
     const authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
       // console.log('[ChannelChat] Current user set:', this.currentUser?.uid);
@@ -107,12 +107,6 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['channel'] && changes['channel'].currentValue) {
       const currentChannel = changes['channel'].currentValue as ChannelWithKey;
-      // console.log(
-      //   'ChannelChatComponent ngOnChanges - Channel erhalten:',
-      //   currentChannel.channelName,
-      //   'mit Key:',
-      //   currentChannel.key
-      // );
       if (currentChannel.key) {
         this.loadMessages(currentChannel.key);
       } else {
@@ -176,7 +170,6 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
       )
       .subscribe({
         next: () => {
-          // console.log('[sendMessage] Nachricht erfolgreich gesendet.');
           this.messageInput.nativeElement.innerText = '';
           this.lastInputValue = '';
         },
@@ -291,6 +284,58 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
     }
   }
 
+  startOrOpenThread(message: Message): void {
+    if (!message || !message.key || !this.channel?.key || !this.currentUser) {
+      console.error('Kann Thread nicht starten/öffnen: Fehlende Daten', {
+        message,
+        channel: this.channel,
+        currentUser: this.currentUser,
+      });
+      return;
+    }
+
+    if (message.threadKey) {
+      console.log(
+        `[ChannelChat] Öffne existierenden Thread: ${message.threadKey}`
+      );
+      this.activeThreadKey = message.threadKey;
+      this.openThreadView(message.threadKey);
+    } else {
+      console.log(
+        `[ChannelChat] Starte neuen Thread für Nachricht: ${message.key}`
+      );
+      this.firebaseService
+        .createThread(message, this.channel.key, this.currentUser)
+        .subscribe({
+          next: (newThreadKey) => {
+            console.log(
+              `[ChannelChat] Neuer Thread erfolgreich erstellt: ${newThreadKey}`
+            );
+            this.activeThreadKey = newThreadKey;
+            message.threadKey = newThreadKey;
+            message.threadReplyCount = 0;
+            message.threadLastReplyAt = Date.now();
+            this.cdRef.markForCheck();
+
+            this.openThreadView(newThreadKey);
+          },
+          error: (err) => {
+            console.error(
+              '[ChannelChat] Fehler beim Erstellen des Threads:',
+              err
+            );
+            // Hier ggf. Nutzerfeedback geben
+          },
+        });
+    }
+  }
+
+  openThreadView(threadKey: string): void {
+    this.activeThreadKey = threadKey;
+    this.variableService.openThread(threadKey);
+    console.log(`[ChannelChat] Thread Ansicht für ${threadKey} angefordert.`);
+  }
+
   openTagPeopleDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
     const inputfield = document.querySelector(
@@ -358,46 +403,39 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
   }
 
   preventEdit(event: MouseEvent) {
-    event.preventDefault(); 
-    
-    const textInput = document.querySelector('.textForMessageInput') as HTMLElement;
+    event.preventDefault();
+
+    const textInput = document.querySelector(
+      '.textForMessageInput'
+    ) as HTMLElement;
     if (!textInput) return;
-  
+
     textInput.focus();
-  
-    
+
     const range = document.createRange();
     const selection = window.getSelection();
-    
-    
+
     if (textInput.lastChild) {
       range.setStartAfter(textInput.lastChild);
     } else {
       range.setStart(textInput, textInput.childNodes.length);
     }
-  
-    range.collapse(true); 
+
+    range.collapse(true);
     selection?.removeAllRanges();
     selection?.addRange(range);
   }
-  
-  
 
   removePersonFromTagged(name: string) {
-   
-    const index = this.taggedPersonsInChat.findIndex(e => e.name === name);
-  
-    
+    const index = this.taggedPersonsInChat.findIndex((e) => e.name === name);
+
     if (index !== -1) {
-      
       this.taggedPersonsInChat.splice(index, 1);
       console.log(`Person ${name} entfernt.`);
     } else {
       console.log(`Person ${name} nicht gefunden.`);
     }
   }
-  
-
 
   openAddSmileyToChannelDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
@@ -406,8 +444,10 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
       const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
         panelClass: '',
         backdropClass: 'transparentBackdrop',
-        position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
-        left: `${rect.left + 20 + window.scrollX}px`},
+        position: {
+          bottom: `${rect.top - 20 + window.scrollY}px`,
+          left: `${rect.left + 20 + window.scrollX}px`,
+        },
         data: { channelKey: this.channel?.key },
       });
   
@@ -423,112 +463,105 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
      });
   
       setTimeout(() => {
-        const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
+        const dialogElement = document.querySelector(
+          'mat-dialog-container'
+        ) as HTMLElement;
         if (dialogElement) {
           const dialogRect = dialogElement.getBoundingClientRect();
-  
-          // Positioniere den Dialog über dem Input
+
           const newTop = rect.top - dialogRect.height + window.scrollY;
           const newLeft = rect.right - dialogRect.width + window.scrollX;
-  
+
           dialogElement.style.position = 'absolute';
+
           dialogElement.style.height = 'fit-content';
           dialogElement.style.width = 'fit-content';
         }
       }, 0);
     }
   }
-  
-  
 
   insertEmojiAtCursor(emoji: string) {
     const input = document.querySelector('.textForMessageInput') as HTMLElement;
-  
+
     if (!input) {
       console.error('Input field not found!');
       return;
     }
-  
+
     if (!this.savedRange) {
       console.error('No saved cursor position available.');
       input.focus(); // Focus the input field if no range is saved
       return;
     }
-  
+
     const selection = window.getSelection();
     if (!selection) return;
-  
+
     try {
       // Restore the saved range
       selection.removeAllRanges();
       selection.addRange(this.savedRange);
-  
+
       const range = selection.getRangeAt(0);
       range.deleteContents(); // Delete content at the cursor position
-  
+
       // Insert the emoji as a text node
       const emojiNode = document.createTextNode(emoji);
       range.insertNode(emojiNode);
-  
+
       // Move the cursor after the inserted emoji
       range.setStartAfter(emojiNode);
       range.collapse(true); // Collapse the range to the end of the emoji
-  
+
       // Save the updated range
       this.savedRange = range.cloneRange();
-  
+
       // Focus the input field for further typing
       input.focus();
     } catch (error) {
       console.error('Error inserting emoji:', error);
     }
   }
-  
-  
+
   saveCursorPosition() {
     const input = document.querySelector('.textForMessageInput') as HTMLElement;
 
     if (!input) {
-        console.error('Input field not found!');
-        return;
+      console.error('Input field not found!');
+      return;
     }
 
-   
     input.focus();
 
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0).cloneRange();
+      const range = selection.getRangeAt(0).cloneRange();
 
-      
-        if (range.collapsed) {
-            console.log('Cursor position is collapsed, saving current position...');
-        } else {
-            console.log('Text range saved:', range);
-        }
+      if (range.collapsed) {
+        console.log('Cursor position is collapsed, saving current position...');
+      } else {
+        console.log('Text range saved:', range);
+      }
 
-        
-        this.savedRange = range;
+      this.savedRange = range;
 
-     
-        const lastChild = input.lastChild;
-        if (lastChild) {
-            // Falls der letzte Knoten ein Textknoten ist, speichern wir seine Position
-            this.savedRange.setStart(lastChild, (lastChild as Text).length);
-            this.savedRange.setEnd(lastChild, (lastChild as Text).length);
-        }
+      const lastChild = input.lastChild;
+      if (lastChild) {
+        // Falls der letzte Knoten ein Textknoten ist, speichern wir seine Position
+        this.savedRange.setStart(lastChild, (lastChild as Text).length);
+        this.savedRange.setEnd(lastChild, (lastChild as Text).length);
+      }
 
-        console.log('Cursor position saved at end of input field or current position:', this.savedRange.endOffset);
+      console.log(
+        'Cursor position saved at end of input field or current position:',
+        this.savedRange.endOffset
+      );
     } else {
-        console.warn('No selection range available to save.');
+      console.warn('No selection range available to save.');
     }
 
     // Öffne den Emoji-Dialog (z. B. zum Hinzufügen eines Smileys)
     this.openAddSmileyToChannelDialog();
-}
-
-
-  
-  
-  
+  }
 }

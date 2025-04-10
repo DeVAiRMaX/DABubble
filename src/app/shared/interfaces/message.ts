@@ -6,4 +6,7 @@ export interface Message {
   senderAvatar?: string;
   time: number;
   reactions?: any[];
+  threadKey?: string;
+  threadReplyCount?: number;
+  threadLastReplyAt?: number;
 }

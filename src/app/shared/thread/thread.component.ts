@@ -1,14 +1,31 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TaggingPersonsDialogComponent } from '../channel-chat/tagging-persons-dialog/tagging-persons-dialog.component';
+import { FirebaseService } from '../services/firebase.service';
+import { AuthService } from '../services/auth.service';
+import { Thread, ThreadMessage } from '../interfaces/thread';
+import { User } from '../interfaces/user';
+import {
+  Observable,
+  Subscription,
+  catchError,
+  from,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
+import { Message } from '../interfaces/message';
+import { get, ref } from '@angular/fire/database';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, MatDialogModule],
+  imports: [CommonModule, MatDialogModule, FormsModule],
   templateUrl: './thread.component.html',
   styleUrl: './thread.component.scss',
   animations: [
@@ -30,15 +47,120 @@ import { TaggingPersonsDialogComponent } from '../channel-chat/tagging-persons-d
     ]),
   ],
 })
-export class ThreadComponent {
+export class ThreadComponent implements OnInit, OnDestroy {
+  private variableService: VariablesService = inject(VariablesService);
+  private firebaseService: FirebaseService = inject(FirebaseService);
+  private authService: AuthService = inject(AuthService);
   private dialog: MatDialog = inject(MatDialog);
-  isClosed: boolean = false;
+
+  isOpen: boolean = false;
+  currentThreadKey: string | null = null;
+  threadMessages$: Observable<ThreadMessage[]> = of([]);
+  originalMessage$: Observable<Message | null> = of(null);
+  currentUser: User | null = null;
+
+  private subscriptions = new Subscription();
+
+  threadMessageText: string = '';
   lastInputValue: string = '';
 
-  constructor(private variableService: VariablesService) {
-    this.variableService.threadIsClosed$.subscribe((value) => {
-      this.isClosed = value;
-    });
+  constructor() {}
+
+  ngOnInit(): void {
+    const openSub = this.variableService.threadIsOpen$.subscribe(
+      (open) => (this.isOpen = open)
+    );
+    const keySub = this.variableService.activeThreadKey$
+      .pipe(
+        tap((key) => (this.currentThreadKey = key)),
+        switchMap((key) => {
+          if (key) {
+            // Lade Thread-Nachrichten
+            this.threadMessages$ = this.firebaseService.getThreadMessages(key);
+            // Lade Original-Nachricht (optional, für Kontext)
+            this.originalMessage$ = this.loadOriginalMessage(key);
+            return of(key); // Nur um die Pipe am Laufen zu halten
+          } else {
+            this.threadMessages$ = of([]);
+            this.originalMessage$ = of(null);
+            return of(null);
+          }
+        })
+      )
+      .subscribe();
+
+    const userSub = this.authService.user$.subscribe(
+      (user) => (this.currentUser = user)
+    );
+
+    this.subscriptions.add(openSub);
+    this.subscriptions.add(keySub);
+    this.subscriptions.add(userSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  loadOriginalMessage(threadKey: string): Observable<Message | null> {
+    const threadRef = ref(
+      this.firebaseService['database'],
+      `Threads/${threadKey}`
+    );
+    return from(get(threadRef)).pipe(
+      switchMap((threadSnapshot) => {
+        if (threadSnapshot.exists()) {
+          const threadData = threadSnapshot.val() as Thread;
+          if (threadData.channelKey && threadData.originalMessageKey) {
+            const messageRef = ref(
+              this.firebaseService['database'],
+              `channels/${threadData.channelKey}/messages/${threadData.originalMessageKey}`
+            );
+            return from(get(messageRef)).pipe(
+              map((messageSnapshot) =>
+                messageSnapshot.exists()
+                  ? (messageSnapshot.val() as Message)
+                  : null
+              )
+            );
+          }
+        }
+        return of(null); // Thread oder Keys nicht gefunden
+      }),
+      catchError((error) => {
+        console.error('Fehler beim Laden der Originalnachricht:', error);
+        return of(null);
+      })
+    );
+  }
+
+  isOwnThreadMessage(message: ThreadMessage): boolean {
+    return !!this.currentUser && message.senderUid === this.currentUser.uid;
+  }
+
+  sendThreadMessage(): void {
+    const text = this.threadMessageText.trim(); // Hole Text aus Input (z.B. ngModel oder ViewChild)
+    if (!text || !this.currentThreadKey || !this.currentUser) {
+      console.warn('Kann Thread-Nachricht nicht senden: Fehlende Daten');
+      return;
+    }
+
+    this.firebaseService
+      .sendThreadMessage(this.currentThreadKey, text, this.currentUser)
+      .subscribe({
+        next: () => {
+          console.log('Thread-Nachricht erfolgreich gesendet.');
+          this.threadMessageText = ''; // Input leeren
+          // Optional: Scroll zum Ende
+        },
+        error: (err) => {
+          console.error('Fehler beim Senden der Thread-Nachricht:', err);
+        },
+      });
+  }
+
+  closeThread(): void {
+    this.variableService.closeThread();
   }
 
   toggleThread() {
