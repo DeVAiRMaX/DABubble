@@ -9,7 +9,7 @@ import {
   ViewChild,
   ElementRef,
   ChangeDetectorRef,
-  CUSTOM_ELEMENTS_SCHEMA
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
@@ -31,7 +31,7 @@ import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
 import { Observable, of, Subscription } from 'rxjs';
 import { User } from '../interfaces/user';
-import { SmileyKeyboardComponent } from "./smiley-keyboard/smiley-keyboard.component";
+import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.component';
 
 @Component({
   selector: 'app-channel-chat',
@@ -40,15 +40,16 @@ import { SmileyKeyboardComponent } from "./smiley-keyboard/smiley-keyboard.compo
     CommonModule,
     MatDialogModule,
     SharedModule,
-    SmileyKeyboardComponent
-],
+    SmileyKeyboardComponent,
+  ],
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
+  activeThreadKey: string | null = null;
 
   @Input() channel!: ChannelWithKey;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
@@ -101,12 +102,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['channel'] && changes['channel'].currentValue) {
       const currentChannel = changes['channel'].currentValue as ChannelWithKey;
-      // console.log(
-      //   'ChannelChatComponent ngOnChanges - Channel erhalten:',
-      //   currentChannel.channelName,
-      //   'mit Key:',
-      //   currentChannel.key
-      // );
       if (currentChannel.key) {
         this.loadMessages(currentChannel.key);
       } else {
@@ -170,7 +165,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       )
       .subscribe({
         next: () => {
-          // console.log('[sendMessage] Nachricht erfolgreich gesendet.');
           this.messageInput.nativeElement.innerText = '';
           this.lastInputValue = '';
         },
@@ -352,46 +346,39 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   preventEdit(event: MouseEvent) {
-    event.preventDefault(); 
-    
-    const textInput = document.querySelector('.textForMessageInput') as HTMLElement;
+    event.preventDefault();
+
+    const textInput = document.querySelector(
+      '.textForMessageInput'
+    ) as HTMLElement;
     if (!textInput) return;
-  
+
     textInput.focus();
-  
-    
+
     const range = document.createRange();
     const selection = window.getSelection();
-    
-    
+
     if (textInput.lastChild) {
       range.setStartAfter(textInput.lastChild);
     } else {
       range.setStart(textInput, textInput.childNodes.length);
     }
-  
-    range.collapse(true); 
+
+    range.collapse(true);
     selection?.removeAllRanges();
     selection?.addRange(range);
   }
-  
-  
 
   removePersonFromTagged(name: string) {
-   
-    const index = this.taggedPersonsInChat.findIndex(e => e.name === name);
-  
-    
+    const index = this.taggedPersonsInChat.findIndex((e) => e.name === name);
+
     if (index !== -1) {
-      
       this.taggedPersonsInChat.splice(index, 1);
       console.log(`Person ${name} entfernt.`);
     } else {
       console.log(`Person ${name} nicht gefunden.`);
     }
   }
-  
-
 
   openAddSmileyToChannelDialog() {
     const targetElement = document.querySelector('.input-container-wrapper');
@@ -400,33 +387,81 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
         panelClass: '',
         backdropClass: 'transparentBackdrop',
-        position: { bottom: `${rect.top - 20 + window.scrollY}px` ,
-        left: `${rect.left + 20 + window.scrollX}px`},
+        position: {
+          bottom: `${rect.top - 20 + window.scrollY}px`,
+          left: `${rect.left + 20 + window.scrollX}px`,
+        },
         data: { channelKey: this.channel?.key },
       });
-  
+
       setTimeout(() => {
-        const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
+        const dialogElement = document.querySelector(
+          'mat-dialog-container'
+        ) as HTMLElement;
         if (dialogElement) {
           const dialogRect = dialogElement.getBoundingClientRect();
-  
-          // Positioniere den Dialog über dem Input
+
           const newTop = rect.top - dialogRect.height + window.scrollY;
           const newLeft = rect.right - dialogRect.width + window.scrollX;
-  
+
           dialogElement.style.position = 'absolute';
-      
-          
+
           dialogElement.style.height = 'fit-content';
           dialogElement.style.width = 'fit-content';
         }
       }, 0);
     }
   }
-  
 
- 
-  
-  
+  startOrOpenThread(message: Message): void {
+    if (!message || !message.key || !this.channel?.key || !this.currentUser) {
+      console.error('Kann Thread nicht starten/öffnen: Fehlende Daten', {
+        message,
+        channel: this.channel,
+        currentUser: this.currentUser,
+      });
+      return;
     }
-  
+
+    if (message.threadKey) {
+      console.log(
+        `[ChannelChat] Öffne existierenden Thread: ${message.threadKey}`
+      );
+      this.activeThreadKey = message.threadKey;
+      this.openThreadView(message.threadKey);
+    } else {
+      console.log(
+        `[ChannelChat] Starte neuen Thread für Nachricht: ${message.key}`
+      );
+      this.firebaseService
+        .createThread(message, this.channel.key, this.currentUser)
+        .subscribe({
+          next: (newThreadKey) => {
+            console.log(
+              `[ChannelChat] Neuer Thread erfolgreich erstellt: ${newThreadKey}`
+            );
+            this.activeThreadKey = newThreadKey;
+            message.threadKey = newThreadKey;
+            message.threadReplyCount = 0;
+            message.threadLastReplyAt = Date.now();
+            this.cdRef.markForCheck();
+
+            this.openThreadView(newThreadKey);
+          },
+          error: (err) => {
+            console.error(
+              '[ChannelChat] Fehler beim Erstellen des Threads:',
+              err
+            );
+            // Hier ggf. Nutzerfeedback geben
+          },
+        });
+    }
+  }
+
+  openThreadView(threadKey: string): void {
+    this.activeThreadKey = threadKey;
+    this.variableService.openThread(threadKey);
+    console.log(`[ChannelChat] Thread Ansicht für ${threadKey} angefordert.`);
+  }
+}

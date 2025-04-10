@@ -743,25 +743,24 @@
   border: 1px solid #adb0d9;
 }
 
-.addUserToChannelOverlay{
+.addUserToChannelOverlay {
   position: absolute;
   top: 100%;
   right: 0px;
 }
 
-.textForMessageInput{
+.textForMessageInput {
   width: 100%;
-    border: none;
-    outline: none;
-    resize: none;
-    min-height: 40px;
-    color: #333;
-    font-size: 18px;
-    font-family: 'Nunito';
-
+  border: none;
+  outline: none;
+  resize: none;
+  min-height: 40px;
+  color: #333;
+  font-size: 18px;
+  font-family: "Nunito";
 }
 
-.taggedPersonsDiv{
+.taggedPersonsDiv {
   display: flex;
   width: fit-content;
   position: absolute;
@@ -772,81 +771,69 @@
   overflow-x: scroll;
 }
 
-.taggedPerson{
-  
+.taggedPerson {
   height: 40px;
   border-radius: 35px;
   box-sizing: border-box;
   padding: 3px 10px 3px 10px;
   display: flex;
   gap: 15px;
-  background-color: #ECEEFE;
+  background-color: #eceefe;
   align-items: center;
   width: fit-content;
 
-
-
-  &:hover{
+  &:hover {
     cursor: pointer;
   }
 
-  >span{
-    font-family: 'Nunito';
-font-weight: 400;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-
+  > span {
+    font-family: "Nunito";
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 100%;
+    letter-spacing: 0%;
   }
 
-  >.taggedImage{
+  > .taggedImage {
     width: 34px;
     height: 34px;
     border-radius: 100px;
   }
 
-  >.closeTaggedPerson{
+  > .closeTaggedPerson {
     width: 30px;
     height: 30px;
-    background: url('/assets/img/closeMenu.png');
+    background: url("/assets/img/closeMenu.png");
     background-position: center;
-    
+
     background-repeat: no-repeat;
 
-    &:hover{
+    &:hover {
       cursor: pointer;
     }
   }
-
-
 }
 
-.cursor-placeholder{
+.cursor-placeholder {
   display: inline-block;
   width: 1px;
   min-width: 1px;
   visibility: hidden;
 }
 
-.add-smiley-button{
+.add-smiley-button {
   position: relative;
 
   &:hover emoji-picker {
     opacity: 1 !important;
     // display: flex !important;
   }
-
-  
 }
 
-emoji-picker{
+emoji-picker {
   position: absolute;
   bottom: 55px;
   opacity: 0;
   // display: none;
-  font-family: 'Nunito';
+  font-family: "Nunito";
 }
-
-
-
-

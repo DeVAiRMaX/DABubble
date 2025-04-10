@@ -18,6 +18,7 @@ import { SubService } from '../shared/services/sub.service';
 import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { userData } from '../../app/shared/interfaces/user';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-main-component',
@@ -54,7 +55,7 @@ import { userData } from '../../app/shared/interfaces/user';
 })
 export class MainComponentComponent implements OnInit, OnDestroy {
   sideNavIsVisible: boolean = true;
-  threadIsVisible: boolean = true;
+  threadIsVisible: boolean = false;
   uid: string | null = '';
   channelKeys: string[] = [];
   userChannels: ChannelWithKey[] = [];
@@ -78,6 +79,8 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   constructor() {}
 
   ngOnInit(): void {
+    // this.threadIsVisible = this.variableService.threadOpenSubject.getValue();
+
     const sideNavSub = this.variableService.sideNavIsVisible$.subscribe(
       (isVisibleValue) => {
         if (this.sideNavIsVisible !== isVisibleValue) {
@@ -132,6 +135,20 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       }
     );
     this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
+
+    const threadVisibilitySub = this.variableService.threadIsOpen$.subscribe(
+      (isOpenValue) => {
+        if (this.threadIsVisible !== isOpenValue) {
+          this.threadIsVisible = isOpenValue;
+          console.log(
+            '[MainComponent] Thread Visible State Updated:',
+            this.threadIsVisible
+          );
+          this.cdRef.markForCheck();
+        }
+      }
+    );
+    this.subService.add(threadVisibilitySub, this.GRP_UI_STATE);
   }
 
   loadUserSpecificData(uid: string): void {

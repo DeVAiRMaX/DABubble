@@ -1,4 +1,5 @@
 export interface Channel {
+  creatorUid?: string;
   channelName: string;
   members: string[];
   description: string;

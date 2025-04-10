@@ -66,26 +66,40 @@
             <div class="msg-bubble msg-left">
               <p>{{ message.message }}</p>
             </div>
-            <div class="message-footer other-footer">
-              <a (click)="toggleThread()" class="msg-count">2 Antworten</a>
-              <p class="last-msg-time">Letzte Antwort 14:56</p>
+            <div
+              class="message-footer other-footer"
+              *ngIf="message.senderUid !== 'DABubble'"
+            >
+              <a (click)="startOrOpenThread(message)" class="msg-count">
+                <span *ngIf="!message.threadKey">Antworten</span>
+                <span *ngIf="message.threadKey"
+                  >{{ message.threadReplyCount || 0 }} Antworten</span
+                >
+              </a>
+              <p
+                class="last-msg-time"
+                *ngIf="message.threadKey && message.threadLastReplyAt"
+              >
+                Letzte Antwort {{ message.threadLastReplyAt | date : "HH:mm" }}
+              </p>
             </div>
           </div>
-          <div class="reactionMenu">
+          <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">
             <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn commentReact"></button>
-            <!-- <button class="reactionMenuBtn check"></button>
-            <button class="reactionMenuBtn thumb"></button>
-            <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn commentReact"></button>
-            <button class="reactionMenuBtn editMsg"></button> -->
+            <button
+              (click)="startOrOpenThread(message)"
+              class="reactionMenuBtn commentReact"
+            ></button>
           </div>
         </div>
 
         <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
           <div class="reactionMenu">
             <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn commentReact"></button>
+            <button
+              (click)="startOrOpenThread(message)"
+              class="reactionMenuBtn commentReact"
+            ></button>
             <button class="reactionMenuBtn editMsg"></button>
           </div>
           <div class="message-content-wrapper">
@@ -104,9 +118,17 @@
                 <img src="./assets/img/icons/check.png" alt="check" />
                 <p>1</p>
               </div>
-              <span class="material-symbols-outlined add_reaction_btn">
-                add_reaction
-              </span>
+              <span class="material-symbols-outlined add_reaction_btn"
+                >add_reaction</span
+              >
+            </div>
+            <div class="message-footer own-footer" *ngIf="message.threadKey">
+              <a (click)="startOrOpenThread(message)" class="msg-count">
+                {{ message.threadReplyCount || 0 }} Antworten
+              </a>
+              <p class="last-msg-time" *ngIf="message.threadLastReplyAt">
+                Letzte Antwort {{ message.threadLastReplyAt | date : "HH:mm" }}
+              </p>
             </div>
           </div>
           <div class="message-avatar">
@@ -121,7 +143,6 @@
         </div>
       </div>
     </ng-container>
-
     <div *ngIf="(messages$ | async)?.length === 0" class="no-messages">
       <p>
         Noch keine Nachrichten in #{{ channel.channelName }}. Sei der Erste!
@@ -164,11 +185,7 @@
           >
             alternate_email
           </span>
-          <span
-            class="material-symbols-outlined"
-            add-smiley-button
-            matTooltip="Emoji hinzufügen"
-          >
+          <span class="material-symbols-outlined" matTooltip="Emoji hinzufügen">
             sentiment_satisfied
           </span>
         </div>
