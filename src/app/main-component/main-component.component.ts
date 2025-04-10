@@ -19,6 +19,7 @@ import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { userData } from '../../app/shared/interfaces/user';
 import { Observable } from 'rxjs';
+import { onLog } from 'firebase/app';
 
 @Component({
   selector: 'app-main-component',
@@ -76,7 +77,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private readonly GRP_DATA_KEYS = 'dataLoadKeys';
   private readonly GRP_DATA_CHANNELS = 'dataLoadChannels';
   private readonly GRP_USER_DATA = 'mainUserData';
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     // this.threadIsVisible = this.variableService.threadOpenSubject.getValue();
@@ -211,8 +212,11 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   }
 
   onChannelSelected(channel: ChannelWithKey): void {
+    console.log(channel);
+
     this.selectedChannel = { ...channel };
   }
+
 
   toggleSideNav(): void {
     this.variableService.toggleSideNav();

@@ -106,6 +106,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['channel'] && changes['channel'].currentValue) {
+      
       const currentChannel = changes['channel'].currentValue as ChannelWithKey;
       if (currentChannel.key) {
         this.loadMessages(currentChannel.key);
