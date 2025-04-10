@@ -411,11 +411,16 @@ private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
         data: { channelKey: this.channel?.key },
       });
   
-      dialogRef.afterClosed().subscribe((selectedEmoji: string) => {
-        if (selectedEmoji) {
-          this.insertEmojiAtCursor(selectedEmoji);
-        }
-      });
+     // Listen for the emojiSelected event
+     const componentInstance = dialogRef.componentInstance as SmileyKeyboardComponent;
+     componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
+       this.insertEmojiAtCursor(selectedEmoji); // Insert the emoji at the cursor position
+     });
+ 
+     // Optionally, handle dialog close if needed
+     dialogRef.afterClosed().subscribe(() => {
+       console.log('Smiley keyboard dialog closed');
+     });
   
       setTimeout(() => {
         const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;

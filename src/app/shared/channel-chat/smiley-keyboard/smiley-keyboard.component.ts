@@ -1,5 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA , ElementRef, ViewChild, AfterViewInit, Inject} from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-smiley-keyboard',
@@ -7,17 +6,18 @@ import { MatDialogRef } from '@angular/material/dialog';
   imports: [],
   templateUrl: './smiley-keyboard.component.html',
   styleUrl: './smiley-keyboard.component.scss',
-   schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SmileyKeyboardComponent implements AfterViewInit {
   @ViewChild('picker', { static: true }) picker!: ElementRef;
 
-  constructor(private dialogRef: MatDialogRef<SmileyKeyboardComponent>) {}
+  // Emit the selected emoji to the parent component
+  @Output() emojiSelected = new EventEmitter<string>();
 
   ngAfterViewInit() {
     this.picker.nativeElement.addEventListener('emoji-click', (event: any) => {
       const emoji = event.detail.unicode;
-      this.dialogRef.close(emoji); // 👈 hier wird das Emoji an die Hauptkomponente zurückgegeben
+      this.emojiSelected.emit(emoji); // Emit the emoji instead of closing the dialog
     });
   }
 }
