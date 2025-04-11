@@ -1,20 +1,18 @@
-<app-header></app-header>
+<app-header (channelSelected)="onChannelSelected($event)"></app-header>
 <div class="main-container">
   <app-side-nav
     [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
     [userChannels]="userChannels"
     (channelSelected)="onChannelSelected($event)"
   >
-    ></app-side-nav
-  >
+  </app-side-nav>
 
   <app-channel-chat
     class="channel-chat-container"
     *ngIf="selectedChannel"
     [channel]="selectedChannel"
   >
-    ></app-channel-chat
-  >
+  </app-channel-chat>
 
   <app-thread
     *ngIf="threadIsVisible"

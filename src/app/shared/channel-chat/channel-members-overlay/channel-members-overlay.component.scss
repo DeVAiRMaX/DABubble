@@ -1,156 +1,144 @@
-.channelMembersOverlay{
+.channelMembersOverlay {
+  display: flex;
+  flex-direction: column;
+  max-width: 415px;
+  min-height: max-content;
+  box-sizing: border-box;
+  background-color: white;
+  padding: 40px;
+  gap: 15px;
+  box-shadow: 0px 6px 10px 0px #00000033;
+
+  > .overlayTop {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 5px;
+
+    > span {
+      font-family: "Nunito";
+      font-weight: 700;
+      font-size: 24px;
+      line-height: 100%;
+      letter-spacing: 0%;
+      color: black;
+    }
+
+    > button {
+      width: 40px;
+      height: 40px;
+      background: url("/assets/img/closeMenu.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 24px 24px;
+      border: none;
+      border-radius: 100px;
+        &:focus {
+          outline: none;
+        }
+      &:hover {
+        background: url("/assets/img/closeMenuPurple.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 24px 24px;
+        border: none;
+        border-radius: 100px;
+        background-color: #eceefe;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .membersList {
     display: flex;
     flex-direction: column;
-    max-width: 415px;
-    min-height: max-content;
-    box-sizing: border-box;
-    background-color: white;
-    padding: 40px;
-    gap: 15px;
-    box-shadow: 0px 6px 10px 0px #00000033;
+    gap: 13px;
 
+    > .singleMember {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 4px 20px 4px 20px;
 
-    >.overlayTop{
-        display: flex;
-        align-items: center;
-        width: 100%;
-        justify-content: space-between;
-        margin-bottom: 5px;
+      > img {
+        width: 50px;
+        height: 50px;
+        border-radius: 100px;
+      }
 
-        >span{
-            font-family: 'Nunito';
-font-weight: 700;
-font-size: 24px;
-line-height: 100%;
-letter-spacing: 0%;
-color: black;
+      > span {
+        font-family: "Nunito";
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 100%;
+        letter-spacing: 0%;
+        color: black;
+      }
 
-        }
-
-        >button{
-            width: 40px;
-            height: 40px;
-            background: url('/assets/img/closeMenu.png');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 24px 24px;
-            border: none;
-            border-radius: 100px;
-            
-
-            &:hover{
-                background: url('/assets/img/closeMenuPurple.png');
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: 24px 24px;
-                border: none;
-                border-radius: 100px; 
-                background-color: #ECEEFE ;
-                cursor: pointer;
-            }
-        }
+      &:hover {
+        background-color: #eceefe;
+        border-radius: 100px;
+        cursor: pointer;
+      }
     }
+  }
 
-    .membersList{
-        display: flex;
-        flex-direction: column;
-        gap: 13px;
+  .addMembers {
+    margin-top: 15px;
+    > button {
+      transition: all 125ms ease-in-out;
+      background-color: white;
+      border-radius: 100px;
+      display: flex;
+      gap: 15px;
+      box-sizing: border-box;
+      padding: 12px 20px 12px 20px;
+      align-items: center;
+      border: none;
 
-        >.singleMember{
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            box-sizing: border-box;
-            padding: 4px 20px 4px 20px;
+      > div {
+        background-color: #eceefe;
+        border-radius: 100px;
+        width: 32px;
+        height: 32px;
 
-            >img{
-                width: 50px;
-                height: 50px;
-                border-radius: 100px;
+        background: url("/assets/img/icons/person_add.png");
+        background-repeat: no-repeat;
+        background-position: center;
 
+        background-size: 24px 24px;
+      }
 
-            }
+      > span {
+        font-family: "Nunito";
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 100%;
+        letter-spacing: 0%;
+      }
 
-            >span{
-                font-family: 'Nunito';
-                font-weight: 400;
-                font-size: 18px;
-                line-height: 100%;
-                letter-spacing: 0%;
-                color: black;
-                
-            }
+      &:hover {
+        background-color: #eceefe;
+        cursor: pointer;
 
-            &:hover{
-                background-color: #eceefe;
-                border-radius: 100px;
-                cursor: pointer;
-            }
+        > div {
+          background-color: transparent;
+          background: url("/assets/img/icons/person_add_purple.png");
+          border-radius: 100px;
+          width: 32px;
+          height: 32px;
 
+          background-repeat: no-repeat;
+          background-size: 24px 24px;
+          background-position: center;
         }
 
-
-    }
-
-    .addMembers{
-
-        margin-top: 15px;
-        >button{
-            transition: all 125ms ease-in-out;
-            background-color: white;
-            border-radius: 100px;
-            display: flex;
-            gap: 15px;
-            box-sizing: border-box;
-            padding: 12px 20px 12px 20px;
-            align-items: center;
-            border: none;
-
-            >div{
-                background-color: #ECEEFE;
-                border-radius: 100px;
-                width: 32px;
-                height: 32px;
-               
-                background: url('/assets/img/icons/person_add.png');
-                background-repeat: no-repeat;
-                background-position: center;
-               
-                background-size: 24px 24px;
-            }
-
-            >span{
-                font-family: 'Nunito';
-font-weight: 400;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-
-            }
-
-
-            &:hover{
-                background-color: #ECEEFE;
-                cursor: pointer;
-
-                >div{
-                    background-color: transparent;
-                    background: url('/assets/img/icons/person_add_purple.png');
-                    border-radius: 100px;
-                    width: 32px;
-                    height: 32px;
-                   
-                    background-repeat: no-repeat;
-                    background-size: 24px 24px;
-                    background-position: center;
-                }
-
-                >span{
-                    color: #535AF1;
-                }
-
-            }
+        > span {
+          color: #535af1;
         }
-
+      }
     }
+  }
 }

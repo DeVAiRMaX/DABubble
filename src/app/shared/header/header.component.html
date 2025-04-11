@@ -12,16 +12,27 @@
         (ngModelChange)="onSearchChange()"
       />
 
-      <div class="search-Results" *ngIf="searchResultsState" >
-        <div class="result-container" *ngFor="let result of searchResults" (click)="openResult(result)">
+      <div class="search-Results" *ngIf="searchResultsState">
+        <div
+          class="result-container"
+          *ngFor="let result of searchResults"
+          (click)="openResult(result)"
+        >
           <ng-container *ngIf="result.type === 'User'">
             <img [src]="result.data.avatar" alt="User Avatar" />
             <p>{{ result.data.displayName }}</p>
           </ng-container>
 
           <ng-container *ngIf="result.type === 'Channel'">
-              <mat-icon fontIcon="forum"></mat-icon>
-              <p>{{ result.data.channelName }}</p>
+            <mat-icon fontIcon="forum"></mat-icon>
+            <!-- <p class="user-not-found-msg" *ngIf="result.userNotFoundChannel">Zugriff verweigert</p> -->
+            <p>{{ result.data.channelName }}</p>
+            <span
+              class="material-symbols-outlined user-not-found-msg"
+              *ngIf="result.userNotFoundChannel"
+            >
+              block
+            </span>
           </ng-container>
         </div>
       </div>

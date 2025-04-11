@@ -5,16 +5,13 @@
   </div>
 
   <div class="membersList">
-    <div class="singleMember">
-      <img src="/assets/img/character/3.png" /><span>Frederik Beck (Du)</span>
-    </div>
-    <div class="singleMember">
-      <img src="/assets/img/character/5.png" /><span>Sofia Müller</span>
-    </div>
-    <div class="singleMember">
-      <img src="/assets/img/character/6.png" /><span>Noah Braun</span>
+    <div class="singleMember" *ngFor="let user of channelMember">
+      <img [src]="user.avatar" [alt]="user.displayName + ' avatar'" />
+      <span>{{ user.displayName }}</span>
     </div>
   </div>
+  
+  
 
   <div class="addMembers">
     <button (click)="openAddUserToChannelDialog()">

@@ -130,6 +130,7 @@ mat-icon {
   cursor: pointer;
   border-radius: 36px;
   transition: all 0.1s ease-in-out;
+  position: relative;
   &:hover {
     background-color: #eceefe;
   }
@@ -144,4 +145,12 @@ mat-icon {
     font-size: 40px;
     color: #797ef3;
   }
+}
+
+.user-not-found-msg{
+  font-size: 40px;
+  color: red;
+  font-weight: 600;
+  position: absolute;
+  right: 16px;
 }
