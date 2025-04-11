@@ -62,14 +62,14 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
-  private savedRange: Range | null = null; // Variable zum Speichern des Bereichs
+  private savedRange: Range | null = null; // Variable zum Speichern des Bereichs (gio: was meinen?)
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
   private readonly SUB_MESSAGES = 'channelMessages';
 
   taggedPersonsInChat = this.variableService.getTaggedContactsFromChat();
   taggedPerson: any;
 
-  messages$: Observable<Message[]> = of([]); // Observable für Nachrichten
+  messages$: Observable<Message[]> = of([]);
   currentUser: User | null = null;
   channelMember: User | null = null;
   memberAvatars: string[] = [];
@@ -90,7 +90,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     }
     const authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
-      // console.log('[ChannelChat] Current user set:', this.currentUser?.uid);
       this.cdRef.markForCheck();
       if (this.channel?.key && user) {
         this.loadMessages(this.channel.key);

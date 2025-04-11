@@ -67,20 +67,37 @@ export class ChannelCreateOverlayComponent {
 
   createChannel() {
     const currentUserUid = this.authService.getCurrentUserUID();
+    const trimmedChannelName = this.channelName.trim();
+
+    if (!trimmedChannelName) {
+      console.warn('Channel-Name darf nicht leer sein.');
+      // Optional: Nutzerfeedback geben (z.B. Input rot markieren)
+      return; // Funktion abbrechen
+    }
+
     if (currentUserUid) {
       this.firebaseService
-        .createChannel(this.channelName, this.description, currentUserUid)
+        .createChannel(trimmedChannelName, this.description, currentUserUid) // getrimmten Namen verwenden
         .subscribe({
           next: (channelKey) => {
             console.log('Channel erstellt mit Key:', channelKey);
+            // ---> BENACHRICHTIGUNG SENDEN <---
+            this.variableService.notifyChannelCreated();
+            // ---> DIALOG ERST BEI ERFOLG SCHLIESSEN <---
+            this.closeDialog();
           },
           error: (error) => {
-            // errror
+            console.error('Fehler beim Erstellen des Channels:', error);
+            // Optional: Fehlermeldung im UI anzeigen
+            // Wichtig: Dialog hier NICHT schließen, damit der Nutzer es erneut versuchen kann oder den Fehler sieht.
           },
         });
-      this.closeDialog();
+      // this.closeDialog(); // <-- NICHT HIER SCHLIESSEN
     } else {
-      // ohne anmeldung keinen channel erstellen
+      console.error(
+        'Fehler: Benutzer nicht angemeldet, kann keinen Channel erstellen.'
+      );
+      // Optional: Fehlermeldung im UI anzeigen
     }
   }
 
@@ -91,7 +108,13 @@ export class ChannelCreateOverlayComponent {
   closeDialog() {
     this.channelCreateOverlayAnimation = 'close';
     setTimeout(() => {
-      this.dialogRef.close();
+      if (this.dialogRef) {
+        this.dialogRef.close();
+      } else {
+        console.error(
+          'DialogRef ist nicht verfügbar in ChannelCreateOverlayComponent'
+        );
+      }
     }, 100);
   }
 }
