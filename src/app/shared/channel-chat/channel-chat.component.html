@@ -84,13 +84,14 @@
               </p>
             </div>
           </div>
-          <div class="reactionMenu">
-            <!-- <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn commentReact"></button> -->
+          <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">
             <button class="reactionMenuBtn check"></button>
             <button class="reactionMenuBtn thumb"></button>
             <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn commentReact"></button>
+            <button
+              class="reactionMenuBtn commentReact"
+              (click)="startOrOpenThread(message)"
+            ></button>
             <button class="reactionMenuBtn editMsg"></button>
           </div>
         </div>
