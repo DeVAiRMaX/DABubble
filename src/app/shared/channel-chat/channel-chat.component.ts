@@ -450,18 +450,19 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         },
         data: { channelKey: this.channel?.key },
       });
-  
-     // Listen for the emojiSelected event
-     const componentInstance = dialogRef.componentInstance as SmileyKeyboardComponent;
-     componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
-       this.insertEmojiAtCursor(selectedEmoji); // Insert the emoji at the cursor position
-     });
- 
-     // Optionally, handle dialog close if needed
-     dialogRef.afterClosed().subscribe(() => {
-       console.log('Smiley keyboard dialog closed');
-     });
-  
+
+      // Listen for the emojiSelected event
+      const componentInstance =
+        dialogRef.componentInstance as SmileyKeyboardComponent;
+      componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
+        this.insertEmojiAtCursor(selectedEmoji); // Insert the emoji at the cursor position
+      });
+
+      // Optionally, handle dialog close if needed
+      dialogRef.afterClosed().subscribe(() => {
+        console.log('Smiley keyboard dialog closed');
+      });
+
       setTimeout(() => {
         const dialogElement = document.querySelector(
           'mat-dialog-container'
