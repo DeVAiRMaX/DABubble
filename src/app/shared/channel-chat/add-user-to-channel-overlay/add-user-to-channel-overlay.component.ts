@@ -1,9 +1,10 @@
-import { Component, inject, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, inject, ElementRef, HostListener, ViewChild, Inject } from '@angular/core';
 import { VariablesService } from '../../../variables.service';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
 import { SharedModule } from '../../../shared';
 import { User } from '../../interfaces/user';
+import { Channel } from '../../interfaces/channel';
 
 @Component({
   selector: 'app-add-user-to-channel-overlay',
@@ -17,6 +18,7 @@ export class AddUserToChannelOverlayComponent {
   userSelected: boolean = false;
   userInput: string = '';
 
+  channelData: Channel[] = [];
   userData: User[] = [];
   selectedUser: any[] = [];
   filteredUserData: User[] = [];
@@ -26,45 +28,57 @@ export class AddUserToChannelOverlayComponent {
 
   private databaseService: FirebaseService = inject(FirebaseService);
 
-
-  constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<AddUserToChannelOverlayComponent>) {
+  constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<AddUserToChannelOverlayComponent>, @Inject(MAT_DIALOG_DATA) public data: { channelKey: string }) {
 
   }
 
   async ngOnInit(): Promise<void> {
-    const data = await this.databaseService.getDatabaseData();
+    const userData = await this.databaseService.getDatabaseData();
 
-    if (data.users && typeof data.users === 'object') {
-      this.userData = Object.values(data.users) as User[];
-      this.filteredUserData = this.userData;  
+    if (userData.users && typeof userData.users === 'object') {
+      this.userData = Object.values(userData.users) as User[];
+      this.filteredUserData = this.userData;
     }
+
+    this.databaseService.getChannel(this.data.channelKey).subscribe(channel => {
+      const channelDataJson = channel as Channel;
+      this.channelData.push(channelDataJson);
+    });
+
+    console.log(this.channelData);
+
   }
 
 
   searchForUser(): void {
     this.searchingForUser = true;
-  
+
     const searchTerm = this.userInput.trim().toLowerCase();
-  
-    if (searchTerm.length === 0) {
-      this.filteredUserData = this.userData; // Alle anzeigen, wenn nichts eingegeben
-      return;
+
+    const currentChannel = this.channelData[0];
+    const currentMembers = currentChannel?.members || [];
+
+    this.filteredUserData = this.userData.filter(user => {
+      const isNotMember = !currentMembers.includes(user.uid);
+      const isNotSelected = !this.selectedUser.some(selected => selected.uid === user.uid);
+      const matchesSearch = user.displayName?.toLowerCase().includes(searchTerm);
+
+      return isNotMember && isNotSelected && (searchTerm.length === 0 || matchesSearch);
+    });
+
+    if (this.filteredUserData.length === 0) {
+      this.searchingForUser = false;
     }
-  
-    this.filteredUserData = this.userData.filter(user =>
-      user.displayName?.toLowerCase().includes(searchTerm)
-    );
   }
-  
+
+
+
 
   selectUser(user: any) {
     this.userSelected = true;
 
     this.selectedUser.push(user);
     this.filteredUserData.splice(this.filteredUserData.indexOf(user), 1);
-
-    // muss noch überprüfen ob der user bereits im channel vorhanden ist.
-
   }
 
   @HostListener('document:click', ['$event'])
@@ -82,11 +96,16 @@ export class AddUserToChannelOverlayComponent {
     this.filteredUserData.push(removedUser);
   }
 
+  async addUsersToChannel(): Promise<void> {
+    for (const user of this.selectedUser) {
+      await this.databaseService.updateChannel(this.data.channelKey, user.uid);
+    }
+    this.closeDialog();
+  }
+
+
   closeDialog() {
-
-
     this.dialogRef.close(AddUserToChannelOverlayComponent);
-
   }
 
   hideAddUserToChannelOverlay() {

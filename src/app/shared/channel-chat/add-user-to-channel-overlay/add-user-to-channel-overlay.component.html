@@ -4,8 +4,7 @@
       <span>Leute hinzufügen</span>
       <button (click)="closeDialog()" class="hide-overlay-btn"></button>
     </div>
-
-    <span># Entwicklerteam</span>
+    <span *ngFor="let channel of channelData">{{ channel?.channelName }}</span>
   </div>
 
   <div class="user-name-input">
@@ -17,7 +16,7 @@
       (ngModelChange)="searchForUser()"
       (focus)="searchForUser()"
     />
-    <div class="result-user-list" *ngIf="searchingForUser" #userListContainer>
+    <div class="result-user-list" *ngIf="searchingForUser && filteredUserData.length > 0" #userListContainer>
       <div>
         <div
           class="result-user"
@@ -45,5 +44,5 @@
     </div>
   </div>
 
-  <button class="add-user-button btn-active">Hinzufügen</button>
+  <button class="add-user-button btn-active" (click)="addUsersToChannel()">Hinzufügen</button>
 </div>

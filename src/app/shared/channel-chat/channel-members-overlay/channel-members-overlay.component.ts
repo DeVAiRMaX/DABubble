@@ -24,7 +24,7 @@ export class ChannelMembersOverlayComponent {
   private authService: AuthService = inject(AuthService);
 
   constructor(private dialogRef: MatDialogRef<ChannelMembersOverlayComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {
-   
+
     this.getMembersData(this.data.channelMember);
   }
 
@@ -35,9 +35,9 @@ export class ChannelMembersOverlayComponent {
       }
       return String(member);
     });
-  
+
     const rawMembers: any[] = await this.authService.getMembersData(membersAsStrings);
-  
+
     this.channelMember = rawMembers.map((member: any): User => {
       return {
         uid: member?.uid || '',
@@ -48,6 +48,17 @@ export class ChannelMembersOverlayComponent {
       };
     });
   }
+
+  async removeMember(uid: string) {
+    const index = this.channelMember.findIndex(member => member.uid === uid);
+    if (index > -1) {
+     
+
+      await this.firebaseService.removeUserChannel(this.data.channelKey, uid);
+      this.channelMember.splice(index, 1);
+    }
+  }
+
 
 
 

@@ -293,7 +293,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
         position: { top: `${rect.bottom + 20 + window.scrollY}px` },
         panelClass: ['custom-dialog', 'memberOverlay'],
-        data: { channelMember: this.channel.members },
+        data: { channelMember: this.channel.members, channelKey: this.channel.key },
       });
       const childEventSub = dialogRef.componentInstance.childEvent.subscribe(
         () => {

@@ -8,10 +8,9 @@
     <div class="singleMember" *ngFor="let user of channelMember">
       <img [src]="user.avatar" [alt]="user.displayName + ' avatar'" />
       <span>{{ user.displayName }}</span>
+      <mat-icon fontIcon="close" (click)="removeMember(user.uid)"></mat-icon>
     </div>
   </div>
-  
-  
 
   <div class="addMembers">
     <button (click)="openAddUserToChannelDialog()">

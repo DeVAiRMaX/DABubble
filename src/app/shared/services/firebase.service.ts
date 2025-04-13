@@ -18,6 +18,7 @@ import { Channel, ChannelWithKey } from '../interfaces/channel';
 import { Message } from '../interfaces/message';
 import { Thread, ThreadMessage } from '../interfaces/thread';
 import { Router } from '@angular/router';
+import { remove } from 'firebase/database';
 
 @Injectable({
   providedIn: 'root',
@@ -196,6 +197,42 @@ export class FirebaseService {
       })
     );
   }
+
+  
+async updateChannel(channelKey: string, update: any): Promise<void> {
+  const membersRef = ref(this.database, `channels/${channelKey}/members`);
+
+  const snapshot = await get(membersRef);
+  let currentMembers: any[] = [];
+
+  if (snapshot.exists()) {
+    currentMembers = snapshot.val();
+
+    if (!Array.isArray(currentMembers)) {
+      currentMembers = Object.values(currentMembers);
+    }
+  }
+
+  if (!currentMembers.includes(update)) {
+    currentMembers.push(update);
+  }
+
+  await set(membersRef, currentMembers);
+}
+
+async removeUserChannel(channelKey: string, uid: string) {
+  const membersRef = ref(this.database, `channels/${channelKey}/members`);
+  const snapshot = await get(membersRef);
+
+  if (snapshot.exists()) {
+    const members = snapshot.val(); // Das ist ein Array
+    const updatedMembers = members.filter((memberUid: string) => memberUid !== uid);
+
+    // Überschreibt das alte Array mit dem neuen (ohne den gelöschten User)
+    await set(membersRef, updatedMembers);
+  }
+}
+
 
   getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
     if (!uid) {
