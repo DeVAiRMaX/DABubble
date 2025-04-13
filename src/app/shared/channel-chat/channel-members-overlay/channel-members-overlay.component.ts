@@ -62,6 +62,5 @@ export class ChannelMembersOverlayComponent {
     setTimeout(() => {
       this.childEvent.emit();
     }, 200);
-
   }
 }

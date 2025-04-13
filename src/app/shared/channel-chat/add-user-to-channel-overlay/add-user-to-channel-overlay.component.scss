@@ -1,7 +1,16 @@
+::ng-deep .custom-dialog {
+  .mdc-dialog__container {
+    max-height: auto !important;
+  }
+  .mdc-dialog__surface {
+    max-height: auto !important;
+  }
+}
+
 .add-user-to-channel-overlay {
   background-color: white;
   width: 515px;
-  height: 295px;
+  // height: 295px;
   border-top-left-radius: 30px;
   border-bottom-right-radius: 30px;
   border-bottom-left-radius: 30px;
@@ -11,6 +20,8 @@
   flex-direction: column;
   gap: 20px;
   box-shadow: 0px 6px 10px 0px #00000033;
+  position: relative;
+  overflow-x: hidden;
 
   > .card-title-div {
     display: flex;
@@ -39,7 +50,9 @@
         background-position: center;
         border: none;
         border-radius: 100%;
-
+        &:focus {
+          outline: none;
+        }
         &:hover {
           cursor: pointer;
           background: url("/assets/img/closeMenuPurple.png");
@@ -64,6 +77,7 @@
   }
 
   > .user-name-input {
+    position: relative;
     > input {
       width: 100%;
       box-sizing: border-box;
@@ -74,9 +88,9 @@
       font-size: 18px;
       font-family: "Nunito";
       font-weight: 400;
-        &:focus {
-            outline: none;
-        }
+      &:focus {
+        outline: none;
+      }
       &:hover {
         cursor: pointer;
         border: 1px solid #535af1;
@@ -121,4 +135,69 @@
 :host ::ng-deep .mat-mdc-dialog-surface {
   border-radius: 30px !important;
   border-top-right-radius: 0px !important;
+}
+
+.result-user-list {
+  width: 400px;
+  position: absolute;
+  top: 40px;
+  left: 22px;
+  background-color: #fff;
+  z-index: 9999;
+  border: 1px solid #cecece;
+  border-radius: 0 30px 30px 30px;
+  padding: 8px 24px 8px 16px;
+  box-shadow: 0px 0px 4px 0px #cecece;
+  div {
+    max-height: 104px;
+    overflow-y: auto;
+  }
+}
+
+.result-user {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 36px;
+  transition: all 0.1s ease-in-out;
+  position: relative;
+  transition: all 0.1s ease-in-out;
+  &:hover {
+    background-color: #eceefe;
+  }
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  span {
+    &:hover{
+      color: #797ef3;
+    }
+  }
+}
+
+.user-not-found-msg {
+  font-size: 40px;
+  color: red;
+  font-weight: 600;
+  position: absolute;
+  right: 16px;
+}
+
+.selected-user {
+  padding: 8px 0;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.selected-user-item {
+  width: auto;
+  padding: 4px 8px;
 }

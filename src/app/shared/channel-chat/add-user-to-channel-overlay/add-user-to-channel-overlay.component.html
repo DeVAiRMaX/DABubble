@@ -7,8 +7,42 @@
 
     <span># Entwicklerteam</span>
   </div>
+
   <div class="user-name-input">
-    <input type="text" placeholder="Name eingeben" />
+    <input
+      #userInputRef
+      type="text"
+      placeholder="Name eingeben"
+      [(ngModel)]="userInput"
+      (ngModelChange)="searchForUser()"
+      (focus)="searchForUser()"
+    />
+    <div class="result-user-list" *ngIf="searchingForUser" #userListContainer>
+      <div>
+        <div
+          class="result-user"
+          *ngFor="let user of filteredUserData"
+          (click)="selectUser(user)"
+        >
+          <img [src]="user.avatar" alt="user-icon" />
+          <p>{{ user.displayName }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="selected-user" *ngIf="userSelected">
+      <div
+        class="result-user"
+        [ngClass]="{ 'selected-user-item': userSelected }"
+        *ngFor="let selectedUser of selectedUser"
+      >
+        <img [src]="selectedUser.avatar" alt="user-icon" />
+        <p>{{ selectedUser.displayName }}</p>
+        <span class="material-symbols-outlined" (click)="removeUser(selectedUser)">
+          close
+          </span>
+      </div>
+    </div>
   </div>
 
   <button class="add-user-button btn-active">Hinzufügen</button>

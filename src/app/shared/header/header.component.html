@@ -6,13 +6,14 @@
     </div>
     <div class="header-search">
       <input
+        #searchInputRef
         type="text"
         placeholder="Devspace durchsuchen"
         [(ngModel)]="searchValue"
         (ngModelChange)="onSearchChange()"
       />
 
-      <div class="search-Results" *ngIf="searchResultsState">
+      <div class="search-Results" *ngIf="searchResultsState" #searchResult>
         <div
           class="result-container"
           *ngFor="let result of searchResults"
@@ -25,7 +26,6 @@
 
           <ng-container *ngIf="result.type === 'Channel'">
             <mat-icon fontIcon="forum"></mat-icon>
-            <!-- <p class="user-not-found-msg" *ngIf="result.userNotFoundChannel">Zugriff verweigert</p> -->
             <p>{{ result.data.channelName }}</p>
             <span
               class="material-symbols-outlined user-not-found-msg"

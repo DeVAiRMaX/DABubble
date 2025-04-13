@@ -116,20 +116,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         if (user?.members && Array.isArray(user.members)) {
           console.log('Member IDs:', user.members);
           try {
-            // Abrufen der vollständigen Member-Daten
             const membersData = await this.authService.getMembersData(
               user.members
             );
 
-            // Optional: Logge jeden Avatar in der Konsole
-            membersData.forEach((member) => {
-              console.log(member.avatar);
-            });
-
-            // Speichere das gesamte Member-Array, falls du später weitere Daten benötigst
             this.channel.members = membersData;
 
-            // Erzeuge ein Array mit den Avatar-URLs aus den Member-Daten
             this.memberAvatars = membersData.map((member) => member.avatar);
           } catch (error) {
             console.error('Fehler beim Abrufen der Mitglieder:', error);
@@ -169,7 +161,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   loadMessages(channelKey: string): void {
-    // console.log(`[ChannelChat] Lade Nachrichten für Channel: ${channelKey}`);
     this.subService.unsubscribeGroup(this.SUB_MESSAGES);
 
     this.messages$ = this.firebaseService.getMessagesForChannel(channelKey);
@@ -281,7 +272,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
           dialogElement.style.left = `${newLeft}px`;
           dialogElement.style.position = 'absolute';
           dialogElement.style.maxWidth = '515px';
-          dialogElement.style.maxHeight = '295px';
+          // dialogElement.style.maxHeight = '295px';
         }
       }, 0);
     }

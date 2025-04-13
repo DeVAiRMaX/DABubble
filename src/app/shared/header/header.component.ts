@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
 import { SharedModule } from './../../shared';
 import { DialogComponent } from '../header-dialog-profil/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -18,6 +18,9 @@ import { ChannelWithKey } from '../interfaces/channel';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
+
+  @ViewChild('searchInputRef') userListRef!: ElementRef;
+  @ViewChild('searchResult') userInputRef!: ElementRef;
 
   @Input() channel!: ChannelWithKey;
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
@@ -135,7 +138,15 @@ export class HeaderComponent {
     this.searchResultsState = false;
   }
 
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    const clickedInsideInput = this.userInputRef?.nativeElement.contains(event.target);
+    const clickedInsideList = this.userListRef?.nativeElement.contains(event.target);
 
+    if (!clickedInsideInput && !clickedInsideList) {
+      this.searchResultsState = false;
+    }
+  }
 
   closeDialog(dialog: string) {
     // this.dialogRef.close(EditProfilDialogComponent);
