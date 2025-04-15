@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Inject, inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
 import { AuthService } from '../../services/auth.service';
 import { SharedModule } from '../../../shared';
@@ -14,8 +14,9 @@ import { User } from '../../interfaces/user';
   styleUrl: './channel-members-overlay.component.scss'
 })
 export class ChannelMembersOverlayComponent {
-  channelMembers: any[] = [];
+  userDontBeEmpty: boolean = false;
 
+  channelMembers: any[] = [];
   channelMember: any[] = [];
 
   @Output() childEvent = new EventEmitter<void>();
@@ -50,10 +51,13 @@ export class ChannelMembersOverlayComponent {
   }
 
   async removeMember(uid: string) {
-    const index = this.channelMember.findIndex(member => member.uid === uid);
-    if (index > -1) {
-     
+    const index = this.channelMember.findIndex(member => member.uid === uid)
+    if (this.channelMember.length === 1) {
+      this.userDontBeEmpty = true;
+      return
+    }
 
+    if (index > -1) {
       await this.firebaseService.removeUserChannel(this.data.channelKey, uid);
       this.channelMember.splice(index, 1);
     }

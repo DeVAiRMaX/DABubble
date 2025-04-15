@@ -11,7 +11,9 @@
       <mat-icon fontIcon="close" (click)="removeMember(user.uid)"></mat-icon>
     </div>
   </div>
-
+  <div class="user-dont-be-empty" *ngIf="userDontBeEmpty">
+    <p>Channel muss einen Nutzer beinhalten</p>
+  </div>
   <div class="addMembers">
     <button (click)="openAddUserToChannelDialog()">
       <div></div>
