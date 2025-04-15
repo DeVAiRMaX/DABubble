@@ -17,11 +17,7 @@ import { SharedModule } from '../../shared';
 import { EditChannelComponent } from './edit-channel/edit-channel.component';
 import { AddUserToChannelOverlayComponent } from './add-user-to-channel-overlay/add-user-to-channel-overlay.component';
 import { CommonModule } from '@angular/common';
-import {
-  MatDialog,
-  MatDialogConfig,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
 import { ChannelWithKey } from '../interfaces/channel';
 import { Message } from '../interfaces/message';
@@ -293,7 +289,10 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
         position: { top: `${rect.bottom + 20 + window.scrollY}px` },
         panelClass: ['custom-dialog', 'memberOverlay'],
-        data: { channelMember: this.channel.members, channelKey: this.channel.key },
+        data: {
+          channelMember: this.channel.members,
+          channelKey: this.channel.key,
+        },
       });
       const childEventSub = dialogRef.componentInstance.childEvent.subscribe(
         () => {

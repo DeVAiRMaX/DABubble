@@ -16,11 +16,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { FirebaseService } from '../shared/services/firebase.service';
 import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
-import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
+import { ChannelWithKey } from '../shared/interfaces/channel';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { userData, User } from '../../app/shared/interfaces/user';
-import { Observable } from 'rxjs';
-import { onLog } from 'firebase/app';
 
 @Component({
   selector: 'app-main-component',
@@ -32,7 +30,7 @@ import { onLog } from 'firebase/app';
     ThreadComponent,
     DirectMessageComponent,
     CommonModule,
-    RouterLink,
+    // RouterLink,
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.scss',
