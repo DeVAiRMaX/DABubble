@@ -1,0 +1,160 @@
+<div class="direct-message-container">
+  <div class="dm-header">
+    <div class="dm-header-left">
+      <div class="dm-avatar-container">
+        <img
+          [src]="otherUser?.avatar || '/assets/img/character/bsp-avatar.png'"
+          [alt]="otherUser?.displayName"
+          class="dm-header-avatar"
+        />
+        <span class="online-status-indicator" *ngIf="otherUser"></span>
+      </div>
+      <h3>{{ otherUser?.displayName }}</h3>
+    </div>
+    <div class="dm-header-right"></div>
+  </div>
+
+  <div class="dm-body">
+    <ng-container
+      *ngFor="
+        let message of dmMessages$ | async;
+        let i = index;
+        let isFirst = first
+      "
+    >
+      <div
+        class="date-divider"
+        *ngIf="shouldShowDateDivider(message, (dmMessages$ | async)?.[i-1])"
+      >
+        <div class="divider-line"></div>
+        <span class="date-text">{{
+          message.time | date : "EEEE, d. MMMM"
+        }}</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <div
+        class="dm-message-container"
+        [ngClass]="{ ownMessage: isOwnMessage(message) }"
+      >
+        <div
+          class="message-layout othersMessage"
+          *ngIf="!isOwnMessage(message)"
+        >
+          <div class="message-avatar">
+            <img
+              [src]="
+                message.senderAvatar || '/assets/img/character/bsp-avatar.png'
+              "
+              [alt]="message.senderDisplayName"
+            />
+          </div>
+          <div class="message-content-wrapper">
+            <div class="message-header">
+              <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+            </div>
+            <div class="msg-bubble msg-left">
+              <p>{{ message.message }}</p>
+            </div>
+            <div
+              class="message-footer other-footer msg-reaction-container"
+              *ngIf="message.reactions && message.reactions.length > 0"
+            >
+              <div
+                class="reaction"
+                *ngFor="let reaction of getUniqueReactions(message.reactions)"
+              >
+                <span>{{ reaction.emoji }}</span>
+                <p>{{ reaction.count }}</p>
+              </div>
+              <span class="material-symbols-outlined add_reaction_btn"
+                >add_reaction</span
+              >
+            </div>
+          </div>
+          <div class="reactionMenu">
+            <button class="reactionMenuBtn reactionSmile"></button>
+          </div>
+        </div>
+
+        <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
+          <div class="reactionMenu">
+            <button class="reactionMenuBtn reactionSmile"></button>
+            <button class="reactionMenuBtn editMsg"></button>
+          </div>
+          <div class="message-content-wrapper">
+            <div class="message-header own-header">
+              <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+            </div>
+            <div class="msg-bubble msg-right">
+              <p>{{ message.message }}</p>
+            </div>
+            <div
+              class="message-footer own-footer msg-reaction-container"
+              *ngIf="message.reactions && message.reactions.length > 0"
+            >
+              <div
+                class="reaction"
+                *ngFor="let reaction of getUniqueReactions(message.reactions)"
+              >
+                <span>{{ reaction.emoji }}</span>
+                <p>{{ reaction.count }}</p>
+              </div>
+              <span class="material-symbols-outlined add_reaction_btn"
+                >add_reaction</span
+              >
+            </div>
+          </div>
+          <div class="message-avatar">
+            <img
+              [src]="
+                currentUser?.avatar || '/assets/img/character/bsp-avatar.png'
+              "
+              [alt]="currentUser?.displayName || 'Du'"
+            />
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="(dmMessages$ | async)?.length === 0" class="no-messages">
+      <p>Beginne deine Unterhaltung mit {{ otherUser?.displayName }}.</p>
+      <p>Nachrichten, die du hier sendest, sind privat.</p>
+    </div>
+  </div>
+
+  <div class="input-container" *ngIf="otherUser">
+    <div class="input-container-wrapper">
+      <div
+        #messageInput
+        class="textForMessageInput"
+        type="text"
+        [attr.placeholder]="'Nachricht an ' + (otherUser.displayName || '')"
+        (input)="onInput($event)"
+        (keydown)="handleKeydown($event)"
+        contenteditable="true"
+      ></div>
+      <div class="icons">
+        <div>
+          <span
+            (click)="openEmojiPicker()"
+            class="material-symbols-outlined add-smiley-button"
+            matTooltip="Emoji hinzufügen"
+          >
+            sentiment_satisfied
+          </span>
+          <span class="material-symbols-outlined" matTooltip="Datei hinzufügen">
+            attach_file
+          </span>
+        </div>
+        <img
+          src="./assets/img/icons/send.png"
+          class="send-btn"
+          alt="send"
+          (click)="sendDirectMessage()"
+          matTooltip="Senden (Enter)"
+        />
+      </div>
+    </div>
+  </div>
+</div>

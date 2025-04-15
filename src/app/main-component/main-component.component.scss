@@ -9,9 +9,7 @@
 .side-nav-container {
   min-width: 306px;
   height: calc(100vh - 137px);
-  
   border-radius: 30px;
- 
   display: flex;
   flex-direction: column;
   animation: slideIn 200ms ease-out-forwards;
@@ -27,6 +25,17 @@
   position: relative;
 }
 
+.direct-message-container {
+  width: 100%;
+  height: calc(100vh - 137px);
+  background-color: #fff;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .thread-container {
   height: calc(100vh - 137px);
   background-color: #fff;
@@ -34,7 +43,6 @@
   max-width: 32%;
   min-width: 328px;
 }
-
 
 @keyframes slideIn {
   0% {

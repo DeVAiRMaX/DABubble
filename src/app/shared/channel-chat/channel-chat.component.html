@@ -12,9 +12,12 @@
         class="channel-chat-header-right-user-container"
         (click)="openChannelMembersDialog()"
       >
-      <div class="profile-images-container" *ngFor="let avatar of memberAvatars; let i = index">
-        <img [src]="avatar" alt="user" />
-      </div>
+        <div
+          class="profile-images-container"
+          *ngFor="let avatar of memberAvatars; let i = index"
+        >
+          <img [src]="avatar" alt="user" />
+        </div>
         <p>{{ channel.members.length || 0 }}</p>
       </div>
       <div (click)="openAddUserToChannelDialog()" class="add_btn_user">
@@ -50,8 +53,7 @@
           <div class="message-avatar">
             <img
               [src]="
-                message.senderAvatar ||
-                './assets/img/character/avatar_default.png'
+                message.senderAvatar || '/assets/img/character/bsp-avatar.png'
               "
               [alt]="message.senderDisplayName"
             />
@@ -140,8 +142,7 @@
           <div class="message-avatar">
             <img
               [src]="
-                currentUser?.avatar ||
-                './assets/img/character/avatar_default.png'
+                currentUser?.avatar || '/assets/img/character/bsp-avatar.png'
               "
               [alt]="currentUser?.displayName || 'Du'"
             />

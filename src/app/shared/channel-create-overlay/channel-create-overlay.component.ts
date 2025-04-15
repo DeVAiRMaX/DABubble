@@ -72,7 +72,7 @@ export class ChannelCreateOverlayComponent {
     if (!trimmedChannelName) {
       console.warn('Channel-Name darf nicht leer sein.');
       // Optional: Nutzerfeedback geben (z.B. Input rot markieren)
-      return; // Funktion abbrechen
+      return;
     }
 
     if (currentUserUid) {
@@ -81,15 +81,11 @@ export class ChannelCreateOverlayComponent {
         .subscribe({
           next: (channelKey) => {
             console.log('Channel erstellt mit Key:', channelKey);
-            // ---> BENACHRICHTIGUNG SENDEN <---
             this.variableService.notifyChannelCreated();
-            // ---> DIALOG ERST BEI ERFOLG SCHLIESSEN <---
             this.closeDialog();
           },
           error: (error) => {
             console.error('Fehler beim Erstellen des Channels:', error);
-            // Optional: Fehlermeldung im UI anzeigen
-            // Wichtig: Dialog hier NICHT schließen, damit der Nutzer es erneut versuchen kann oder den Fehler sieht.
           },
         });
       // this.closeDialog(); // <-- NICHT HIER SCHLIESSEN

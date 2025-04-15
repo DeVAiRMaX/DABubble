@@ -10,8 +10,9 @@ import {
   orderByChild,
   query,
   update,
+  serverTimestamp,
 } from '@angular/fire/database';
-import { User as CustomUser } from '../interfaces/user';
+import { User as CustomUser, userData } from '../interfaces/user';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
@@ -198,41 +199,41 @@ export class FirebaseService {
     );
   }
 
-  
-async updateChannel(channelKey: string, update: any): Promise<void> {
-  const membersRef = ref(this.database, `channels/${channelKey}/members`);
+  async updateChannel(channelKey: string, update: any): Promise<void> {
+    const membersRef = ref(this.database, `channels/${channelKey}/members`);
 
-  const snapshot = await get(membersRef);
-  let currentMembers: any[] = [];
+    const snapshot = await get(membersRef);
+    let currentMembers: any[] = [];
 
-  if (snapshot.exists()) {
-    currentMembers = snapshot.val();
+    if (snapshot.exists()) {
+      currentMembers = snapshot.val();
 
-    if (!Array.isArray(currentMembers)) {
-      currentMembers = Object.values(currentMembers);
+      if (!Array.isArray(currentMembers)) {
+        currentMembers = Object.values(currentMembers);
+      }
+    }
+
+    if (!currentMembers.includes(update)) {
+      currentMembers.push(update);
+    }
+
+    await set(membersRef, currentMembers);
+  }
+
+  async removeUserChannel(channelKey: string, uid: string) {
+    const membersRef = ref(this.database, `channels/${channelKey}/members`);
+    const snapshot = await get(membersRef);
+
+    if (snapshot.exists()) {
+      const members = snapshot.val(); // Das ist ein Array
+      const updatedMembers = members.filter(
+        (memberUid: string) => memberUid !== uid
+      );
+
+      // Überschreibt das alte Array mit dem neuen (ohne den gelöschten User)
+      await set(membersRef, updatedMembers);
     }
   }
-
-  if (!currentMembers.includes(update)) {
-    currentMembers.push(update);
-  }
-
-  await set(membersRef, currentMembers);
-}
-
-async removeUserChannel(channelKey: string, uid: string) {
-  const membersRef = ref(this.database, `channels/${channelKey}/members`);
-  const snapshot = await get(membersRef);
-
-  if (snapshot.exists()) {
-    const members = snapshot.val(); // Das ist ein Array
-    const updatedMembers = members.filter((memberUid: string) => memberUid !== uid);
-
-    // Überschreibt das alte Array mit dem neuen (ohne den gelöschten User)
-    await set(membersRef, updatedMembers);
-  }
-}
-
 
   getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
     if (!uid) {
@@ -754,6 +755,209 @@ async removeUserChannel(channelKey: string, uid: string) {
       catchError((error) => {
         console.error(
           `[getThreadMessages] Fehler beim Abrufen der Nachrichten für Thread ${threadKey}:`,
+          error
+        );
+        return of([]);
+      })
+    );
+  }
+
+  getDirectMessages(conversationId: string): Observable<Message[]> {
+    if (!conversationId) {
+      console.warn(
+        '[getDirectMessages] conversationId ist leer, gebe leeres Array zurück.'
+      );
+      return of([]);
+    }
+
+    const messagesRef = ref(
+      this.database,
+      `direct-messages/${conversationId}/messages`
+    );
+    const messagesQuery = query(messagesRef, orderByChild('time'));
+
+    console.log(
+      `[getDirectMessages] Lade Nachrichten für DM: ${conversationId}`
+    );
+
+    return listVal<Message>(messagesQuery, { keyField: 'key' }).pipe(
+      tap((messages) =>
+        console.log(
+          `[getDirectMessages] ${
+            messages?.length ?? 0
+          } Nachrichten für DM ${conversationId} empfangen.`
+        )
+      ),
+      map((messages) => messages || []),
+      catchError((error) => {
+        console.error(
+          `[getDirectMessages] Fehler beim Abrufen der Nachrichten für DM ${conversationId}:`,
+          error
+        );
+        if (error.message.includes('index') && error.message.includes('time')) {
+          console.warn(
+            `Firebase-Fehler: Fehlender Index für 'time' im Pfad /direct-messages/${conversationId}/messages. Bitte die Datenbankregeln anpassen.`
+          );
+        }
+        return of([]);
+      })
+    );
+  }
+
+  sendDirectMessage(
+    conversationId: string,
+    messageText: string,
+    sender: CustomUser
+  ): Observable<void> {
+    if (!conversationId || !messageText || !sender || !sender.uid) {
+      return throwError(
+        () =>
+          new Error(
+            'sendDirectMessage: conversationId, messageText und sender (mit uid) sind erforderlich.'
+          )
+      );
+    }
+
+    const messagesRef = ref(
+      this.database,
+      `direct-messages/${conversationId}/messages`
+    );
+    const newMessageRef = push(messagesRef);
+    const timestamp = Date.now();
+    const newMessageData: Omit<Message, 'key'> = {
+      message: messageText,
+      senderUid: sender.uid,
+      senderDisplayName: sender.displayName || '',
+      senderAvatar: sender.avatar || 'assets/img/character/bsp-avatar.png',
+      time: timestamp,
+      reactions: [],
+    };
+
+    console.log(
+      `[sendDirectMessage] Sende Nachricht zu DM ${conversationId}:`,
+      newMessageData
+    );
+
+    const sendMessageOperation = from(set(newMessageRef, newMessageData));
+    const conversationMetaRef = ref(
+      this.database,
+      `direct-messages/${conversationId}`
+    );
+    const updateMetaOperation = from(
+      update(conversationMetaRef, {
+        lastMessageTimestamp: timestamp,
+      })
+    );
+
+    return sendMessageOperation.pipe(
+      switchMap(() => updateMetaOperation),
+      map(() => void 0),
+      catchError((error) => {
+        console.error(
+          `[sendDirectMessage] Fehler beim Senden/Updaten der DM ${conversationId}:`,
+          error
+        );
+        return throwError(
+          () =>
+            new Error(
+              'Direktnachricht senden/updaten fehlgeschlagen: ' + error.message
+            )
+        );
+      })
+    );
+  }
+
+  ensureDirectMessageConversation(
+    uid1: string,
+    uid2: string
+  ): Observable<string> {
+    if (!uid1 || !uid2 || uid1 === uid2) {
+      return throwError(() => new Error('Ungültige UIDs für DM-Konversation.'));
+    }
+    const conversationId = [uid1, uid2].sort().join('_');
+    const conversationRef = ref(
+      this.database,
+      `direct-messages/${conversationId}`
+    );
+
+    return from(get(conversationRef)).pipe(
+      switchMap((snapshot) => {
+        if (snapshot.exists()) {
+          return of(conversationId);
+        } else {
+          console.log(
+            `[ensureDirectMessageConversation] Erstelle neue DM-Konversation: ${conversationId}`
+          );
+          const initialConversationData = {
+            participants: {
+              [uid1]: true,
+              [uid2]: true,
+            },
+            createdAt: serverTimestamp(),
+            lastMessageTimestamp: serverTimestamp(),
+          };
+          const createConvOp = from(
+            set(conversationRef, initialConversationData)
+          );
+          const user1Ref = ref(
+            this.database,
+            `users/${uid1}/directMessageKeys/${conversationId}`
+          );
+          const user2Ref = ref(
+            this.database,
+            `users/${uid2}/directMessageKeys/${conversationId}`
+          );
+          const updateUser1Op = from(set(user1Ref, true));
+          const updateUser2Op = from(set(user2Ref, true));
+
+          return createConvOp.pipe(
+            switchMap(() => updateUser1Op),
+            switchMap(() => updateUser2Op),
+            map(() => conversationId)
+          );
+        }
+      }),
+      catchError((error) => {
+        console.error(
+          `[ensureDirectMessageConversation] Fehler beim Sicherstellen/Erstellen der DM ${conversationId}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Fehler bei DM-Konversation: ' + error.message)
+        );
+      })
+    );
+  }
+
+  getUserDirectMessageKeys(uid: string): Observable<string[]> {
+    if (!uid) return of([]);
+    const dmKeysRef = ref(this.database, `users/${uid}/directMessageKeys`);
+    return from(get(dmKeysRef)).pipe(
+      map((snapshot) => {
+        if (snapshot.exists()) {
+          const keysObject = snapshot.val();
+          return Object.keys(keysObject);
+        } else {
+          return [];
+        }
+      }),
+      catchError((error) => {
+        console.error(
+          `[getUserDirectMessageKeys] Fehler beim Abrufen der DM-Keys für User ${uid}:`,
+          error
+        );
+        return of([]);
+      })
+    );
+  }
+
+  getAllUsers(): Observable<userData[]> {
+    const usersRef = ref(this.database, 'users');
+    return listVal<userData>(usersRef, { keyField: 'uid' }).pipe(
+      map((users) => users || []),
+      catchError((error) => {
+        console.error(
+          '[getAllUsers] Fehler beim Abrufen aller Benutzer:',
           error
         );
         return of([]);

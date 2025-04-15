@@ -9,6 +9,7 @@ import { HeaderComponent } from '../shared/header/header.component';
 import { SideNavComponent } from '../shared/side-nav/side-nav.component';
 import { ChannelChatComponent } from '../shared/channel-chat/channel-chat.component';
 import { ThreadComponent } from '../shared/thread/thread.component';
+import { DirectMessageComponent } from '../shared/direct-message/direct-message.component';
 import { CommonModule } from '@angular/common';
 import { VariablesService } from '../variables.service';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -17,7 +18,7 @@ import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
 import { Channel, ChannelWithKey } from '../shared/interfaces/channel';
 import { RouterLink, ActivatedRoute } from '@angular/router';
-import { userData } from '../../app/shared/interfaces/user';
+import { userData, User } from '../../app/shared/interfaces/user';
 import { Observable } from 'rxjs';
 import { onLog } from 'firebase/app';
 
@@ -29,6 +30,7 @@ import { onLog } from 'firebase/app';
     SideNavComponent,
     ChannelChatComponent,
     ThreadComponent,
+    DirectMessageComponent,
     CommonModule,
     RouterLink,
   ],
@@ -61,6 +63,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   channelKeys: string[] = [];
   userChannels: ChannelWithKey[] = [];
   selectedChannel: ChannelWithKey | undefined = undefined;
+  selectedOtherUser: User | null = null;
   userIdFromUrl: any;
   userData: userData | null = null;
 
@@ -77,7 +80,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private readonly GRP_DATA_KEYS = 'dataLoadKeys';
   private readonly GRP_DATA_CHANNELS = 'dataLoadChannels';
   private readonly GRP_USER_DATA = 'mainUserData';
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     // this.threadIsVisible = this.variableService.threadOpenSubject.getValue();
@@ -125,17 +128,17 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     });
     this.subService.add(authSub, this.GRP_AUTH);
 
-    const channelCreatedSub = this.variableService.channelCreated$.subscribe(
-      () => {
-        if (this.uid) {
-          this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
-          this.loadChannels(this.uid);
-        } else {
-          // keine uid
-        }
-      }
-    );
-    this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
+    // const channelCreatedSub = this.variableService.channelCreated$.subscribe(
+    //   () => {
+    //     if (this.uid) {
+    //       this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
+    //       this.loadChannels(this.uid);
+    //     } else {
+    //       // keine uid
+    //     }
+    //   }
+    // );
+    // this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
 
     const threadVisibilitySub = this.variableService.threadIsOpen$.subscribe(
       (isOpenValue) => {
@@ -150,6 +153,24 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       }
     );
     this.subService.add(threadVisibilitySub, this.GRP_UI_STATE);
+
+    const channelCreatedSub = this.variableService.channelCreated$.subscribe(
+      () => {
+        if (this.uid) {
+          console.log(
+            '[MainComponent] Channel-Erstellung bemerkt, lade Kanäle neu...'
+          );
+          // Rufe die Methode auf, die getChannelsForUser aufruft
+          this.loadChannels(this.uid);
+          // Oder wenn die Keys neu geladen werden müssen: this.loadUserSpecificData(this.uid);
+        } else {
+          console.warn(
+            '[MainComponent] Channel erstellt, aber keine UID vorhanden zum Neuladen.'
+          );
+        }
+      }
+    );
+    this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
   }
 
   loadUserSpecificData(uid: string): void {
@@ -212,11 +233,25 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   }
 
   onChannelSelected(channel: ChannelWithKey): void {
-    console.log(channel);
-
+    console.log('Channel selected:', channel);
     this.selectedChannel = { ...channel };
+    this.selectedOtherUser = null;
+    this.cdRef.markForCheck();
   }
 
+  onUserSelected(user: User): void {
+    console.log('User selected for DM:', user);
+    if (user) {
+      this.selectedOtherUser = { ...user };
+      this.selectedChannel = undefined;
+      this.cdRef.markForCheck();
+    } else {
+      console.warn('onUserSelected received null or undefined user');
+      this.selectedOtherUser = null;
+      this.selectedChannel = undefined;
+      this.cdRef.markForCheck();
+    }
+  }
 
   toggleSideNav(): void {
     this.variableService.toggleSideNav();

@@ -7,6 +7,7 @@ import { ResetPasswordComponent } from './features/auth/components/register/rese
 import { ConfirmResetPasswordComponent } from './features/auth/components/register/reset-password/confirm-reset-password/confirm-reset-password.component';
 import { ImpressumComponent } from './shared/impressum/impressum.component';
 import { DataProtectionComponent } from './shared/data-protection/data-protection.component';
+import { DirectMessageComponent } from './shared/direct-message/direct-message.component';
 
 export const routes: Routes = [
   {
@@ -48,6 +49,10 @@ export const routes: Routes = [
   {
     path: 'datenschutz',
     component: DataProtectionComponent,
+  },
+  {
+    path: 'direct-messsage',
+    component: DirectMessageComponent,
   },
   { path: '**', redirectTo: '' },
 ];

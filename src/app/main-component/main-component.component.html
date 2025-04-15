@@ -4,15 +4,24 @@
     [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
     [userChannels]="userChannels"
     (channelSelected)="onChannelSelected($event)"
+    (userSelected)="onUserSelected($event)"
   >
+    >
   </app-side-nav>
 
   <app-channel-chat
     class="channel-chat-container"
-    *ngIf="selectedChannel"
+    *ngIf="selectedChannel && !selectedOtherUser"
     [channel]="selectedChannel"
   >
   </app-channel-chat>
+
+  <app-direct-message
+    *ngIf="selectedOtherUser && !selectedChannel"
+    [otherUser]="selectedOtherUser"
+    class="direct-message-container"
+  >
+  </app-direct-message>
 
   <app-thread
     *ngIf="threadIsVisible"
