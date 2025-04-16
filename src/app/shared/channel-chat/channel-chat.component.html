@@ -34,7 +34,10 @@
         let isFirst = first
       "
     >
-      <div class="date-divider" *ngIf="isFirst">
+      <div
+        class="date-divider"
+        *ngIf="shouldShowDateDivider(message, (messages$ | async)?.[i - 1])"
+      >
         <div class="divider-line"></div>
         <span class="date-text">{{
           message.time | date : "EEEE, d. MMMM"

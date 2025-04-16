@@ -25,7 +25,7 @@ import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-
 import { SubService } from '../services/sub.service';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
-import { Observable, of, Subscription } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { User } from '../interfaces/user';
 import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.component';
 
@@ -36,7 +36,7 @@ import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.compo
     CommonModule,
     MatDialogModule,
     SharedModule,
-    SmileyKeyboardComponent,
+    // SmileyKeyboardComponent,
   ],
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
@@ -206,14 +206,38 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   shouldShowDateDivider(
     currentMessage: Message,
-    previousMessage: Message | null
+    previousMessage: Message | null | undefined // Wichtig: auch undefined zulassen
   ): boolean {
-    if (!previousMessage) return true;
+    // Wenn es keine vorherige Nachricht gibt (also die erste Nachricht im Array),
+    // zeige den Divider immer an.
+    if (!previousMessage) {
+      return true;
+    }
 
-    const currentDate = new Date(currentMessage.time);
-    const previousDate = new Date(previousMessage.time);
+    // Sicherstellen, dass Zeitstempel vorhanden und gültig sind
+    if (!currentMessage?.time || !previousMessage?.time) {
+      console.warn('Fehlender Zeitstempel für Datums-Divider-Prüfung.');
+      // Entscheide, wie du diesen Fall behandeln möchtest.
+      // 'false' zurückzugeben scheint hier sicherer, um Fehler zu vermeiden.
+      return false;
+    }
 
-    return currentDate.toDateString() !== previousDate.toDateString();
+    try {
+      const currentDate = new Date(currentMessage.time);
+      const previousDate = new Date(previousMessage.time);
+
+      // Prüfen, ob die erzeugten Daten gültig sind
+      if (isNaN(currentDate.getTime()) || isNaN(previousDate.getTime())) {
+        console.warn('Ungültiges Datum bei Datums-Divider-Prüfung.');
+        return false;
+      }
+
+      // Vergleiche nur den Datumsanteil (Tag, Monat, Jahr)
+      return currentDate.toDateString() !== previousDate.toDateString();
+    } catch (error) {
+      console.error('Fehler beim Vergleichen der Daten für Divider:', error);
+      return false; // Zeige keinen Divider bei einem Fehler
+    }
   }
 
   toggleAddUserToChannelOverlay() {
@@ -583,7 +607,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
       const lastChild = input.lastChild;
       if (lastChild) {
-        // Falls der letzte Knoten ein Textknoten ist, speichern wir seine Position
         this.savedRange.setStart(lastChild, (lastChild as Text).length);
         this.savedRange.setEnd(lastChild, (lastChild as Text).length);
       }

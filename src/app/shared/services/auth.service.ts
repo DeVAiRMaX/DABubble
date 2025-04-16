@@ -185,15 +185,19 @@ export class AuthService {
     return set(userRef, displayName);
   }
 
-  updateChannel(currentChannel: string, field: string, value: string): Promise<void> {
+  updateChannel(
+    currentChannel: string,
+    field: string,
+    value: string
+  ): Promise<void> {
     const channelRef = ref(this.database, `channels/${currentChannel}`);
     return update(channelRef, { [field]: value });
   }
 
   getMembersData(members: string[]): Promise<any[]> {
-    const promises = members.map(memberId => {
+    const promises = members.map((memberId) => {
       const memberRef = ref(this.database, `users/${memberId}`);
-      return get(memberRef).then(snapshot => {
+      return get(memberRef).then((snapshot) => {
         if (snapshot.exists()) {
           const memberData = snapshot.val();
           return memberData;
@@ -202,10 +206,9 @@ export class AuthService {
         }
       });
     });
-  
-    return Promise.all(promises)
-      .then(results => results.filter(data => data !== null));
-  }
-  
 
+    return Promise.all(promises).then((results) =>
+      results.filter((data) => data !== null)
+    );
+  }
 }
