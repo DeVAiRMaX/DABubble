@@ -199,41 +199,74 @@ export class FirebaseService {
     );
   }
 
-  async updateChannel(channelKey: string, update: any): Promise<void> {
+  async updateChannelMember(channelKey: string, uid: string): Promise<void> {
     const membersRef = ref(this.database, `channels/${channelKey}/members`);
-
-    const snapshot = await get(membersRef);
-    let currentMembers: any[] = [];
-
-    if (snapshot.exists()) {
-      currentMembers = snapshot.val();
-
-      if (!Array.isArray(currentMembers)) {
-        currentMembers = Object.values(currentMembers);
-      }
+    const userRef = ref(this.database, `users/${uid}/channelKeys`);
+  
+    const channelMembersSnapshot = await get(membersRef);
+    let currentMembers: string[] = [];
+  
+    if (channelMembersSnapshot.exists()) {
+      const data = channelMembersSnapshot.val();
+      currentMembers = Array.isArray(data) ? data : Object.values(data);
+    }
+  
+    const userChannelKeysSnapshot = await get(userRef);
+    let userChannelKeys: string[] = [];
+  
+    if (userChannelKeysSnapshot.exists()) {
+      const data = userChannelKeysSnapshot.val();
+      userChannelKeys = Array.isArray(data) ? data : Object.values(data);
+    }
+  
+    if (!currentMembers.includes(uid)) {
+      currentMembers.push(uid);
+    }
+  
+    if (!userChannelKeys.includes(channelKey)) {
+      userChannelKeys.push(channelKey);
     }
 
-    if (!currentMembers.includes(update)) {
-      currentMembers.push(update);
-    }
-
-    await set(membersRef, currentMembers);
+    await Promise.all([
+      set(membersRef, currentMembers),
+      set(userRef, userChannelKeys),
+    ]);
   }
+  
 
-  async removeUserChannel(channelKey: string, uid: string) {
+  async removeUserChannel(channelKey: string, uid: string): Promise<void> {
     const membersRef = ref(this.database, `channels/${channelKey}/members`);
-    const snapshot = await get(membersRef);
-
-    if (snapshot.exists()) {
-      const members = snapshot.val(); // Das ist ein Array
-      const updatedMembers = members.filter(
-        (memberUid: string) => memberUid !== uid
-      );
-
-      // Überschreibt das alte Array mit dem neuen (ohne den gelöschten User)
-      await set(membersRef, updatedMembers);
+    const userRef = ref(this.database, `users/${uid}/channelKeys`);
+  
+    const [membersSnap, userChannelsSnap] = await Promise.all([
+      get(membersRef),
+      get(userRef)
+    ]);
+  
+    let updatedMembers: string[] = [];
+    let updatedUserChannels: string[] = [];
+  
+    // === Channel-Mitglieder laden und User entfernen ===
+    if (membersSnap.exists()) {
+      const data = membersSnap.val();
+      const members = Array.isArray(data) ? data : Object.values(data);
+      updatedMembers = members.filter((memberUid: string) => memberUid !== uid);
     }
+  
+    // === ChannelKeys des Users laden und Channel entfernen ===
+    if (userChannelsSnap.exists()) {
+      const data = userChannelsSnap.val();
+      const userChannels = Array.isArray(data) ? data : Object.values(data);
+      updatedUserChannels = userChannels.filter((key: string) => key !== channelKey);
+    }
+  
+    // === Beide Pfade gleichzeitig schreiben ===
+    await Promise.all([
+      set(membersRef, updatedMembers),
+      set(userRef, updatedUserChannels)
+    ]);
   }
+  
 
   getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
     if (!uid) {

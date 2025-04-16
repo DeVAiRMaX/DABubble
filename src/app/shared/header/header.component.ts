@@ -81,8 +81,8 @@ export class HeaderComponent {
           }))
         : [];
 
-        // const massages = data.massages
-        // ? Object.entries(data.massages as Record<string, any>)
+        // const massages = data.direct-messages
+        // ? Object.entries(data.direct-messages as Record<string, any>)
         //   .filter(([id, channel]) =>
         //     channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
         //   )
