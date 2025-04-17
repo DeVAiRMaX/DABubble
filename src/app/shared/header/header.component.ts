@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
 import { SharedModule } from './../../shared';
 import { DialogComponent } from '../header-dialog-profil/dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../services/auth.service';
 import { User } from '../interfaces/user';
 import { Observable, filter } from 'rxjs';
@@ -24,6 +24,7 @@ export class HeaderComponent {
 
   @Input() channel!: ChannelWithKey;
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
+  @Output() userSelected = new EventEmitter<User>();
 
   searchValue: string = '';
   searchResults: any[] = [];
@@ -36,7 +37,8 @@ export class HeaderComponent {
 
   user$: Observable<User | null>;
 
-  constructor(public dialog: MatDialog) {
+  constructor(public dialog: MatDialog, ) {
+    
     this.user$ = this.authService.user$;          
   }
 
@@ -110,7 +112,6 @@ export class HeaderComponent {
       if (Array.isArray(result.data.members) && result.data.members.includes(this.userID)) {
         this.openResultChannel(result);
       } else {
-        console.log("user im channel nicht gefunden");
         result.userNotFoundChannel = true;
       }
     } else if (result.type === 'User') {
@@ -118,15 +119,23 @@ export class HeaderComponent {
     }
   }
   
-  
 
-  openResultUser(data: string) {
-    this.dialog.open(UserProfilComponent, {
+  openResultUser(data: any) {
+    const dialogRef = this.dialog.open(UserProfilComponent, {
       data: data,
       panelClass: 'custom-user-profil-container',
     });
+  
     this.searchResultsState = false;
+  
+    dialogRef.afterClosed().subscribe((selectedUser: User | undefined) => {
+      if (selectedUser) {
+        console.log('[Header] Got user from dialog:', selectedUser);
+        this.userSelected.emit(selectedUser); // 🔥 gibt an MainComponent weiter
+      }
+    });
   }
+  
 
   openResultChannel(result: any & ChannelWithKey) {
     if (result.type === 'Channel') {

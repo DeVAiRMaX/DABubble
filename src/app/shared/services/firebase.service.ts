@@ -245,22 +245,19 @@ export class FirebaseService {
   
     let updatedMembers: string[] = [];
     let updatedUserChannels: string[] = [];
-  
-    // === Channel-Mitglieder laden und User entfernen ===
+
     if (membersSnap.exists()) {
       const data = membersSnap.val();
       const members = Array.isArray(data) ? data : Object.values(data);
       updatedMembers = members.filter((memberUid: string) => memberUid !== uid);
     }
-  
-    // === ChannelKeys des Users laden und Channel entfernen ===
+
     if (userChannelsSnap.exists()) {
       const data = userChannelsSnap.val();
       const userChannels = Array.isArray(data) ? data : Object.values(data);
       updatedUserChannels = userChannels.filter((key: string) => key !== channelKey);
     }
-  
-    // === Beide Pfade gleichzeitig schreiben ===
+
     await Promise.all([
       set(membersRef, updatedMembers),
       set(userRef, updatedUserChannels)
@@ -1005,9 +1002,7 @@ export class FirebaseService {
     if (snapshot.exists()) {
       return snapshot.val();
 
-      // return JSON.stringify(snapshot.val());
     } else {
-      // Keine Daten gefunden, daher wird ein leeres Objekt zurückgegeben.
       return {};
     }
   }

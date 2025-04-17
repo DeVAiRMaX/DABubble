@@ -131,7 +131,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   // }
 
   selectUserForDm(user: User): void {
-    console.log('[SideNav] User selected:', user);
+    // console.log('[SideNav] User selected:', user);
     this.userSelected.emit(user);
   }
 

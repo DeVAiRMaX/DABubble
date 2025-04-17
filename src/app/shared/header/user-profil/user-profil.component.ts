@@ -1,4 +1,4 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, EventEmitter, Inject, inject, Optional, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../../interfaces/user';
 import { SharedModule } from '../../../shared';
@@ -18,12 +18,28 @@ export class UserProfilComponent {
   private authService: AuthService = inject(AuthService);
 
 
-  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<UserProfilComponent>, @Inject(MAT_DIALOG_DATA) public data: { data: User }) {
+  constructor(@Optional() public dialogRef: MatDialogRef<UserProfilComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: { data: User }
+  ) {
+    if (data) {
+      this.userData = data.data;
+    }
 
-    this.userData = this.data.data;
+
+
+    // this.userData = this.data.data;
   }
 
   closeDialog() {
     this.dialogRef.close(UserProfilComponent);
   }
+
+  selectUserForDm(user: User): void {
+    console.log('[Dialog] User selected:', user);
+    if (this.dialogRef) {
+      this.dialogRef.close(user); // gibt User zurück an HeaderComponent
+    }
+  }
+  
+
 }
