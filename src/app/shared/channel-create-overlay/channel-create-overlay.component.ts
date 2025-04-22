@@ -60,9 +60,9 @@ export class ChannelCreateOverlayComponent {
   constructor() {}
 
   ngOnInit() {
-    setTimeout(() => {
+    this.dialogRef.afterOpened().subscribe(() => {
       this.startAnimation();
-    }, 10);
+    });
   }
 
   createChannel() {
