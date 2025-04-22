@@ -49,7 +49,11 @@
 
       <div
         class="channel-chat-message-container"
-        [ngClass]="{ ownMessage: isOwnMessage(message) }"
+        [attr.data-message-key]="message.key"
+        [ngClass]="{
+          ownMessage: isOwnMessage(message),
+          editing: editingMessageKey === message.key
+        }"
       >
         <div
           class="message-layout othersMessage"
@@ -90,9 +94,18 @@
             </div>
           </div>
           <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">
-            <button class="reactionMenuBtn check"></button>
-            <button class="reactionMenuBtn thumb"></button>
-            <button class="reactionMenuBtn reactionSmile"></button>
+            <button
+              (click)="toggleReaction(message, '✅')"
+              class="reactionMenuBtn check"
+            ></button>
+            <button
+              (click)="toggleReaction(message, '👍')"
+              class="reactionMenuBtn thumb"
+            ></button>
+            <button
+              (click)="openEmojiPickerForReaction(message)"
+              class="reactionMenuBtn reactionSmile"
+            ></button>
             <button
               class="reactionMenuBtn commentReact"
               (click)="startOrOpenThread(message)"
@@ -103,37 +116,84 @@
 
         <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
           <div class="reactionMenu">
-            <!-- <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn commentReact"></button>
-            <button class="reactionMenuBtn editMsg"></button> -->
-            <button class="reactionMenuBtn check"></button>
-            <button class="reactionMenuBtn thumb"></button>
-            <button class="reactionMenuBtn reactionSmile"></button>
+            <button
+              (click)="toggleReaction(message, '✅')"
+              class="reactionMenuBtn check"
+            ></button>
+            <button
+              (click)="toggleReaction(message, '👍')"
+              class="reactionMenuBtn thumb"
+            ></button>
+            <button
+              (click)="openEmojiPickerForReaction(message)"
+              class="reactionMenuBtn reactionSmile"
+            ></button>
             <button
               (click)="startOrOpenThread(message)"
               class="reactionMenuBtn commentReact"
             ></button>
-            <button class="reactionMenuBtn editMsg"></button>
+            <button
+              (click)="startEditing(message)"
+              class="reactionMenuBtn editMsg"
+            ></button>
           </div>
           <div class="message-content-wrapper">
             <div class="message-header own-header">
               <h3 class="msg-user-name">Du</h3>
               <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
             </div>
-            <div class="msg-bubble msg-right">
+            <div
+              class="msg-bubble msg-right"
+              *ngIf="editingMessageKey !== message.key"
+            >
               <p>{{ message.message }}</p>
+              <span class="edited-indicator" *ngIf="message.editedAt"
+                >(bearbeitet)</span
+              >
+            </div>
+            <div
+              class="edit-message-input-container"
+              *ngIf="editingMessageKey === message.key"
+            >
+              <textarea
+                #editInput
+                [(ngModel)]="editMessageText"
+                (keydown.escape)="cancelEdit()"
+                (keydown.enter)="handleEditEnter($event, message)"
+                rows="3"
+              ></textarea>
+              <div class="edit-actions">
+                <button (click)="cancelEdit()">Abbrechen</button>
+                <button (click)="saveEdit(message)">Speichern</button>
+              </div>
             </div>
             <div
               class="message-footer own-footer msg-reaction-container"
               *ngIf="message.reactions && message.reactions.length > 0"
             >
-              <div class="reaction">
-                <img src="./assets/img/icons/check.png" alt="check" />
-                <p>1</p>
-              </div>
-              <span class="material-symbols-outlined add_reaction_btn"
-                >add_reaction</span
+              <div
+                class="message-footer own-footer msg-reaction-container"
+                *ngIf="message.reactions && message.reactions.length > 0"
               >
+                <div
+                  class="reaction"
+                  *ngFor="let reaction of groupReactions(message.reactions)"
+                  (click)="toggleReaction(message, reaction.emoji)"
+                  [class.reacted-by-user]="reaction.reactedByUser"
+                  matTooltip="{{ reaction.userNames.join(',\\n') }}"
+                  matTooltipPosition="above"
+                >
+                  <span>{{ reaction.emoji }}</span>
+                  <p>{{ reaction.count }}</p>
+                </div>
+                <span
+                  class="material-symbols-outlined add_reaction_btn"
+                  (click)="openEmojiPickerForReaction(message)"
+                  matTooltip="Reaktion hinzufügen"
+                  matTooltipPosition="above"
+                  >add_reaction</span
+                >
+              </div>
             </div>
             <div class="message-footer own-footer" *ngIf="message.threadKey">
               <a (click)="startOrOpenThread(message)" class="msg-count">

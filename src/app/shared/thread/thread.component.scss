@@ -2,7 +2,6 @@
   height: 100%;
   display: grid;
   grid-template-rows: auto 1fr auto;
-
 }
 .thread-header {
   padding: 32px 40px;
@@ -40,7 +39,7 @@
   padding: 10px;
   transition: all 0.1s ease-in-out;
   &:hover {
-    background-color: #ECEEFE;
+    background-color: #eceefe;
     color: #535af1;
   }
 }
@@ -59,7 +58,7 @@
   cursor: pointer;
   &:hover {
     background-color: #797df32f;
-    .msg-content-left{
+    .msg-content-left {
       background-color: #fff;
     }
   }
@@ -127,7 +126,6 @@
 .reaction-container {
   display: flex;
   gap: 10px;
-  
 }
 
 .reaction {
@@ -141,8 +139,8 @@
   border: 1px solid #adb0d9;
   gap: 10px;
   position: relative;
-  &:hover{
-    .reaction-information-overlay{
+  &:hover {
+    .reaction-information-overlay {
       display: block;
     }
   }
@@ -160,17 +158,17 @@
   z-index: 100;
 }
 
-.reaction-overlay-item{
+.reaction-overlay-item {
   display: flex;
   align-items: center;
   flex-direction: column;
   gap: 5px;
-  h3{
+  h3 {
     color: #fff;
     font-size: 18px;
     font-weight: 700;
   }
-  p{
+  p {
     color: #fff;
     font-size: 14px;
     font-weight: 400;
@@ -186,6 +184,16 @@
   &:hover {
     color: #535af1;
   }
+}
+
+.no-thread-messages {
+  width: 100%;
+  display: flex;
+  color: #adb0d9;
+  font-size: 18px;
+  font-weight: 400;
+  text-align: center;
+  justify-content: center;
 }
 
 .msg-right-container {
@@ -248,7 +256,7 @@
         transition: all 0.1s ease-in-out;
         &:hover {
           color: #535af1;
-          background-color: #ECEEFE;
+          background-color: #eceefe;
         }
       }
     }
@@ -273,7 +281,6 @@
   padding: 20px;
   border: 1px solid #adb0d9;
 }
-
 
 .taggedPersonsDiv {
   display: flex;
@@ -320,4 +327,15 @@
 
     background-repeat: no-repeat;
   }
+}
+
+.textForThreadInput{
+  width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    min-height: 40px;
+    color: #333;
+    font-size: 18px;
+    font-family: "Nunito";
 }
