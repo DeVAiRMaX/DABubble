@@ -34,6 +34,8 @@
         let isFirst = first
       "
     >
+    <ng-container *ngIf="i !== 0">
+    
       <div
         class="date-divider"
         *ngIf="shouldShowDateDivider(message, (messages$ | async)?.[i - 1])"
@@ -153,10 +155,18 @@
         </div>
       </div>
     </ng-container>
-    <div *ngIf="(messages$ | async)?.length === 0" class="no-messages">
-      <p>
-        Noch keine Nachrichten in #{{ channel.channelName }}. Sei der Erste!
-      </p>
+    </ng-container>
+
+    <div *ngIf="(messages$ | async)?.length === 1" class="no-messages">
+      <div class="no-messages-header">
+        <span class="material-symbols-outlined"> tag </span>
+        <h3>{{ channel.channelName }}</h3>
+      </div>
+      <div class="no-messages-text">
+        <p>
+          Noch keine Nachrichten in #{{ channel.channelName }}. Sei der Erste!
+        </p>
+      </div>
     </div>
   </div>
   <div class="input-container" *ngIf="channel">

@@ -95,8 +95,6 @@ export class HeaderComponent {
         //   }))
         // : [];
 
-
-
       this.searchResults = [
         ...channels,
         ...users,

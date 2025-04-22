@@ -48,6 +48,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   messageText: string = '';
   isLoading: boolean = false;
   lastInputValue: string = '';
+  at = '@';
 
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
   private savedRange: Range | null = null;
