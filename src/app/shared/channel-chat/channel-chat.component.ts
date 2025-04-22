@@ -387,6 +387,9 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         panelClass: ['tagging-dialog'],
         backdropClass: 'transparentBackdrop',
         autoFocus: false,
+        data:{
+          mode: 'chat'
+        },
       });
 
       setTimeout(() => {

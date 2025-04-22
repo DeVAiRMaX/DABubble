@@ -233,6 +233,7 @@
   .icons {
     width: 100%;
     display: flex;
+    position: relative;
     align-items: center;
     justify-content: space-between;
     div {
@@ -271,4 +272,52 @@
   border-radius: 20px;
   padding: 20px;
   border: 1px solid #adb0d9;
+}
+
+
+.taggedPersonsDiv {
+  display: flex;
+  width: fit-content;
+  position: absolute;
+  top: 0;
+  height: max-content;
+}
+
+.taggedPerson {
+  height: 40px;
+  border-radius: 35px;
+  box-sizing: border-box;
+  padding: 3px 10px 3px 10px;
+  display: flex;
+  gap: 15px;
+  background-color: #eceefe;
+  align-items: center;
+  width: fit-content;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  > span {
+    font-family: "Nunito";
+    font-weight: 400;
+    font-size: 18px !important;
+    line-height: 100%;
+    letter-spacing: 0%;
+  }
+
+  > .taggedImage {
+    width: 34px;
+    height: 34px;
+    border-radius: 100px;
+  }
+
+  > .closeTaggedPerson {
+    width: 30px;
+    height: 30px;
+    background: url("/assets/img/closeMenu.png");
+    background-position: center;
+
+    background-repeat: no-repeat;
+  }
 }

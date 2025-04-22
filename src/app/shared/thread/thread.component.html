@@ -130,7 +130,7 @@
     <div class="input-container-wrapper threadwrapper">
       <input
         [(ngModel)]="threadMessageText"
-        (ngModelChange)="checkForMention($event)"
+        (input)="checkForMention($event)"
         (keydown.enter)="sendThreadMessage()"
         class="textForThreadInput"
         type="text"
@@ -152,6 +152,23 @@
           class="send-btn"
           alt="send"
         />
+
+        <div class="taggedPersonsDiv">
+          <div
+            contenteditable="false"
+            aria-readonly="true"
+            class="taggedPerson"
+            (mousedown)="preventEdit($event)"
+            *ngFor="let person of taggedPersonsInThreads"
+          >
+            <img class="taggedImage" [src]="person.img" />
+            <span> {{ person.name }}</span>
+            <span
+              (click)="removePersonFromTagged(person.name)"
+              class="closeTaggedPerson"
+            ></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

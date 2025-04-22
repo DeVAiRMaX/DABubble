@@ -63,7 +63,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   threadMessageText: string = '';
   lastInputValue: string = '';
-
+  taggedPersonsInThreads = this.variableService.getTaggedcontactsFromThreads();
   constructor() {}
 
   ngOnInit(): void {
@@ -184,6 +184,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
         panelClass: ['tagging-dialog'],
         backdropClass: 'transparentBackdrop',
         autoFocus: false,
+        data:{
+          mode: 'thread'
+        },
       });
 
       setTimeout(() => {
@@ -230,5 +233,41 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
     this.lastInputValue = inputElement.value;
     this.variableService.setNameToFilter(this.lastInputValue);
+  }
+
+
+  preventEdit(event: MouseEvent) {
+    event.preventDefault();
+
+    const textInput = document.querySelector(
+      '.textForThreadInput'
+    ) as HTMLElement;
+    if (!textInput) return;
+
+    textInput.focus();
+
+    const range = document.createRange();
+    const selection = window.getSelection();
+
+    if (textInput.lastChild) {
+      range.setStartAfter(textInput.lastChild);
+    } else {
+      range.setStart(textInput, textInput.childNodes.length);
+    }
+
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+
+  removePersonFromTagged(name: string) {
+    const index = this.taggedPersonsInThreads.findIndex((e) => e.name === name);
+
+    if (index !== -1) {
+      this.taggedPersonsInThreads.splice(index, 1);
+      console.log(`Person ${name} entfernt.`);
+    } else {
+      console.log(`Person ${name} nicht gefunden.`);
+    }
   }
 }

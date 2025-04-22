@@ -1,14 +1,33 @@
-<div class="wholeDialog">
-  <div
-    *ngFor="let contact of filteredContacts"
-    class="singleContact"
-    (click)="addContactToChat(contact)"
-  >
-    <img [src]="contact.img" />
-    <span>{{ contact.name }}</span>
-  </div>
+<ng-container *ngIf="modeForTagging === 'chat'">
+  <div class="wholeDialog">
+    <div
+      *ngFor="let contact of filteredContacts"
+      class="singleContact"
+      (click)="checkWhichMode(contact)"
+    >
+      <img [src]="contact.img" />
+      <span>{{ contact.name }}</span>
+    </div>
 
-  <div *ngIf="filteredContacts.length === 0" class="no-results">
-    <p>Kein Kontakt gefunden</p>
+    <div *ngIf="filteredContacts.length === 0" class="no-results">
+      <p>Kein Kontakt gefunden</p>
+    </div>
   </div>
-</div>
+</ng-container>
+
+<ng-container *ngIf="modeForTagging === 'thread'">
+  <div class="wholeDialog">
+    <div
+      *ngFor="let contact of filteredContactsThread"
+      class="singleContact"
+      (click)="checkWhichMode(contact)"
+    >
+      <img [src]="contact.img" />
+      <span>{{ contact.name }}</span>
+    </div>
+
+    <div *ngIf="filteredContactsThread.length === 0" class="no-results">
+      <p>Kein Kontakt gefunden</p>
+    </div>
+  </div>
+</ng-container>

@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { VariablesService } from '../../../variables.service';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-tagging-persons-dialog',
@@ -12,8 +13,9 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class TaggingPersonsDialogComponent implements OnInit {
   nametoFilter : string = '';
+  modeForTagging : string = '';
 
-  constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<TaggingPersonsDialogComponent>) {}
+  constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<TaggingPersonsDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: {mode: string}) {}
 
   allContacts = [
     { name: 'Frederik Beck (Du)', img: '/assets/img/character/3.png' },
@@ -25,15 +27,19 @@ export class TaggingPersonsDialogComponent implements OnInit {
   ];
 
   taggedContacts: {name: string; img: string;}[] = [];
-
+  taggedContactsThread:{name: string; img: string}[] = [];
   filteredContacts : {name: string; img: string}[] = [];
+  filteredContactsThread: {name: string; img: string}[] = [];
 
   ngOnInit() {
-
+this.modeForTagging = this.data.mode;
 this.taggedContacts = this.variableService.getTaggedContactsFromChat();
+this.taggedContactsThread = this.variableService.getTaggedcontactsFromThreads();
 
 this.updateFilteredContacts();
-console.log(this.taggedContacts);
+this.updateFilteredThreadContacts();
+console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
+console.log('gewählter Modus ist' + this.data.mode);
 
     this.variableService.nameToFilter$.subscribe((value) => {
       this.nametoFilter = value;
@@ -47,6 +53,7 @@ console.log(this.taggedContacts);
 
       if(this.nametoFilter === '@'){
        this.updateFilteredContacts();
+       this.updateFilteredThreadContacts();
         return;
       }
 
@@ -56,6 +63,7 @@ console.log(this.taggedContacts);
 
 
         this.filteredContacts = this.filteredContacts.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
+        this.filteredContactsThread = this.filteredContactsThread.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
     });
   }
 
@@ -79,9 +87,49 @@ console.log(this.taggedContacts);
 
   }
 
+  addContactToThread(contact: any){
+
+    const nameToRemove = this.filteredContactsThread.findIndex((c) => c.name === contact.name);
+    
+    
+    if(nameToRemove !== -1){
+      
+      const removedContact = this.filteredContactsThread.splice(nameToRemove, 1)[0];
+      this.taggedContactsThread.push(removedContact);
+      console.log(this.taggedContactsThread);
+      this.variableService.setTaggedContactsFromThread(this.taggedContactsThread);
+      this.updateFilteredThreadContacts();
+      
+
+    }
+
+  }
+
+  updateFilteredThreadContacts(){
+    this.filteredContactsThread = this.allContacts.filter(
+      (contact) => !this.taggedContactsThread.some((tagged)=> tagged.name === contact.name)
+    );
+    console.log('filtered Contacts sind:' + this.filteredContactsThread);
+  }
+
   updateFilteredContacts() {
     this.filteredContacts = this.allContacts.filter(
       (contact) => !this.taggedContacts.some((tagged) => tagged.name === contact.name)
     );
+
+  }
+
+  checkWhichMode(contact: any){
+    if( this.modeForTagging == 'thread'){
+
+      this.addContactToThread(contact);
+
+
+    }else if(this.modeForTagging == 'chat'){
+      this.addContactToChat(contact);
+    }else{
+      
+      console.error('No Conact Found');
+    }
   }
 }

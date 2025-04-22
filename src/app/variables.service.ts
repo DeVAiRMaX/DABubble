@@ -106,6 +106,20 @@ export class VariablesService {
     return this.taggedContactsFromChatSubject.getValue();
   }
 
+  private taggedContactsFromThreadSubject = new BehaviorSubject<
+    { name: string; img: string }[]
+  >([]);
+  taggedContactsInThread$ = this.taggedContactsFromThreadSubject.asObservable();
+
+  setTaggedContactsFromThread(contacts: {name: string; img: string}[]){
+    this.taggedContactsFromThreadSubject.next(contacts);
+  }
+
+  getTaggedcontactsFromThreads(){
+    return this.taggedContactsFromThreadSubject.getValue();
+  }
+
+
   openThread(threadKey: string) {
     this.activeThreadKeySubject.next(threadKey);
     this.threadOpenSubject.next(true);
