@@ -102,8 +102,8 @@
         <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
           <div class="reactionMenu">
             <!-- <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn commentReact"></button>
-            <button class="reactionMenuBtn editMsg"></button> -->
+            <button class="reactionMenuBtn commentReact"></button>-->
+
             <button class="reactionMenuBtn check"></button>
             <button class="reactionMenuBtn thumb"></button>
             <button class="reactionMenuBtn reactionSmile"></button>
@@ -120,6 +120,11 @@
             </div>
             <div class="msg-bubble msg-right">
               <p>{{ message.message }}</p>
+              <div class="msg-reactions">
+                <span *ngFor="let reaction of message.reactions">{{
+                  reaction
+                }}</span>
+              </div>
             </div>
             <div
               class="message-footer own-footer msg-reaction-container"

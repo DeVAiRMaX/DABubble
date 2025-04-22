@@ -625,4 +625,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     // Öffne den Emoji-Dialog (z. B. zum Hinzufügen eines Smileys)
     this.openAddSmileyToChannelDialog();
   }
+
+ 
 }

@@ -321,3 +321,14 @@
     background-repeat: no-repeat;
   }
 }
+
+.textForThreadInput{
+  width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    min-height: 40px;
+    color: #333;
+    font-size: 18px;
+    font-family: "Nunito";
+}

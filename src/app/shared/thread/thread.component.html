@@ -127,14 +127,14 @@
 
   <div class="input-container">
     <div class="input-container-wrapper threadwrapper">
-      <input
-        [(ngModel)]="threadMessageText"
-        (input)="checkForMention($event)"
-        (keydown.enter)="sendThreadMessage()"
+      <div
+        #editableDiv
+        contenteditable="true"
+        (input)="onContentChanged($event)"
+        (keydown.enter)="onEnter($event)"
         class="textForThreadInput"
-        type="text"
-        placeholder="Antworten..."
-      />
+      ></div>
+
       <div class="icons">
         <div>
           <span
@@ -143,7 +143,12 @@
           >
             alternate_email
           </span>
-          <span class="material-symbols-outlined"> sentiment_satisfied </span>
+          <span
+            class="material-symbols-outlined"
+            (click)="saveCursorPosition()"
+          >
+            sentiment_satisfied
+          </span>
         </div>
         <img
           (click)="sendThreadMessage()"
