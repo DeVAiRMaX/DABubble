@@ -98,7 +98,7 @@ export class AddUserToChannelOverlayComponent {
 
   async addUsersToChannel(): Promise<void> {
     for (const user of this.selectedUser) {
-      await this.databaseService.updateChannel(this.data.channelKey, user.uid);
+      await this.databaseService.updateChannelMember(this.data.channelKey, user.uid);
     }
     this.closeDialog();
   }

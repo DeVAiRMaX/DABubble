@@ -1,4 +1,4 @@
-<app-header (channelSelected)="onChannelSelected($event)"></app-header>
+<app-header (channelSelected)="onChannelSelected($event)" (userSelected)="onUserSelected($event)"></app-header>
 <div class="main-container">
   <app-side-nav
     [ngClass]="{ 'side-nav-container': sideNavIsVisible }"
