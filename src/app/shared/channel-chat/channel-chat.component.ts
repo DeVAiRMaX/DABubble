@@ -10,6 +10,8 @@ import {
   ElementRef,
   ChangeDetectorRef,
   CUSTOM_ELEMENTS_SCHEMA,
+  QueryList,
+  ViewChildren,
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
@@ -20,7 +22,7 @@ import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
 import { ChannelWithKey } from '../interfaces/channel';
-import { Message } from '../interfaces/message';
+import { Message, Reaction } from '../interfaces/message';
 import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-persons-dialog.component';
 import { SubService } from '../services/sub.service';
 import { FirebaseService } from '../services/firebase.service';
@@ -28,6 +30,8 @@ import { AuthService } from '../services/auth.service';
 import { Observable, of } from 'rxjs';
 import { User } from '../interfaces/user';
 import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.component';
+import { FormsModule } from '@angular/forms';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-channel-chat',
@@ -36,7 +40,9 @@ import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.compo
     CommonModule,
     MatDialogModule,
     SharedModule,
-    // SmileyKeyboardComponent,
+    SharedModule,
+    FormsModule,
+    MatTooltipModule,
   ],
   templateUrl: './channel-chat.component.html',
   styleUrl: './channel-chat.component.scss',
@@ -48,9 +54,14 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   activeThreadKey: string | null = null;
   channelUsers: any = [];
   channelMemberAvatars: any = [];
+  editingMessageKey: string | null = null;
+  editMessageText: string = '';
 
   @Input() channel!: ChannelWithKey;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
+  @ViewChildren('editInput') editInputs!: QueryList<
+    ElementRef<HTMLTextAreaElement>
+  >;
 
   private variableService: VariablesService = inject(VariablesService);
   private subService: SubService = inject(SubService);
@@ -58,7 +69,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
-  private savedRange: Range | null = null; // Variable zum Speichern des Bereichs (gio: was meinen?)
+  private savedRange: Range | null = null;
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
   private readonly SUB_MESSAGES = 'channelMessages';
 
@@ -110,7 +121,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       .getChannel(this.channel.key)
       .subscribe(async (user) => {
         if (user?.members && Array.isArray(user.members)) {
-          console.log('Member IDs:', user.members);
           try {
             const membersData = await this.authService.getMembersData(
               user.members
@@ -123,7 +133,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
             console.error('Fehler beim Abrufen der Mitglieder:', error);
           }
         } else {
-          console.log('Keine Mitglieder vorhanden oder ungültiges Format');
           this.channel.members = [];
           this.memberAvatars = [];
         }
@@ -131,6 +140,17 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (
+      changes['channel'] &&
+      changes['channel'].currentValue?.key !==
+        changes['channel'].previousValue?.key
+    ) {
+      this.cancelEdit();
+      this.getChannelMembers();
+    } else if (changes['channel']) {
+      this.getChannelMembers();
+    }
+
     if (changes['channel'] && changes['channel'].currentValue) {
       const currentChannel = changes['channel'].currentValue as ChannelWithKey;
       if (currentChannel.key) {
@@ -206,19 +226,13 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   shouldShowDateDivider(
     currentMessage: Message,
-    previousMessage: Message | null | undefined // Wichtig: auch undefined zulassen
+    previousMessage: Message | null | undefined
   ): boolean {
-    // Wenn es keine vorherige Nachricht gibt (also die erste Nachricht im Array),
-    // zeige den Divider immer an.
     if (!previousMessage) {
       return true;
     }
-
-    // Sicherstellen, dass Zeitstempel vorhanden und gültig sind
     if (!currentMessage?.time || !previousMessage?.time) {
       console.warn('Fehlender Zeitstempel für Datums-Divider-Prüfung.');
-      // Entscheide, wie du diesen Fall behandeln möchtest.
-      // 'false' zurückzugeben scheint hier sicherer, um Fehler zu vermeiden.
       return false;
     }
 
@@ -226,17 +240,15 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       const currentDate = new Date(currentMessage.time);
       const previousDate = new Date(previousMessage.time);
 
-      // Prüfen, ob die erzeugten Daten gültig sind
       if (isNaN(currentDate.getTime()) || isNaN(previousDate.getTime())) {
         console.warn('Ungültiges Datum bei Datums-Divider-Prüfung.');
         return false;
       }
 
-      // Vergleiche nur den Datumsanteil (Tag, Monat, Jahr)
       return currentDate.toDateString() !== previousDate.toDateString();
     } catch (error) {
       console.error('Fehler beim Vergleichen der Daten für Divider:', error);
-      return false; // Zeige keinen Divider bei einem Fehler
+      return false;
     }
   }
 
@@ -292,7 +304,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
           dialogElement.style.left = `${newLeft}px`;
           dialogElement.style.position = 'absolute';
           dialogElement.style.maxWidth = '515px';
-          // dialogElement.style.maxHeight = '295px';
         }
       }, 0);
     }
@@ -353,22 +364,13 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (message.threadKey) {
-      console.log(
-        `[ChannelChat] Öffne existierenden Thread: ${message.threadKey}`
-      );
       this.activeThreadKey = message.threadKey;
       this.openThreadView(message.threadKey);
     } else {
-      console.log(
-        `[ChannelChat] Starte neuen Thread für Nachricht: ${message.key}`
-      );
       this.firebaseService
         .createThread(message, this.channel.key, this.currentUser)
         .subscribe({
           next: (newThreadKey) => {
-            console.log(
-              `[ChannelChat] Neuer Thread erfolgreich erstellt: ${newThreadKey}`
-            );
             this.activeThreadKey = newThreadKey;
             message.threadKey = newThreadKey;
             message.threadReplyCount = 0;
@@ -382,7 +384,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
               '[ChannelChat] Fehler beim Erstellen des Threads:',
               err
             );
-            // Hier ggf. Nutzerfeedback geben
           },
         });
     }
@@ -391,7 +392,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   openThreadView(threadKey: string): void {
     this.activeThreadKey = threadKey;
     this.variableService.openThread(threadKey);
-    console.log(`[ChannelChat] Thread Ansicht für ${threadKey} angefordert.`);
   }
 
   openTagPeopleDialog() {
@@ -411,8 +411,8 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         panelClass: ['tagging-dialog'],
         backdropClass: 'transparentBackdrop',
         autoFocus: false,
-        data:{
-          mode: 'chat'
+        data: {
+          mode: 'chat',
         },
       });
 
@@ -492,7 +492,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
     if (index !== -1) {
       this.taggedPersonsInChat.splice(index, 1);
-      console.log(`Person ${name} entfernt.`);
     } else {
       console.log(`Person ${name} nicht gefunden.`);
     }
@@ -512,14 +511,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         data: { channelKey: this.channel?.key },
       });
 
-      // Listen for the emojiSelected event
       const componentInstance =
         dialogRef.componentInstance as SmileyKeyboardComponent;
       componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
-        this.insertEmojiAtCursor(selectedEmoji); // Insert the emoji at the cursor position
+        this.insertEmojiAtCursor(selectedEmoji);
       });
 
-      // Optionally, handle dialog close if needed
       dialogRef.afterClosed().subscribe(() => {
         console.log('Smiley keyboard dialog closed');
       });
@@ -553,7 +550,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
     if (!this.savedRange) {
       console.error('No saved cursor position available.');
-      input.focus(); // Focus the input field if no range is saved
+      input.focus();
       return;
     }
 
@@ -561,25 +558,20 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     if (!selection) return;
 
     try {
-      // Restore the saved range
       selection.removeAllRanges();
       selection.addRange(this.savedRange);
 
       const range = selection.getRangeAt(0);
-      range.deleteContents(); // Delete content at the cursor position
+      range.deleteContents();
 
-      // Insert the emoji as a text node
       const emojiNode = document.createTextNode(emoji);
       range.insertNode(emojiNode);
 
-      // Move the cursor after the inserted emoji
       range.setStartAfter(emojiNode);
-      range.collapse(true); // Collapse the range to the end of the emoji
+      range.collapse(true);
 
-      // Save the updated range
       this.savedRange = range.cloneRange();
 
-      // Focus the input field for further typing
       input.focus();
     } catch (error) {
       console.error('Error inserting emoji:', error);
@@ -600,12 +592,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0).cloneRange();
 
-      if (range.collapsed) {
-        console.log('Cursor position is collapsed, saving current position...');
-      } else {
-        console.log('Text range saved:', range);
-      }
-
       this.savedRange = range;
 
       const lastChild = input.lastChild;
@@ -613,16 +599,137 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         this.savedRange.setStart(lastChild, (lastChild as Text).length);
         this.savedRange.setEnd(lastChild, (lastChild as Text).length);
       }
-
-      console.log(
-        'Cursor position saved at end of input field or current position:',
-        this.savedRange.endOffset
-      );
     } else {
       console.warn('No selection range available to save.');
     }
 
-    // Öffne den Emoji-Dialog (z. B. zum Hinzufügen eines Smileys)
     this.openAddSmileyToChannelDialog();
+  }
+
+  toggleReaction(message: Message, emoji: string): void {
+    if (!this.currentUser || !message.key || !this.channel?.key) return;
+
+    this.firebaseService
+      .toggleReaction(this.channel.key, message.key, emoji, this.currentUser)
+      .subscribe({
+        next: () =>
+          console.log(
+            `Reaktion ${emoji} für Nachricht ${message.key} getoggled.`
+          ),
+        error: (err) => console.error('Fehler beim togglen der Reaktion:', err),
+      });
+  }
+
+  openEmojiPickerForReaction(message: Message): void {
+    if (!this.currentUser || !message.key || !this.channel?.key) return;
+
+    const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+      panelClass: 'emoji-picker-dialog-reaction',
+      backdropClass: 'transparentBackdrop',
+    });
+
+    dialogRef.componentInstance.emojiSelected.subscribe(
+      (selectedEmoji: string) => {
+        this.toggleReaction(message, selectedEmoji);
+      }
+    );
+  }
+
+  groupReactions(reactions: Reaction[] | undefined): {
+    emoji: string;
+    count: number;
+    userIds: string[];
+    userNames: string[];
+    reactedByUser: boolean;
+  }[] {
+    if (!reactions || reactions.length === 0) {
+      return [];
+    }
+
+    const grouped = reactions.reduce((acc, reaction) => {
+      if (!acc[reaction.emoji]) {
+        acc[reaction.emoji] = {
+          emoji: reaction.emoji,
+          count: 0,
+          userIds: [],
+          userNames: [],
+          reactedByUser: false,
+        };
+      }
+      acc[reaction.emoji].count++;
+      acc[reaction.emoji].userIds.push(reaction.userId);
+      acc[reaction.emoji].userNames.push(reaction.userName);
+      if (reaction.userId === this.currentUser?.uid) {
+        acc[reaction.emoji].reactedByUser = true;
+      }
+      return acc;
+    }, {} as { [key: string]: { emoji: string; count: number; userIds: string[]; userNames: string[]; reactedByUser: boolean } });
+
+    return Object.values(grouped);
+  }
+
+  startEditing(message: Message): void {
+    if (!message?.key) {
+      return;
+    }
+
+    this.editingMessageKey = message.key;
+    this.editMessageText = message.message;
+
+    this.cdRef.markForCheck();
+    setTimeout(() => {
+      const inputEl = this.editInputs.find(
+        (el) =>
+          !!el.nativeElement
+            .closest('.channel-chat-message-container')
+            ?.classList.contains('editing')
+      );
+
+      if (inputEl?.nativeElement) {
+        inputEl.nativeElement.focus();
+        const length = inputEl.nativeElement.value.length;
+        inputEl.nativeElement.setSelectionRange(length, length);
+      } else {
+        console.warn(
+          'Konnte das zu fokussierende Edit-Input-Element nicht finden.'
+        );
+      }
+    }, 0);
+  }
+
+  saveEdit(message: Message): void {
+    const newText = this.editMessageText.trim();
+    if (
+      !this.editingMessageKey ||
+      !newText ||
+      newText === message.message ||
+      !this.channel?.key
+    ) {
+      this.cancelEdit();
+      return;
+    }
+
+    this.firebaseService
+      .updateMessage(this.channel.key, this.editingMessageKey, newText)
+      .subscribe({
+        next: () => {
+          this.cancelEdit();
+        },
+        error: (err) => {
+          console.error('Fehler beim Speichern der Bearbeitung:', err);
+        },
+      });
+  }
+
+  handleEditEnter(event: any, message: Message): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.saveEdit(message);
+    }
+  }
+
+  cancelEdit(): void {
+    this.editingMessageKey = null;
+    this.editMessageText = '';
   }
 }
