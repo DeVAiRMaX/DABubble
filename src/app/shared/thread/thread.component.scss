@@ -334,7 +334,10 @@
     border: none;
     outline: none;
     resize: none;
+    overflow-wrap: anywhere;
     min-height: 40px;
+    max-height: 90px;
+    overflow-y: scroll;
     color: #333;
     font-size: 18px;
     font-family: "Nunito";

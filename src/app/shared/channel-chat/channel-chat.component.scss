@@ -706,6 +706,7 @@
   min-height: unset;
   max-height: 100px;
   overflow-y: auto;
+  overflow-wrap: anywhere; 
   padding: 8px 0;
   font-family: "Nunito";
   resize: none;
