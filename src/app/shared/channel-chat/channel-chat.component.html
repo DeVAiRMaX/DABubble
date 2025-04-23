@@ -34,187 +34,189 @@
         let isFirst = first
       "
     >
-    <ng-container *ngIf="i !== 0">
-    
-      <div
-        class="date-divider"
-        *ngIf="shouldShowDateDivider(message, (messages$ | async)?.[i - 1])"
-      >
-        <div class="divider-line"></div>
-        <span class="date-text">{{
-          message.time | date : "EEEE, d. MMMM"
-        }}</span>
-        <div class="divider-line"></div>
-      </div>
-
-      <div
-        class="channel-chat-message-container"
-        [attr.data-message-key]="message.key"
-        [ngClass]="{
-          ownMessage: isOwnMessage(message),
-          editing: editingMessageKey === message.key
-        }"
-      >
+      <ng-container *ngIf="i !== 0">
         <div
-          class="message-layout othersMessage"
-          *ngIf="!isOwnMessage(message)"
+          class="date-divider"
+          *ngIf="shouldShowDateDivider(message, (messages$ | async)?.[i - 1])"
         >
-          <div class="message-avatar">
-            <img
-              [src]="
-                message.senderAvatar || '/assets/img/character/bsp-avatar.png'
-              "
-              [alt]="message.senderDisplayName"
-            />
-          </div>
-          <div class="message-content-wrapper">
-            <div class="message-header">
-              <h3 class="msg-user-name">{{ message.senderDisplayName }}</h3>
-              <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
-            </div>
-            <div class="msg-bubble msg-left">
-              <p>{{ message.message }}</p>
-            </div>
-            <div
-              class="message-footer other-footer"
-              *ngIf="message.senderUid !== 'DABubble'"
-            >
-              <a (click)="startOrOpenThread(message)" class="msg-count">
-                <span *ngIf="!message.threadKey">Antworten</span>
-                <span *ngIf="message.threadKey"
-                  >{{ message.threadReplyCount || 0 }} Antworten</span
-                >
-              </a>
-              <p
-                class="last-msg-time"
-                *ngIf="message.threadKey && message.threadLastReplyAt"
-              >
-                Letzte Antwort {{ message.threadLastReplyAt | date : "HH:mm" }}
-              </p>
-            </div>
-          </div>
-          <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">
-            <button
-              (click)="toggleReaction(message, '✅')"
-              class="reactionMenuBtn check"
-            ></button>
-            <button
-              (click)="toggleReaction(message, '👍')"
-              class="reactionMenuBtn thumb"
-            ></button>
-            <button
-              (click)="openEmojiPickerForReaction(message)"
-              class="reactionMenuBtn reactionSmile"
-            ></button>
-            <button
-              class="reactionMenuBtn commentReact"
-              (click)="startOrOpenThread(message)"
-            ></button>
-            <button class="reactionMenuBtn editMsg"></button>
-          </div>
+          <div class="divider-line"></div>
+          <span class="date-text">{{
+            message.time | date : "EEEE, d. MMMM"
+          }}</span>
+          <div class="divider-line"></div>
         </div>
 
-        <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
-          <div class="reactionMenu">
-            <button
-              (click)="toggleReaction(message, '✅')"
-              class="reactionMenuBtn check"
-            ></button>
-            <button
-              (click)="toggleReaction(message, '👍')"
-              class="reactionMenuBtn thumb"
-            ></button>
-            <button
-              (click)="openEmojiPickerForReaction(message)"
-              class="reactionMenuBtn reactionSmile"
-            ></button>
-            <button
-              (click)="startOrOpenThread(message)"
-              class="reactionMenuBtn commentReact"
-            ></button>
-            <button
-              (click)="startEditing(message)"
-              class="reactionMenuBtn editMsg"
-            ></button>
-          </div>
-          <div class="message-content-wrapper">
-            <div class="message-header own-header">
-              <h3 class="msg-user-name">Du</h3>
-              <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+        <div
+          class="channel-chat-message-container"
+          [attr.data-message-key]="message.key"
+          [ngClass]="{
+            ownMessage: isOwnMessage(message),
+            editing: editingMessageKey === message.key
+          }"
+        >
+          <div
+            class="message-layout othersMessage"
+            *ngIf="!isOwnMessage(message)"
+          >
+            <div class="message-avatar">
+              <img
+                [src]="
+                  message.senderAvatar || '/assets/img/character/bsp-avatar.png'
+                "
+                [alt]="message.senderDisplayName"
+              />
             </div>
-            <div
-              class="msg-bubble msg-right"
-              *ngIf="editingMessageKey !== message.key"
-            >
-              <p>{{ message.message }}</p>
-              <span class="edited-indicator" *ngIf="message.editedAt"
-                >(bearbeitet)</span
+            <div class="message-content-wrapper">
+              <div class="message-header">
+                <h3 class="msg-user-name">{{ message.senderDisplayName }}</h3>
+                <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+              </div>
+              <div class="msg-bubble msg-left">
+                <p>{{ message.message }}</p>
+              </div>
+              <div
+                class="message-footer other-footer"
+                *ngIf="message.senderUid !== 'DABubble'"
               >
-            </div>
-            <div
-              class="edit-message-input-container"
-              *ngIf="editingMessageKey === message.key"
-            >
-              <textarea
-                #editInput
-                [(ngModel)]="editMessageText"
-                (keydown.escape)="cancelEdit()"
-                (keydown.enter)="handleEditEnter($event, message)"
-                rows="3"
-              ></textarea>
-              <div class="edit-actions">
-                <button (click)="cancelEdit()">Abbrechen</button>
-                <button (click)="saveEdit(message)">Speichern</button>
+                <a (click)="startOrOpenThread(message)" class="msg-count">
+                  <span *ngIf="!message.threadKey">Antworten</span>
+                  <span *ngIf="message.threadKey"
+                    >{{ message.threadReplyCount || 0 }} Antworten</span
+                  >
+                </a>
+                <p
+                  class="last-msg-time"
+                  *ngIf="message.threadKey && message.threadLastReplyAt"
+                >
+                  Letzte Antwort
+                  {{ message.threadLastReplyAt | date : "HH:mm" }}
+                </p>
               </div>
             </div>
-            <div
-              class="message-footer own-footer msg-reaction-container"
-              *ngIf="message.reactions && message.reactions.length > 0"
-            >
+            <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">
+              <button
+                (click)="toggleReaction(message, '✅')"
+                class="reactionMenuBtn check"
+              ></button>
+              <button
+                (click)="toggleReaction(message, '👍')"
+                class="reactionMenuBtn thumb"
+              ></button>
+              <button
+                (click)="openEmojiPickerForReaction(message)"
+                class="reactionMenuBtn reactionSmile"
+              ></button>
+              <button
+                class="reactionMenuBtn commentReact"
+                (click)="startOrOpenThread(message)"
+              ></button>
+              <button class="reactionMenuBtn editMsg"></button>
+            </div>
+          </div>
+
+          <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
+            <div class="reactionMenu">
+              <button
+                (click)="toggleReaction(message, '✅')"
+                class="reactionMenuBtn check"
+              ></button>
+              <button
+                (click)="toggleReaction(message, '👍')"
+                class="reactionMenuBtn thumb"
+              ></button>
+              <button
+                (click)="openEmojiPickerForReaction(message)"
+                class="reactionMenuBtn reactionSmile"
+              ></button>
+              <button
+                (click)="startOrOpenThread(message)"
+                class="reactionMenuBtn commentReact"
+              ></button>
+              <button
+                (click)="startEditing(message)"
+                class="reactionMenuBtn editMsg"
+              ></button>
+            </div>
+            <div class="message-content-wrapper">
+              <div class="message-header own-header">
+                <h3 class="msg-user-name">Du</h3>
+                <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+              </div>
+              <div
+                class="msg-bubble msg-right"
+                *ngIf="editingMessageKey !== message.key"
+              >
+                <p>{{ message.message }}</p>
+                <span class="edited-indicator" *ngIf="message.editedAt"
+                  >(bearbeitet)</span
+                >
+              </div>
+              <div
+                class="edit-message-input-container"
+                *ngIf="editingMessageKey === message.key"
+              >
+                <textarea
+                  class="edit-textbox"
+                  #editInput
+                  [(ngModel)]="editMessageText"
+                  (keydown.escape)="cancelEdit()"
+                  (keydown.enter)="handleEditEnter($event, message)"
+                  rows="3"
+                ></textarea>
+                <div class="edit-actions">
+                  <button (click)="cancelEdit()">Abbrechen</button>
+                  <button (click)="saveEdit(message)">Speichern</button>
+                </div>
+              </div>
               <div
                 class="message-footer own-footer msg-reaction-container"
                 *ngIf="message.reactions && message.reactions.length > 0"
               >
                 <div
-                  class="reaction"
-                  *ngFor="let reaction of groupReactions(message.reactions)"
-                  (click)="toggleReaction(message, reaction.emoji)"
-                  [class.reacted-by-user]="reaction.reactedByUser"
-                  matTooltip="{{ reaction.userNames.join(',\\n') }}"
-                  matTooltipPosition="above"
+                  class="message-footer own-footer msg-reaction-container"
+                  *ngIf="message.reactions && message.reactions.length > 0"
                 >
-                  <span>{{ reaction.emoji }}</span>
-                  <p>{{ reaction.count }}</p>
+                  <div
+                    class="reaction"
+                    *ngFor="let reaction of groupReactions(message.reactions)"
+                    (click)="toggleReaction(message, reaction.emoji)"
+                    [class.reacted-by-user]="reaction.reactedByUser"
+                    matTooltip="{{ reaction.userNames.join(',\\n') }}"
+                    matTooltipPosition="above"
+                  >
+                    <span>{{ reaction.emoji }}</span>
+                    <p>{{ reaction.count }}</p>
+                  </div>
+                  <span
+                    class="material-symbols-outlined add_reaction_btn"
+                    (click)="openEmojiPickerForReaction(message)"
+                    matTooltip="Reaktion hinzufügen"
+                    matTooltipPosition="above"
+                    >add_reaction</span
+                  >
                 </div>
-                <span
-                  class="material-symbols-outlined add_reaction_btn"
-                  (click)="openEmojiPickerForReaction(message)"
-                  matTooltip="Reaktion hinzufügen"
-                  matTooltipPosition="above"
-                  >add_reaction</span
-                >
+              </div>
+              <div class="message-footer own-footer" *ngIf="message.threadKey">
+                <a (click)="startOrOpenThread(message)" class="msg-count">
+                  {{ message.threadReplyCount || 0 }} Antworten
+                </a>
+                <p class="last-msg-time" *ngIf="message.threadLastReplyAt">
+                  Letzte Antwort
+                  {{ message.threadLastReplyAt | date : "HH:mm" }}
+                </p>
               </div>
             </div>
-            <div class="message-footer own-footer" *ngIf="message.threadKey">
-              <a (click)="startOrOpenThread(message)" class="msg-count">
-                {{ message.threadReplyCount || 0 }} Antworten
-              </a>
-              <p class="last-msg-time" *ngIf="message.threadLastReplyAt">
-                Letzte Antwort {{ message.threadLastReplyAt | date : "HH:mm" }}
-              </p>
+            <div class="message-avatar">
+              <img
+                [src]="
+                  currentUser?.avatar || '/assets/img/character/bsp-avatar.png'
+                "
+                [alt]="currentUser?.displayName || 'Du'"
+              />
             </div>
           </div>
-          <div class="message-avatar">
-            <img
-              [src]="
-                currentUser?.avatar || '/assets/img/character/bsp-avatar.png'
-              "
-              [alt]="currentUser?.displayName || 'Du'"
-            />
-          </div>
         </div>
-      </div>
-    </ng-container>
+      </ng-container>
     </ng-container>
 
     <div *ngIf="(messages$ | async)?.length === 1" class="no-messages">

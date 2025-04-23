@@ -922,9 +922,12 @@ emoji-picker {
   flex-direction: column;
   gap: 5px;
   margin: 5px 0;
-  width: fit-content;
+  min-width: fit-content;
+  width: 100%;
+  position: relative;
   max-width: 100%;
-  align-self: flex-end;
+
+  align-items: center;
 
   .othersMessage & {
     align-self: flex-start;
@@ -954,11 +957,17 @@ emoji-picker {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 4px;
+  position: absolute;
+  bottom: 20px;
 
   button {
-    padding: 4px 12px;
-    font-size: 13px;
-    border-radius: 6px;
+    padding: 12px 25px 12px 25px;
+    font-size: 15px;
+    font-weight: 700;
+    max-width: 133px;
+    max-height: 49px;
+    border-radius: 50px;
+    text-align: center;
     cursor: pointer;
     border: 1px solid transparent;
     transition: background-color 0.15s ease, border-color 0.15s ease,
@@ -966,8 +975,8 @@ emoji-picker {
 
     &:first-of-type {
       background-color: transparent;
-      border-color: #adb0d9;
-      color: #495057;
+      border-color: #797EF3;
+      color: #444DF2;
       &:hover {
         background-color: #f1f3f5;
       }
@@ -990,4 +999,8 @@ emoji-picker {
   color: #6c757d;
   margin-left: 8px;
   font-style: italic;
+}
+
+.edit-textbox{
+  min-height: 155px;
 }
