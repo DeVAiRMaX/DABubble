@@ -154,9 +154,9 @@
   width: 100%;
   overflow-y: auto;
   margin: 8px 0;
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
+  // display: flex;                 AYO max für was ist diese?
+  // justify-content: flex-end;
+  // flex-direction: column;
 }
 
 .channel-chat-message-container-left-user-container {
