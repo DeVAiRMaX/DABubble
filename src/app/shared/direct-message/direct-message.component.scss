@@ -101,6 +101,10 @@
   &.has-reactions:hover {
     background-color: rgb(236, 238, 253);
   }
+
+  &:hover{
+    background-color: #ECEEFE;
+  }
 }
 
 .message-layout {

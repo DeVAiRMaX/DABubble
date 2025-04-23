@@ -213,15 +213,37 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
 
   //nochmal schauen wa
   openEmojiPicker(): void {
+    const targetElement = document.querySelector('.textForMessageInput');
     this.saveCursorPosition();
-    const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+    if(targetElement){
+      const rect = targetElement.getBoundingClientRect();
+      const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
       panelClass: 'emoji-picker-dialog',
       backdropClass: 'transparentBackdrop',
+      position:{
+        bottom: `${rect.top - 20 + window.scrollY}px`,
+        left: `${rect.left + 20 + window.scrollX}px`,
+      }
     });
 
-    dialogRef.componentInstance.emojiSelected.subscribe((emoji: string) => {
+     dialogRef.componentInstance.emojiSelected.subscribe((emoji: string) => {
       this.insertEmojiAtCursor(emoji);
     });
+
+
+    setTimeout(() => {
+      const dialogElement = document.querySelector('mat-dialog-container') as HTMLElement;
+      if(dialogElement){
+        const dialogRect = dialogElement.getBoundingClientRect();
+        dialogElement.style.position = 'absolute';
+        const newTop = rect.top - dialogRect.height + window.scrollY;
+        const newLeft = rect.right - dialogRect.width - window.scrollX;
+      }
+    }, 0);
+    }
+    
+
+   
   }
 
   saveCursorPosition(): void {
