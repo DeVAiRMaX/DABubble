@@ -10,6 +10,7 @@ import { Thread, ThreadMessage } from '../interfaces/thread';
 import { User } from '../interfaces/user';
 import {
   Observable,
+  Subject,
   Subscription,
   catchError,
   from,
@@ -23,6 +24,9 @@ import { get, ref } from '@angular/fire/database';
 import { FormsModule } from '@angular/forms';
 import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-keyboard.component';
 import { ChannelWithKey } from '../interfaces/channel';
+import { fromEvent } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
 
 
 
@@ -60,6 +64,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   private authService: AuthService = inject(AuthService);
   private dialog: MatDialog = inject(MatDialog);
   private savedRange: Range | null = null;
+  private destroy$ = new Subject<void>();
 
   isOpen: boolean = false;
   currentThreadKey: string | null = null;
@@ -73,6 +78,22 @@ export class ThreadComponent implements OnInit, OnDestroy {
   lastInputValue: string = '';
   taggedPersonsInThreads = this.variableService.getTaggedcontactsFromThreads();
   constructor() {}
+
+  ngAfterViewInit(){
+    const el = this.editableDiv.nativeElement;
+
+
+    fromEvent(el, 'keyup').pipe(takeUntil(this.destroy$)).subscribe(() => this.cacheCurrentRange());
+    fromEvent(el, 'mouseup').pipe(takeUntil(this.destroy$)).subscribe(() => this.cacheCurrentRange());
+
+  }
+
+  private cacheCurrentRange() {
+    const sel = window.getSelection();
+    if(sel && sel.rangeCount > 0) {
+      this.savedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
 
   ngOnInit(): void {
     const openSub = this.variableService.threadIsOpen$.subscribe(
@@ -107,6 +128,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.subscriptions.unsubscribe();
   }
 
@@ -368,7 +391,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
 
     insertEmojiAtCursor(emoji: string) {
-      const input = document.querySelector('.textForThreadInput') as HTMLElement;
+      const input = this.editableDiv.nativeElement;
+      input.focus();
   
       if (!input) {
         console.error('Input field not found!');
@@ -376,6 +400,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
       }
   
       if (!this.savedRange) {
+        const range = document.createRange();
+        range.selectNodeContents(input);
+        range.collapse(false); // Collapse to the end of the input field
+        this.savedRange = range;
         console.error('No saved cursor position available.');
         input.focus(); // Focus the input field if no range is saved
         return;
@@ -402,7 +430,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   
         // Save the updated range
         this.savedRange = range.cloneRange();
-        this.threadMessageText = this.editableDiv.nativeElement.innerHTML;
+        this.threadMessageText = input.innerHTML;
         // Focus the input field for further typing
         input.focus();
       } catch (error) {
