@@ -16,7 +16,7 @@ import { User as CustomUser, userData } from '../interfaces/user';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Channel, ChannelWithKey } from '../interfaces/channel';
-import { Message } from '../interfaces/message';
+import { Message, Reaction } from '../interfaces/message';
 import { Thread, ThreadMessage } from '../interfaces/thread';
 import { Router } from '@angular/router';
 import { remove } from 'firebase/database';
@@ -202,27 +202,27 @@ export class FirebaseService {
   async updateChannelMember(channelKey: string, uid: string): Promise<void> {
     const membersRef = ref(this.database, `channels/${channelKey}/members`);
     const userRef = ref(this.database, `users/${uid}/channelKeys`);
-  
+
     const channelMembersSnapshot = await get(membersRef);
     let currentMembers: string[] = [];
-  
+
     if (channelMembersSnapshot.exists()) {
       const data = channelMembersSnapshot.val();
       currentMembers = Array.isArray(data) ? data : Object.values(data);
     }
-  
+
     const userChannelKeysSnapshot = await get(userRef);
     let userChannelKeys: string[] = [];
-  
+
     if (userChannelKeysSnapshot.exists()) {
       const data = userChannelKeysSnapshot.val();
       userChannelKeys = Array.isArray(data) ? data : Object.values(data);
     }
-  
+
     if (!currentMembers.includes(uid)) {
       currentMembers.push(uid);
     }
-  
+
     if (!userChannelKeys.includes(channelKey)) {
       userChannelKeys.push(channelKey);
     }
@@ -232,17 +232,16 @@ export class FirebaseService {
       set(userRef, userChannelKeys),
     ]);
   }
-  
 
   async removeUserChannel(channelKey: string, uid: string): Promise<void> {
     const membersRef = ref(this.database, `channels/${channelKey}/members`);
     const userRef = ref(this.database, `users/${uid}/channelKeys`);
-  
+
     const [membersSnap, userChannelsSnap] = await Promise.all([
       get(membersRef),
-      get(userRef)
+      get(userRef),
     ]);
-  
+
     let updatedMembers: string[] = [];
     let updatedUserChannels: string[] = [];
 
@@ -255,15 +254,16 @@ export class FirebaseService {
     if (userChannelsSnap.exists()) {
       const data = userChannelsSnap.val();
       const userChannels = Array.isArray(data) ? data : Object.values(data);
-      updatedUserChannels = userChannels.filter((key: string) => key !== channelKey);
+      updatedUserChannels = userChannels.filter(
+        (key: string) => key !== channelKey
+      );
     }
 
     await Promise.all([
       set(membersRef, updatedMembers),
-      set(userRef, updatedUserChannels)
+      set(userRef, updatedUserChannels),
     ]);
   }
-  
 
   getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
     if (!uid) {
@@ -1001,9 +1001,114 @@ export class FirebaseService {
 
     if (snapshot.exists()) {
       return snapshot.val();
-
     } else {
       return {};
     }
+  }
+
+  toggleReaction(
+    channelKey: string,
+    messageKey: string,
+    emoji: string,
+    user: CustomUser
+  ): Observable<void> {
+    if (!channelKey || !messageKey || !emoji || !user || !user.uid) {
+      return throwError(() => new Error('toggleReaction: Ungültige Eingabe.'));
+    }
+
+    const reactionsRef = ref(
+      this.database,
+      `channels/${channelKey}/messages/${messageKey}/reactions`
+    );
+
+    // 1. Aktuelle Reaktionen holen (nur einmal mit 'first()')
+    return from(get(reactionsRef)).pipe(
+      switchMap((snapshot) => {
+        const currentReactions: Reaction[] = snapshot.exists()
+          ? snapshot.val()
+          : [];
+        let updatedReactions: Reaction[];
+
+        // 2. Prüfen, ob der User bereits mit diesem Emoji reagiert hat
+        const existingReactionIndex = currentReactions.findIndex(
+          (r) => r.emoji === emoji && r.userId === user.uid
+        );
+
+        if (existingReactionIndex > -1) {
+          // Reaktion existiert -> Entfernen
+          updatedReactions = [
+            ...currentReactions.slice(0, existingReactionIndex),
+            ...currentReactions.slice(existingReactionIndex + 1),
+          ];
+          console.log(
+            `[toggleReaction] Reaktion entfernt: ${emoji} von ${user.uid}`
+          );
+        } else {
+          // Reaktion existiert nicht -> Hinzufügen
+          const newReaction: Reaction = {
+            emoji: emoji,
+            userId: user.uid,
+            userName: user.displayName || 'Unbekannt', // Namen für Tooltip speichern
+          };
+          updatedReactions = [...currentReactions, newReaction];
+          console.log(
+            `[toggleReaction] Reaktion hinzugefügt: ${emoji} von ${user.uid}`
+          );
+        }
+
+        // 3. Aktualisierte Liste zurückschreiben
+        // Verwende set() auf reactionsRef, um das gesamte Array zu überschreiben.
+        // Das ist sicherer als push/remove bei Arrays in Firebase RTDB.
+        return from(set(reactionsRef, updatedReactions));
+      }),
+      map(() => void 0), // Signalisiert Erfolg
+      catchError((error) => {
+        console.error(
+          `[toggleReaction] Fehler beim Aktualisieren der Reaktion für Nachricht ${messageKey}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Fehler beim Aktualisieren der Reaktion.')
+        );
+      })
+    );
+  }
+
+  updateMessage(
+    channelKey: string,
+    messageKey: string,
+    newText: string
+  ): Observable<void> {
+    if (!channelKey || !messageKey || !newText) {
+      return throwError(() => new Error('updateMessage: Ungültige Eingabe.'));
+    }
+
+    const messageRef = ref(
+      this.database,
+      `channels/${channelKey}/messages/${messageKey}`
+    );
+
+    const updateData = {
+      message: newText,
+      editedAt: serverTimestamp(), // Füge einen Zeitstempel für die Bearbeitung hinzu
+    };
+
+    console.log(
+      `[updateMessage] Aktualisiere Nachricht ${messageKey} mit:`,
+      updateData
+    );
+
+    return from(update(messageRef, updateData)).pipe(
+      map(() => void 0),
+      catchError((error) => {
+        console.error(
+          `[updateMessage] Fehler beim Aktualisieren der Nachricht ${messageKey}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Fehler beim Aktualisieren der Nachricht.')
+        );
+      })
+    );
   }
 }

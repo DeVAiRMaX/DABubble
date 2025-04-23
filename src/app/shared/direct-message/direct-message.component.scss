@@ -347,16 +347,17 @@
 .input-container {
   padding: 15px 25px 20px 25px;
   background-color: #fff;
-  border-top: 1px solid #edeefe;
 }
 
 .input-container-wrapper {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   width: 100%;
+  height: 145px;
   border: 1px solid #adb0d9;
-  border-radius: 10px; //anpassen
-  padding: 8px 15px;
+  border-radius: 20px;
+  padding: 20px;
   background-color: #fff;
   position: relative;
 }
@@ -369,11 +370,10 @@
   min-height: 24px;
   max-height: 150px;
   overflow-y: auto;
-  padding: 8px 0;
   font-family: "Nunito", sans-serif;
   color: #333;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 18px;
+  font-weight: 400;
 
   &:empty:before {
     content: attr(placeholder);
@@ -396,8 +396,8 @@
     gap: 5px;
 
     > span {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -405,7 +405,7 @@
       color: #686868;
       cursor: pointer;
       transition: all 0.1s ease-in-out;
-      font-size: 20px;
+      font-size: 24px;
 
       &:hover {
         color: #535af1;
@@ -430,21 +430,51 @@
 }
 
 .no-messages {
-  padding: 40px;
-  text-align: center;
-  color: #6c757d;
-  font-size: 16px;
+  padding: 0 45px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1; // Nimmt verfügbaren Platz ein
+  align-items: flex-start;
+  justify-content: flex-end;
+  flex-grow: 1;
+  font-size: 20px;
+}
 
-  p:first-child {
-    font-weight: 600;
-    margin-bottom: 5px;
+.no-messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-messages-user {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 25px;
+  img {
+    width: 100px;
+    border-radius: 50%;
+  }
+  h3 {
+    font-weight: 700;
+    font-size: 24px;
+    color: #000;
   }
 }
+
+.no-messages-text {
+  p {
+    font-size: 20px;
+    font-weight: 400;
+    color: #686868;
+  }
+  i {
+    color: #535af1;
+    text-decoration: none;
+    font-weight: 400;
+    cursor: pointer;
+  }
+}
+
 
 //anpassen
 ::ng-deep .emoji-picker-dialog .mat-mdc-dialog-container .mdc-dialog__surface {

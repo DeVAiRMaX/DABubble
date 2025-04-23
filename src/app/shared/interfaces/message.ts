@@ -5,8 +5,15 @@ export interface Message {
   senderDisplayName: string;
   senderAvatar?: string;
   time: number;
-  reactions?: any[];
+  reactions?: Reaction[];
   threadKey?: string;
   threadReplyCount?: number;
   threadLastReplyAt?: number;
+  editedAt?: number;
+}
+
+export interface Reaction {
+  emoji: string;
+  userId: string;
+  userName: string;
 }

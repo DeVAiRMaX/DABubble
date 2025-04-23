@@ -117,10 +117,21 @@
       </div>
     </ng-container>
 
+    <!-- <p>Beginne deine Unterhaltung mit {{ otherUser?.displayName }}.</p>
+      <p>Nachrichten, die du hier sendest, sind privat.</p> -->
+
     <div *ngIf="(dmMessages$ | async)?.length === 0" class="no-messages">
-      <p>Beginne deine Unterhaltung mit {{ otherUser?.displayName }}.</p>
-      <p>Nachrichten, die du hier sendest, sind privat.</p>
+      <div class="no-messages-container">
+        <div class="no-messages-user">
+          <img [src]="otherUser?.avatar" alt="">
+          <h3>{{ otherUser?.displayName }}</h3>
+        </div>
+        <div class="no-messages-text">
+          <p>Diese Unterhaltung findet nur zwischen <i>{{ at }}{{ otherUser?.displayName }}</i> und dir statt.</p>
+        </div>
+      </div>
     </div>
+    
   </div>
 
   <div class="input-container" *ngIf="otherUser">
