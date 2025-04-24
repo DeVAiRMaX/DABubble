@@ -1,10 +1,7 @@
 .direct-message-container {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  background-color: #ffffff;
-  border-radius: 30px;
-  overflow: hidden;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
 }
 
 .dm-header {
@@ -63,12 +60,10 @@
 
 .dm-body {
   width: 100%;
-  overflow-y: auto;
   margin: 8px 0;
   display: flex;
-  justify-content: flex-end;
   flex-direction: column;
-  flex: 1;
+  overflow-y: auto;
 }
 
 .date-divider {
@@ -371,11 +366,16 @@
   width: 100%;
   border: none;
   outline: none;
+  flex-grow: 1;
+  min-height: unset;
+  max-height: 100px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  padding: 8px 0;
+  font-family: "Nunito";
   resize: none;
-  min-height: 40px;
   color: #333;
   font-size: 18px;
-  font-family: "Nunito";
 
   &:empty:before {
     content: attr(placeholder);

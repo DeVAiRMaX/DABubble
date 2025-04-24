@@ -154,9 +154,7 @@
   width: 100%;
   overflow-y: auto;
   margin: 8px 0;
-  // AYO Gio ist dafür das nachrichten unten anfangen und nach oben gehen.
   display: flex;
-  justify-content: flex-end;
   flex-direction: column;
 }
 
@@ -693,7 +691,6 @@
   justify-content: space-between;
   flex-direction: column !important;
   width: 100%;
-  gap: 40px;
   border: 1px solid #adb0d9;
   border-radius: 20px;
   padding: 20px;

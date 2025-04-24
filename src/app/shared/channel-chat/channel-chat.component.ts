@@ -57,6 +57,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   editingMessageKey: string | null = null;
   editMessageText: string = '';
 
+  @ViewChild('channelChatBody') channelChatBody!: ElementRef;
   @Input() channel!: ChannelWithKey;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
   @ViewChildren('editInput') editInputs!: QueryList<
@@ -115,6 +116,23 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
     this.getChannelMembers();
   }
+
+  ngAfterViewInit() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.channelChatBody.nativeElement.scrollTop = this.channelChatBody.nativeElement.scrollHeight;
+    } catch (err) {
+      console.warn('Scroll failed', err);
+    }
+  }
+
+  onNewMessageReceived() {
+    this.scrollToBottom();
+  }
+
 
   getChannelMembers() {
     this.firebaseService
@@ -217,6 +235,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         next: () => {
           this.messageInput.nativeElement.innerText = '';
           this.lastInputValue = '';
+          this.onNewMessageReceived();
         },
         error: (err) => {
           console.error('[sendMessage] Fehler beim Senden:', err);

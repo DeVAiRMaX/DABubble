@@ -19,15 +19,17 @@ export class TaggingPersonsDialogComponent implements OnInit {
 
   constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<TaggingPersonsDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: { mode: string }) { }
 
-  allContacts = [
-    { name: 'Frederik Beck (Du)', img: '/assets/img/character/3.png' },
-    { name: 'Sofia Müller', img: '/assets/img/character/2.png' },
-    { name: 'Noah Braun', img: '/assets/img/character/1.png' },
-    { name: 'Elise Roth', img: '/assets/img/character/4.png' },
-    { name: 'Elias Neumann', img: '/assets/img/character/5.png' },
-    { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' }
-  ];
-  contactsArray: any[] = [];
+  // allContacts = [
+  //   { name: 'Frederik Beck (Du)', img: '/assets/img/character/3.png' },
+  //   { name: 'Sofia Müller', img: '/assets/img/character/2.png' },
+  //   { name: 'Noah Braun', img: '/assets/img/character/1.png' },
+  //   { name: 'Elise Roth', img: '/assets/img/character/4.png' },
+  //   { name: 'Elias Neumann', img: '/assets/img/character/5.png' },
+  //   { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' }
+  // ];
+
+
+  allContacts: any[] = [];
 
   taggedContacts: { name: string; img: string; }[] = [];
   taggedContactsThread: { name: string; img: string }[] = [];
@@ -36,7 +38,7 @@ export class TaggingPersonsDialogComponent implements OnInit {
 
   private firebaseService: FirebaseService = inject(FirebaseService);
 
-  async ngOnInit() {
+  ngOnInit() {
 
     this.loadContacts();
 
@@ -83,13 +85,11 @@ export class TaggingPersonsDialogComponent implements OnInit {
   closeDiaglog() { this.dialogRef.close(); }
 
 
-  async loadContacts() {
+  loadContacts() {
     this.firebaseService.getAllUsers().subscribe(users => {
-      this.contactsArray.push(users);
-      
-    
+      this.allContacts.push(...users);
     });
-    console.log(this.contactsArray);
+    console.log(this.allContacts);
   }
 
 

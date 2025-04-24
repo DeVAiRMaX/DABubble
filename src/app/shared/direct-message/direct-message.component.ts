@@ -51,6 +51,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   lastInputValue: string = '';
   at = '@';
 
+  @ViewChild('dmBody') dmBody!: ElementRef;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
   private savedRange: Range | null = null;
 
@@ -81,6 +82,23 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
     this.subService.unsubscribeGroup(this.SUB_AUTH);
     this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+  }
+
+  ngAfterViewInit() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.dmBody.nativeElement.scrollTop = this.dmBody.nativeElement.scrollHeight;
+    } catch (err) {
+      console.warn('Scroll failed', err);
+    }
+  }
+
+  // Wenn neue Nachricht empfangen oder gesendet wird:
+  onNewMessageReceived() {
+    this.scrollToBottom();
   }
 
   private initializeConversation(): void {
@@ -165,7 +183,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         next: () => {
           console.log('[DirectMessage] Nachricht erfolgreich gesendet.');
           this.messageText = '';
-          // this.scrollToBottom();
+          this.onNewMessageReceived();
         },
         error: (err) => {
           console.error(
