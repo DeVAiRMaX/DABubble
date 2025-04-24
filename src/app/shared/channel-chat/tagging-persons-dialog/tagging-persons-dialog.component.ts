@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, inject } from '@angular/core';
 import { VariablesService } from '../../../variables.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FirebaseService } from '../../services/firebase.service';
 
 @Component({
   selector: 'app-tagging-persons-dialog',
@@ -25,21 +26,32 @@ export class TaggingPersonsDialogComponent implements OnInit {
     { name: 'Elias Neumann', img: '/assets/img/character/5.png' },
     { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' }
   ];
+  ContactsData: any = {};
 
   taggedContacts: {name: string; img: string;}[] = [];
   taggedContactsThread:{name: string; img: string}[] = [];
   filteredContacts : {name: string; img: string}[] = [];
   filteredContactsThread: {name: string; img: string}[] = [];
 
+  private firebaseService: FirebaseService = inject(FirebaseService);
+
   ngOnInit() {
+    let Contacts = this.firebaseService.getDatabaseData().then((data) => {
+      Contacts = data.users;
+      this.ContactsData.push(data.users);
+      console.log(Contacts);
+      console.log(this.ContactsData);
+    });
+    
 this.modeForTagging = this.data.mode;
+
 this.taggedContacts = this.variableService.getTaggedContactsFromChat();
 this.taggedContactsThread = this.variableService.getTaggedcontactsFromThreads();
 
 this.updateFilteredContacts();
 this.updateFilteredThreadContacts();
-console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
-console.log('gewählter Modus ist' + this.data.mode);
+// console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
+// console.log('gewählter Modus ist' + this.data.mode);
 
     this.variableService.nameToFilter$.subscribe((value) => {
       this.nametoFilter = value;
@@ -96,7 +108,7 @@ console.log('gewählter Modus ist' + this.data.mode);
       
       const removedContact = this.filteredContactsThread.splice(nameToRemove, 1)[0];
       this.taggedContactsThread.push(removedContact);
-      console.log(this.taggedContactsThread);
+      // console.log(this.taggedContactsThread);
       this.variableService.setTaggedContactsFromThread(this.taggedContactsThread);
       this.updateFilteredThreadContacts();
       
@@ -109,7 +121,7 @@ console.log('gewählter Modus ist' + this.data.mode);
     this.filteredContactsThread = this.allContacts.filter(
       (contact) => !this.taggedContactsThread.some((tagged)=> tagged.name === contact.name)
     );
-    console.log('filtered Contacts sind:' + this.filteredContactsThread);
+    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
   }
 
   updateFilteredContacts() {
