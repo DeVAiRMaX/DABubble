@@ -155,7 +155,7 @@
   overflow-y: auto;
   margin: 8px 0;
   // AYO Gio ist dafür das nachrichten unten anfangen und nach oben gehen.
-  display: flex;                 
+  display: flex;
   justify-content: flex-end;
   flex-direction: column;
 }
@@ -709,7 +709,7 @@
   min-height: unset;
   max-height: 100px;
   overflow-y: auto;
-  overflow-wrap: anywhere; 
+  overflow-wrap: anywhere;
   padding: 8px 0;
   font-family: "Nunito";
   resize: none;
@@ -722,7 +722,6 @@
   justify-content: space-between;
   padding: 0 45px 25px 45px;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 0 0 30px 30px;
   input {
     width: 100%;
@@ -974,8 +973,8 @@ emoji-picker {
 
     &:first-of-type {
       background-color: transparent;
-      border-color: #797EF3;
-      color: #444DF2;
+      border-color: #797ef3;
+      color: #444df2;
       &:hover {
         background-color: #f1f3f5;
       }
@@ -999,6 +998,40 @@ emoji-picker {
   font-style: italic;
 }
 
-.edit-textbox{
+.edit-textbox {
   min-height: 155px;
+}
+
+.no-messages {
+  padding: 0 45px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 32px;
+}
+
+.no-messages-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  h3{
+    font-size: 24px;
+    font-weight: 700;
+  }
+  span{
+    font-size: 28px;
+  }
+}
+
+.no-messages-text {
+  font-size: 20px;
+  font-weight: 400;
+  p{
+    i{
+      color: #535af1;
+      font-style: normal;
+      cursor: pointer;
+    }
+  }
 }
