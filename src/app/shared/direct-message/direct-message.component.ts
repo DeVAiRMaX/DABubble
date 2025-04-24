@@ -11,6 +11,7 @@ import {
   ChangeDetectorRef,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
+import { SharedModule } from '../../shared';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
@@ -27,7 +28,7 @@ import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-
 @Component({
   selector: 'app-direct-message',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, SharedModule],
   templateUrl: './direct-message.component.html',
   styleUrls: ['./direct-message.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

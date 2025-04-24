@@ -154,9 +154,10 @@
   width: 100%;
   overflow-y: auto;
   margin: 8px 0;
-  // display: flex;                 AYO max für was ist diese?
-  // justify-content: flex-end;
-  // flex-direction: column;
+  // AYO Gio ist dafür das nachrichten unten anfangen und nach oben gehen.
+  display: flex;                 
+  justify-content: flex-end;
+  flex-direction: column;
 }
 
 .channel-chat-message-container-left-user-container {
@@ -383,9 +384,10 @@
 .taggedPersonsDiv {
   display: flex;
   width: fit-content;
-  position: absolute;
-  top: 0;
   height: max-content;
+  max-width: 800px;
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 
 .taggedPerson {
@@ -661,6 +663,7 @@
   display: flex;
   position: relative;
   justify-content: space-between;
+  align-items: center;
   > div {
     display: flex;
     justify-content: center;
@@ -735,7 +738,12 @@
 
   .send-btn {
     cursor: pointer;
+    width: 36px;
+    height: 36px;
     transition: all 0.1s ease-in-out;
+    border-radius: 50%;
+    padding: 6px;
+    box-sizing: border-box;
     &:hover {
       opacity: 0.6;
     }
@@ -770,17 +778,6 @@
   color: #333;
   font-size: 18px;
   font-family: "Nunito";
-}
-
-.taggedPersonsDiv {
-  display: flex;
-  width: fit-content;
-  position: absolute;
-  bottom: 22px;
-  left: 120px;
-  max-width: 550px;
-  overflow-y: hidden;
-  overflow-x: scroll;
 }
 
 .taggedPerson {

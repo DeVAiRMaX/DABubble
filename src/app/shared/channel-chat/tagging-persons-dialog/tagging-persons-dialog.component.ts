@@ -36,6 +36,7 @@ export class TaggingPersonsDialogComponent implements OnInit {
   private firebaseService: FirebaseService = inject(FirebaseService);
 
   ngOnInit() {
+    
     let Contacts = this.firebaseService.getDatabaseData().then((data) => {
       Contacts = data.users;
       this.ContactsData.push(data.users);
@@ -45,11 +46,14 @@ export class TaggingPersonsDialogComponent implements OnInit {
     
 this.modeForTagging = this.data.mode;
 
+
 this.taggedContacts = this.variableService.getTaggedContactsFromChat();
 this.taggedContactsThread = this.variableService.getTaggedcontactsFromThreads();
 
 this.updateFilteredContacts();
 this.updateFilteredThreadContacts();
+// console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
+// console.log('gewählter Modus ist' + this.data.mode);
 // console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
 // console.log('gewählter Modus ist' + this.data.mode);
 
@@ -109,6 +113,7 @@ this.updateFilteredThreadContacts();
       const removedContact = this.filteredContactsThread.splice(nameToRemove, 1)[0];
       this.taggedContactsThread.push(removedContact);
       // console.log(this.taggedContactsThread);
+      // console.log(this.taggedContactsThread);
       this.variableService.setTaggedContactsFromThread(this.taggedContactsThread);
       this.updateFilteredThreadContacts();
       
@@ -121,6 +126,7 @@ this.updateFilteredThreadContacts();
     this.filteredContactsThread = this.allContacts.filter(
       (contact) => !this.taggedContactsThread.some((tagged)=> tagged.name === contact.name)
     );
+    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
     // console.log('filtered Contacts sind:' + this.filteredContactsThread);
   }
 
