@@ -4,6 +4,7 @@ import { VariablesService } from '../../../variables.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-tagging-persons-dialog',
@@ -13,10 +14,10 @@ import { FirebaseService } from '../../services/firebase.service';
   styleUrl: './tagging-persons-dialog.component.scss'
 })
 export class TaggingPersonsDialogComponent implements OnInit {
-  nametoFilter : string = '';
-  modeForTagging : string = '';
+  nametoFilter: string = '';
+  modeForTagging: string = '';
 
-  constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<TaggingPersonsDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: {mode: string}) {}
+  constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<TaggingPersonsDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: { mode: string }) { }
 
   allContacts = [
     { name: 'Frederik Beck (Du)', img: '/assets/img/character/3.png' },
@@ -26,50 +27,45 @@ export class TaggingPersonsDialogComponent implements OnInit {
     { name: 'Elias Neumann', img: '/assets/img/character/5.png' },
     { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' }
   ];
-  ContactsData: any = {};
+  contactsArray: any[] = [];
 
-  taggedContacts: {name: string; img: string;}[] = [];
-  taggedContactsThread:{name: string; img: string}[] = [];
-  filteredContacts : {name: string; img: string}[] = [];
-  filteredContactsThread: {name: string; img: string}[] = [];
+  taggedContacts: { name: string; img: string; }[] = [];
+  taggedContactsThread: { name: string; img: string }[] = [];
+  filteredContacts: { name: string; img: string }[] = [];
+  filteredContactsThread: { name: string; img: string }[] = [];
 
   private firebaseService: FirebaseService = inject(FirebaseService);
 
-  ngOnInit() {
-    
-    let Contacts = this.firebaseService.getDatabaseData().then((data) => {
-      Contacts = data.users;
-      this.ContactsData.push(data.users);
-      console.log(Contacts);
-      console.log(this.ContactsData);
-    });
-    
-this.modeForTagging = this.data.mode;
+  async ngOnInit() {
+
+    this.loadContacts();
+
+    this.modeForTagging = this.data.mode;
 
 
-this.taggedContacts = this.variableService.getTaggedContactsFromChat();
-this.taggedContactsThread = this.variableService.getTaggedcontactsFromThreads();
+    this.taggedContacts = this.variableService.getTaggedContactsFromChat();
+    this.taggedContactsThread = this.variableService.getTaggedcontactsFromThreads();
 
-this.updateFilteredContacts();
-this.updateFilteredThreadContacts();
-// console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
-// console.log('gewählter Modus ist' + this.data.mode);
-// console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
-// console.log('gewählter Modus ist' + this.data.mode);
+    this.updateFilteredContacts();
+    this.updateFilteredThreadContacts();
+    // console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
+    // console.log('gewählter Modus ist' + this.data.mode);
+    // console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
+    // console.log('gewählter Modus ist' + this.data.mode);
 
     this.variableService.nameToFilter$.subscribe((value) => {
       this.nametoFilter = value;
-     
 
 
-      if(this.nametoFilter === ''){
+
+      if (this.nametoFilter === '') {
         this.closeDiaglog();
         return;
       }
 
-      if(this.nametoFilter === '@'){
-       this.updateFilteredContacts();
-       this.updateFilteredThreadContacts();
+      if (this.nametoFilter === '@') {
+        this.updateFilteredContacts();
+        this.updateFilteredThreadContacts();
         return;
       }
 
@@ -78,76 +74,88 @@ this.updateFilteredThreadContacts();
         : this.nametoFilter.trim();
 
 
-        this.filteredContacts = this.filteredContacts.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
-        this.filteredContactsThread = this.filteredContactsThread.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
+      this.filteredContacts = this.filteredContacts.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
+      this.filteredContactsThread = this.filteredContactsThread.filter(contact => contact.name.toLowerCase().includes(filterText.toLowerCase()));
     });
   }
 
-  closeDiaglog(){this.dialogRef.close();}
+
+  closeDiaglog() { this.dialogRef.close(); }
 
 
-  addContactToChat(contact: any){
-
-    const nameToRemove = this.filteredContacts.findIndex((c) => c.name === contact.name);
+  async loadContacts() {
+    this.firebaseService.getAllUsers().subscribe(users => {
+      this.contactsArray.push(users);
+      
     
-    
-    if(nameToRemove !== -1){
-      
-      const removedContact = this.filteredContacts.splice(nameToRemove, 1)[0];
-      this.taggedContacts.push(removedContact);
-      this.variableService.setTaggedContactsFromChat(this.taggedContacts);
-      this.updateFilteredContacts();
-      
+    });
+    console.log(this.contactsArray);
+  }
 
-    }
+
+
+addContactToChat(contact: any) {
+
+  const nameToRemove = this.filteredContacts.findIndex((c) => c.name === contact.name);
+
+
+  if (nameToRemove !== -1) {
+
+    const removedContact = this.filteredContacts.splice(nameToRemove, 1)[0];
+    this.taggedContacts.push(removedContact);
+    this.variableService.setTaggedContactsFromChat(this.taggedContacts);
+    this.updateFilteredContacts();
+
 
   }
 
-  addContactToThread(contact: any){
+}
 
-    const nameToRemove = this.filteredContactsThread.findIndex((c) => c.name === contact.name);
-    
-    
-    if(nameToRemove !== -1){
-      
-      const removedContact = this.filteredContactsThread.splice(nameToRemove, 1)[0];
-      this.taggedContactsThread.push(removedContact);
-      // console.log(this.taggedContactsThread);
-      // console.log(this.taggedContactsThread);
-      this.variableService.setTaggedContactsFromThread(this.taggedContactsThread);
-      this.updateFilteredThreadContacts();
-      
+addContactToThread(contact: any) {
 
-    }
+  const nameToRemove = this.filteredContactsThread.findIndex((c) => c.name === contact.name);
+
+
+  if (nameToRemove !== -1) {
+
+    const removedContact = this.filteredContactsThread.splice(nameToRemove, 1)[0];
+    this.taggedContactsThread.push(removedContact);
+    // console.log(this.taggedContactsThread);
+    // console.log(this.taggedContactsThread);
+    this.variableService.setTaggedContactsFromThread(this.taggedContactsThread);
+    this.updateFilteredThreadContacts();
+
 
   }
 
-  updateFilteredThreadContacts(){
-    this.filteredContactsThread = this.allContacts.filter(
-      (contact) => !this.taggedContactsThread.some((tagged)=> tagged.name === contact.name)
-    );
-    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
-    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
+}
+
+updateFilteredThreadContacts() {
+  this.filteredContactsThread = this.allContacts.filter(
+    (contact) => !this.taggedContactsThread.some((tagged) => tagged.name === contact.name)
+  );
+  // console.log('filtered Contacts sind:' + this.filteredContactsThread);
+  // console.log('filtered Contacts sind:' + this.filteredContactsThread);
+}
+
+updateFilteredContacts() {
+  this.filteredContacts = this.allContacts.filter(
+    (contact) => !this.taggedContacts.some((tagged) => tagged.name === contact.name)
+  );
+
+}
+
+checkWhichMode(contact: any) {
+  if (this.modeForTagging == 'thread') {
+
+    this.addContactToThread(contact);
+
+
+  } else if (this.modeForTagging == 'chat') {
+    this.addContactToChat(contact);
+  } else {
+
+    console.error('No Conact Found');
   }
-
-  updateFilteredContacts() {
-    this.filteredContacts = this.allContacts.filter(
-      (contact) => !this.taggedContacts.some((tagged) => tagged.name === contact.name)
-    );
-
-  }
-
-  checkWhichMode(contact: any){
-    if( this.modeForTagging == 'thread'){
-
-      this.addContactToThread(contact);
-
-
-    }else if(this.modeForTagging == 'chat'){
-      this.addContactToChat(contact);
-    }else{
-      
-      console.error('No Conact Found');
-    }
-  }
+}
 }
