@@ -11,6 +11,7 @@ import {
   ChangeDetectorRef,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
+import { SharedModule } from '../../shared';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
@@ -27,7 +28,7 @@ import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-
 @Component({
   selector: 'app-direct-message',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, SharedModule],
   templateUrl: './direct-message.component.html',
   styleUrls: ['./direct-message.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -50,6 +51,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   lastInputValue: string = '';
   at = '@';
 
+  @ViewChild('dmBody') dmBody!: ElementRef;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
   private savedRange: Range | null = null;
 
@@ -80,6 +82,23 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
     this.subService.unsubscribeGroup(this.SUB_AUTH);
     this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+  }
+
+  ngAfterViewInit() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.dmBody.nativeElement.scrollTop = this.dmBody.nativeElement.scrollHeight;
+    } catch (err) {
+      console.warn('Scroll failed', err);
+    }
+  }
+
+  // Wenn neue Nachricht empfangen oder gesendet wird:
+  onNewMessageReceived() {
+    this.scrollToBottom();
   }
 
   private initializeConversation(): void {
@@ -164,7 +183,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         next: () => {
           console.log('[DirectMessage] Nachricht erfolgreich gesendet.');
           this.messageText = '';
-          // this.scrollToBottom();
+          this.onNewMessageReceived();
         },
         error: (err) => {
           console.error(

@@ -26,7 +26,7 @@
     </div>
   </div>
 
-  <div class="channel-chat-body">
+  <div class="channel-chat-body" #channelChatBody>
     <ng-container
       *ngFor="
         let message of messages$ | async;
@@ -114,109 +114,109 @@
             </div>
           </div>
 
-          <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
-            <div class="reactionMenu">
-              <button
-                (click)="toggleReaction(message, '✅')"
-                class="reactionMenuBtn check"
-              ></button>
-              <button
-                (click)="toggleReaction(message, '👍')"
-                class="reactionMenuBtn thumb"
-              ></button>
-              <button
-                (click)="openEmojiPickerForReaction(message)"
-                class="reactionMenuBtn reactionSmile"
-              ></button>
-              <button
-                (click)="startOrOpenThread(message)"
-                class="reactionMenuBtn commentReact"
-              ></button>
-              <button
-                (click)="startEditing(message)"
-                class="reactionMenuBtn editMsg"
-              ></button>
-            </div>
-            <div class="message-content-wrapper">
-              <div class="message-header own-header">
-                <h3 class="msg-user-name">Du</h3>
-                <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
+            <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
+              <div class="reactionMenu">
+                <button
+                  (click)="toggleReaction(message, '✅')"
+                  class="reactionMenuBtn check"
+                ></button>
+                <button
+                  (click)="toggleReaction(message, '👍')"
+                  class="reactionMenuBtn thumb"
+                ></button>
+                <button
+                  (click)="openEmojiPickerForReaction(message)"
+                  class="reactionMenuBtn reactionSmile"
+                ></button>
+                <button
+                  (click)="startOrOpenThread(message)"
+                  class="reactionMenuBtn commentReact"
+                ></button>
+                <button
+                  (click)="startEditing(message)"
+                  class="reactionMenuBtn editMsg"
+                ></button>
               </div>
-              <div
-                class="msg-bubble msg-right"
-                *ngIf="editingMessageKey !== message.key"
-              >
-                <p>{{ message.message }}</p>
-                <span class="edited-indicator" *ngIf="message.editedAt"
-                  >(bearbeitet)</span
-                >
-              </div>
-              <div
-                class="edit-message-input-container"
-                *ngIf="editingMessageKey === message.key"
-              >
-                <textarea
-                  class="edit-textbox"
-                  #editInput
-                  [(ngModel)]="editMessageText"
-                  (keydown.escape)="cancelEdit()"
-                  (keydown.enter)="handleEditEnter($event, message)"
-                  rows="3"
-                ></textarea>
-                <div class="edit-actions">
-                  <button (click)="cancelEdit()">Abbrechen</button>
-                  <button (click)="saveEdit(message)">Speichern</button>
+              <div class="message-content-wrapper">
+                <div class="message-header own-header">
+                  <h3 class="msg-user-name">Du</h3>
+                  <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
                 </div>
-              </div>
-              <div
-                class="message-footer own-footer msg-reaction-container"
-                *ngIf="message.reactions && message.reactions.length > 0"
-              >
+                <div
+                  class="msg-bubble msg-right"
+                  *ngIf="editingMessageKey !== message.key"
+                >
+                  <p>{{ message.message }}</p>
+                  <span class="edited-indicator" *ngIf="message.editedAt"
+                    >(bearbeitet)</span
+                  >
+                </div>
+                <div
+                  class="edit-message-input-container"
+                  *ngIf="editingMessageKey === message.key"
+                >
+                  <textarea
+                    class="edit-textbox"
+                  #editInput
+                    [(ngModel)]="editMessageText"
+                    (keydown.escape)="cancelEdit()"
+                    (keydown.enter)="handleEditEnter($event, message)"
+                    rows="3"
+                  ></textarea>
+                  <div class="edit-actions">
+                    <button (click)="cancelEdit()">Abbrechen</button>
+                    <button (click)="saveEdit(message)">Speichern</button>
+                  </div>
+                </div>
                 <div
                   class="message-footer own-footer msg-reaction-container"
                   *ngIf="message.reactions && message.reactions.length > 0"
                 >
                   <div
-                    class="reaction"
-                    *ngFor="let reaction of groupReactions(message.reactions)"
-                    (click)="toggleReaction(message, reaction.emoji)"
-                    [class.reacted-by-user]="reaction.reactedByUser"
-                    matTooltip="{{ reaction.userNames.join(',\\n') }}"
-                    matTooltipPosition="above"
+                    class="message-footer own-footer msg-reaction-container"
+                    *ngIf="message.reactions && message.reactions.length > 0"
                   >
-                    <span>{{ reaction.emoji }}</span>
-                    <p>{{ reaction.count }}</p>
+                    <div
+                      class="reaction"
+                      *ngFor="let reaction of groupReactions(message.reactions)"
+                      (click)="toggleReaction(message, reaction.emoji)"
+                      [class.reacted-by-user]="reaction.reactedByUser"
+                      matTooltip="{{ reaction.userNames.join(',\\n') }}"
+                      matTooltipPosition="above"
+                    >
+                      <span>{{ reaction.emoji }}</span>
+                      <p>{{ reaction.count }}</p>
+                    </div>
+                    <span
+                      class="material-symbols-outlined add_reaction_btn"
+                      (click)="openEmojiPickerForReaction(message)"
+                      matTooltip="Reaktion hinzufügen"
+                      matTooltipPosition="above"
+                      >add_reaction</span
+                    >
                   </div>
-                  <span
-                    class="material-symbols-outlined add_reaction_btn"
-                    (click)="openEmojiPickerForReaction(message)"
-                    matTooltip="Reaktion hinzufügen"
-                    matTooltipPosition="above"
-                    >add_reaction</span
-                  >
+                </div>
+                <div class="message-footer own-footer" *ngIf="message.threadKey">
+                  <a (click)="startOrOpenThread(message)" class="msg-count">
+                    {{ message.threadReplyCount || 0 }} Antworten
+                  </a>
+                  <p class="last-msg-time" *ngIf="message.threadLastReplyAt">
+                    Letzte Antwort
+                  {{ message.threadLastReplyAt | date : "HH:mm" }}
+                  </p>
                 </div>
               </div>
-              <div class="message-footer own-footer" *ngIf="message.threadKey">
-                <a (click)="startOrOpenThread(message)" class="msg-count">
-                  {{ message.threadReplyCount || 0 }} Antworten
-                </a>
-                <p class="last-msg-time" *ngIf="message.threadLastReplyAt">
-                  Letzte Antwort
-                  {{ message.threadLastReplyAt | date : "HH:mm" }}
-                </p>
+              <div class="message-avatar">
+                <img
+                  [src]="
+                    currentUser?.avatar || '/assets/img/character/bsp-avatar.png'
+                  "
+                  [alt]="currentUser?.displayName || 'Du'"
+                />
               </div>
             </div>
-            <div class="message-avatar">
-              <img
-                [src]="
-                  currentUser?.avatar || '/assets/img/character/bsp-avatar.png'
-                "
-                [alt]="currentUser?.displayName || 'Du'"
-              />
-            </div>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
     </ng-container>
 
     <div *ngIf="(messages$ | async)?.length === 1" class="no-messages">
@@ -226,7 +226,7 @@
       </div>
       <div class="no-messages-text">
         <p>
-          Noch keine Nachrichten in #{{ channel.channelName }}. Sei der Erste!
+          Du hast diesen Channel heute erstellt. Das ist der Anfang des Channels  <i># {{ channel.channelName }}</i>.
         </p>
       </div>
     </div>
@@ -260,13 +260,6 @@
             sentiment_satisfied
           </span>
         </div>
-        <img
-          src="./assets/img/icons/send.png"
-          class="send-btn"
-          alt="send"
-          (click)="sendMessage()"
-          matTooltip="Senden (Enter)"
-        />
 
         <div class="taggedPersonsDiv">
           <div
@@ -284,6 +277,16 @@
             ></span>
           </div>
         </div>
+
+        <img
+          src="./assets/img/icons/send.png"
+          class="send-btn"
+          alt="send"
+          (click)="sendMessage()"
+          matTooltip="Senden (Enter)"
+        />
+
+        
       </div>
     </div>
   </div>

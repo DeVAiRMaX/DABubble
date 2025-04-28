@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, inject } from '@angular/core';
 import { VariablesService } from '../../../variables.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FirebaseService } from '../../services/firebase.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-tagging-persons-dialog',
@@ -21,28 +23,39 @@ export class TaggingPersonsDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: { mode: string }
   ) {}
 
-  allContacts = [
-    { name: 'Frederik Beck (Du)', img: '/assets/img/character/3.png' },
-    { name: 'Sofia Müller', img: '/assets/img/character/2.png' },
-    { name: 'Noah Braun', img: '/assets/img/character/1.png' },
-    { name: 'Elise Roth', img: '/assets/img/character/4.png' },
-    { name: 'Elias Neumann', img: '/assets/img/character/5.png' },
-    { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' },
-  ];
+  // allContacts = [
+  //   { name: 'Frederik Beck (Du)', img: '/assets/img/character/3.png' },
+  //   { name: 'Sofia Müller', img: '/assets/img/character/2.png' },
+  //   { name: 'Noah Braun', img: '/assets/img/character/1.png' },
+  //   { name: 'Elise Roth', img: '/assets/img/character/4.png' },
+  //   { name: 'Elias Neumann', img: '/assets/img/character/5.png' },
+  //   { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' }
+  // ];
+
+  allContacts: any[] = [];
 
   taggedContacts: { name: string; img: string }[] = [];
   taggedContactsThread: { name: string; img: string }[] = [];
   filteredContacts: { name: string; img: string }[] = [];
   filteredContactsThread: { name: string; img: string }[] = [];
 
+  private firebaseService: FirebaseService = inject(FirebaseService);
+
   ngOnInit() {
+    this.loadContacts();
+
     this.modeForTagging = this.data.mode;
+
     this.taggedContacts = this.variableService.getTaggedContactsFromChat();
     this.taggedContactsThread =
       this.variableService.getTaggedcontactsFromThreads();
 
     this.updateFilteredContacts();
     this.updateFilteredThreadContacts();
+    // console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
+    // console.log('gewählter Modus ist' + this.data.mode);
+    // console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
+    // console.log('gewählter Modus ist' + this.data.mode);
 
     this.variableService.nameToFilter$.subscribe((value) => {
       this.nametoFilter = value;
@@ -76,6 +89,13 @@ export class TaggingPersonsDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  loadContacts() {
+    this.firebaseService.getAllUsers().subscribe((users) => {
+      this.allContacts.push(...users);
+    });
+    console.log(this.allContacts);
+  }
+
   addContactToChat(contact: any) {
     const nameToRemove = this.filteredContacts.findIndex(
       (c) => c.name === contact.name
@@ -100,6 +120,8 @@ export class TaggingPersonsDialogComponent implements OnInit {
         1
       )[0];
       this.taggedContactsThread.push(removedContact);
+      // console.log(this.taggedContactsThread);
+      // console.log(this.taggedContactsThread);
       this.variableService.setTaggedContactsFromThread(
         this.taggedContactsThread
       );
@@ -114,6 +136,8 @@ export class TaggingPersonsDialogComponent implements OnInit {
           (tagged) => tagged.name === contact.name
         )
     );
+    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
+    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
   }
 
   updateFilteredContacts() {
