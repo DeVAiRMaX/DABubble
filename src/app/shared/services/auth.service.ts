@@ -10,6 +10,9 @@ import {
   signInWithEmailAndPassword,
   UserCredential,
   updateProfile,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode,
 } from '@angular/fire/auth';
 import { BehaviorSubject, catchError, map, of, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
@@ -36,7 +39,6 @@ export class AuthService {
   constructor() {
     authState(this.auth)
       .pipe(
-        tap((authUser) => console.log('Auth State Changed:', authUser)),
         switchMap((authUser: AuthUser | null) => {
           if (authUser) {
             const userRef = ref(this.database, `users/${authUser.uid}`);
@@ -68,13 +70,7 @@ export class AuthService {
           } else {
             return of(null);
           }
-        }),
-        tap((finalUser) =>
-          console
-            .log
-            // 'Final Combined User:', finalUser
-            ()
-        )
+        })
       )
       .subscribe((user) => {
         this.userSubject.next(user);
@@ -90,7 +86,6 @@ export class AuthService {
       if (result.user) {
         this.firebaseService.saveUserData(result.user).subscribe({
           next: () => {
-            console.log('userdata gespeichert.');
             this.router.navigate(['/dashboard']);
           },
           error: (error) => {
@@ -119,10 +114,8 @@ export class AuthService {
         email,
         password
       );
-      console.log('User registered in Firebase Auth:', result.user);
       try {
         await updateProfile(result.user, { displayName: displayName });
-        console.log('Firebase Auth profile updated with displayName.');
       } catch (profileError) {
         console.error(
           'Error updating Firebase Auth profile displayName:',
@@ -131,7 +124,6 @@ export class AuthService {
       }
       this.firebaseService.saveUserData(result.user, password).subscribe({
         next: () => {
-          console.log('Manual registration user data saved successfully.');
           this.router.navigate(['/avatar']);
         },
         error: (dbError) => {
@@ -155,7 +147,6 @@ export class AuthService {
         email,
         password
       );
-      console.log('User logged in:', result.user);
       this.router.navigate(['/dashboard']);
     } catch (error: any) {
       console.error('Error during email/password login:', error);
@@ -210,5 +201,36 @@ export class AuthService {
     return Promise.all(promises).then((results) =>
       results.filter((data) => data !== null)
     );
+  }
+
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    try {
+      await firebaseSendPasswordResetEmail(this.auth, email);
+    } catch (error) {
+      console.error(
+        'Fehler beim Senden der Passwortzurücksetzungs-E-Mail:',
+        error
+      );
+      throw error;
+    }
+  }
+
+  async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
+    try {
+      await confirmPasswordReset(this.auth, code, newPassword);
+    } catch (error) {
+      console.error('Fehler beim Bestätigen des Passwort-Resets:', error);
+      throw error;
+    }
+  }
+
+  async verifyPasswordResetCode(code: string): Promise<string> {
+    try {
+      const email = await verifyPasswordResetCode(this.auth, code);
+      return email;
+    } catch (error) {
+      console.error('Ungültiger oder abgelaufener Passwort-Reset-Code:', error);
+      throw error;
+    }
   }
 }

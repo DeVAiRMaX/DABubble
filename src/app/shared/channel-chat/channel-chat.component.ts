@@ -493,7 +493,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     if (index !== -1) {
       this.taggedPersonsInChat.splice(index, 1);
     } else {
-      console.log(`Person ${name} nicht gefunden.`);
+      // nicht gefunden
     }
   }
 
@@ -515,10 +515,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
         dialogRef.componentInstance as SmileyKeyboardComponent;
       componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
         this.insertEmojiAtCursor(selectedEmoji);
-      });
-
-      dialogRef.afterClosed().subscribe(() => {
-        console.log('Smiley keyboard dialog closed');
       });
 
       setTimeout(() => {
@@ -612,10 +608,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     this.firebaseService
       .toggleReaction(this.channel.key, message.key, emoji, this.currentUser)
       .subscribe({
-        next: () =>
-          console.log(
-            `Reaktion ${emoji} für Nachricht ${message.key} getoggled.`
-          ),
         error: (err) => console.error('Fehler beim togglen der Reaktion:', err),
       });
   }

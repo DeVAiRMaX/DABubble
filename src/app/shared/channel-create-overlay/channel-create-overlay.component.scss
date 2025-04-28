@@ -55,7 +55,7 @@ textarea {
       padding: 10px;
       transition: all 0.1s ease-in-out;
       &:hover {
-        background-color: #ECEEFE;
+        background-color: #eceefe;
         color: #535af1;
       }
     }
@@ -127,6 +127,7 @@ textarea {
     letter-spacing: 0%;
     border: none;
     align-self: flex-end;
+    transition: all 0.1s ease-in-out;
 
     &:hover {
       cursor: pointer;

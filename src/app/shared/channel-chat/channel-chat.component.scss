@@ -66,6 +66,7 @@
   gap: 10px;
   cursor: pointer;
   border-radius: 30px;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: #eceefe;
   }
@@ -154,7 +155,8 @@
   width: 100%;
   overflow-y: auto;
   margin: 8px 0;
-  // display: flex;                 AYO max für was ist diese?
+  // AYO max für was ist diese?
+  // display: flex;
   // justify-content: flex-end;
   // flex-direction: column;
 }
@@ -215,6 +217,7 @@
   color: #535af1;
   text-decoration: none;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
   &:hover {
     font-weight: 700;
   }
@@ -235,12 +238,14 @@
   justify-content: flex-start;
   position: relative;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: rgb(236, 238, 255);
   }
 }
 
 .ownMessage {
+  transition: all 0.1s ease-in-out;
   &:hover .reactionMenu {
     opacity: 1;
   }
@@ -252,6 +257,7 @@
 }
 
 .othersMessage {
+  transition: all 0.1s ease-in-out;
   &:hover .reactionMenu {
     opacity: 1;
   }
@@ -282,6 +288,7 @@
 
 .reactionSmile {
   background: url("/assets/img/icons/add_reaction.png");
+  transition: all 0.1s ease-in-out;
   &:hover {
     background: url("/assets/img/icons/add_reaction_purple.png");
   }
@@ -398,6 +405,7 @@
   background-color: #eceefe;
   align-items: center;
   width: fit-content;
+  transition: all 0.1s ease-in-out;
 
   &:hover {
     cursor: pointer;
@@ -439,6 +447,7 @@
 .channel-chat-message-container {
   padding: 0 45px;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
 
   &:hover {
     background-color: rgb(236, 238, 253);
@@ -542,6 +551,7 @@
   color: #535af1;
   text-decoration: none;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
   &:hover {
     text-decoration: underline;
   }
@@ -590,6 +600,7 @@
   color: #6c757d;
   padding: 5px;
   font-size: 20px;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: #adb0d9;
     color: #535af1;
@@ -642,6 +653,7 @@
   background-size: 20px 20px;
   background-position: center !important;
   background-repeat: no-repeat !important;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: rgb(236, 238, 255);
     cursor: pointer;
@@ -673,6 +685,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.1s ease-in-out;
       &:hover {
         cursor: pointer;
         color: #535af1;
@@ -792,6 +805,7 @@
   background-color: #eceefe;
   align-items: center;
   width: fit-content;
+  transition: all 0.1s ease-in-out;
 
   &:hover {
     cursor: pointer;
@@ -816,7 +830,7 @@
     height: 30px;
     background: url("/assets/img/closeMenu.png");
     background-position: center;
-
+    transition: all 0.1s ease-in-out;
     background-repeat: no-repeat;
 
     &:hover {
@@ -834,6 +848,7 @@
 
 .add-smiley-button {
   position: relative;
+  transition: all 0.1s ease-in-out;
 
   &:hover emoji-picker {
     opacity: 1 !important;
@@ -976,8 +991,9 @@ emoji-picker {
 
     &:first-of-type {
       background-color: transparent;
-      border-color: #797EF3;
-      color: #444DF2;
+      border-color: #797ef3;
+      color: #444df2;
+      transition: all 0.1s ease-in-out;
       &:hover {
         background-color: #f1f3f5;
       }
@@ -987,6 +1003,7 @@ emoji-picker {
       background-color: #535af1;
       color: white;
       border-color: #535af1;
+      transition: all 0.1s ease-in-out;
       &:hover {
         background-color: #4347d0;
         border-color: #4347d0;
@@ -1002,6 +1019,6 @@ emoji-picker {
   font-style: italic;
 }
 
-.edit-textbox{
+.edit-textbox {
   min-height: 155px;
 }

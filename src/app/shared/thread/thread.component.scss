@@ -56,6 +56,8 @@
   gap: 20px;
   padding: 10px 40px;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
+
   &:hover {
     background-color: #797df32f;
     .msg-content-left {
@@ -139,6 +141,8 @@
   border: 1px solid #adb0d9;
   gap: 10px;
   position: relative;
+  transition: all 0.1s ease-in-out;
+
   &:hover {
     .reaction-information-overlay {
       display: block;
@@ -181,6 +185,8 @@
   padding: 10px;
   transition: all 0.1s ease-in-out;
   background-color: #fff;
+  transition: all 0.1s ease-in-out;
+
   &:hover {
     color: #535af1;
   }
@@ -202,6 +208,8 @@
   padding: 10px 40px;
   cursor: pointer;
   flex-direction: row-reverse;
+  transition: all 0.1s ease-in-out;
+
   &:hover {
     background-color: #797df32f;
   }
@@ -300,6 +308,7 @@
   background-color: #eceefe;
   align-items: center;
   width: fit-content;
+  transition: all 0.1s ease-in-out;
 
   &:hover {
     cursor: pointer;
@@ -329,13 +338,13 @@
   }
 }
 
-.textForThreadInput{
+.textForThreadInput {
   width: 100%;
-    border: none;
-    outline: none;
-    resize: none;
-    min-height: 40px;
-    color: #333;
-    font-size: 18px;
-    font-family: "Nunito";
+  border: none;
+  outline: none;
+  resize: none;
+  min-height: 40px;
+  color: #333;
+  font-size: 18px;
+  font-family: "Nunito";
 }

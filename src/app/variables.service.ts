@@ -63,7 +63,6 @@ export class VariablesService {
 
   notifyChannelCreated(): void {
     this.channelCreatedSource.next();
-    console.log('VariablesService: Channel creation notified.');
   }
 
   private saveToStorage(key: string, value: boolean) {
@@ -111,14 +110,13 @@ export class VariablesService {
   >([]);
   taggedContactsInThread$ = this.taggedContactsFromThreadSubject.asObservable();
 
-  setTaggedContactsFromThread(contacts: {name: string; img: string}[]){
+  setTaggedContactsFromThread(contacts: { name: string; img: string }[]) {
     this.taggedContactsFromThreadSubject.next(contacts);
   }
 
-  getTaggedcontactsFromThreads(){
+  getTaggedcontactsFromThreads() {
     return this.taggedContactsFromThreadSubject.getValue();
   }
-
 
   openThread(threadKey: string) {
     this.activeThreadKeySubject.next(threadKey);
