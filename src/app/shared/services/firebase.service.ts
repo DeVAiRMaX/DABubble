@@ -113,9 +113,6 @@ export class FirebaseService {
     description: string,
     channelCreatorUid: string
   ): Observable<string> {
-    console.log(
-      `[createChannel] Attempting creation by user ${channelCreatorUid} for channel "${channelName}"`
-    );
     if (!channelName || !channelCreatorUid) {
       return throwError(
         () =>
@@ -134,7 +131,6 @@ export class FirebaseService {
           new Error('createChannel: Channel Key konnte nicht generiert werden.')
       );
     }
-    console.log(`[createChannel] Generated new channel key: ${channelKey}`);
 
     const timestamp = Date.now();
     const newChannel: Channel = {
@@ -154,11 +150,6 @@ export class FirebaseService {
     const createChannelOperation = from(set(newChannelRef, newChannel));
 
     return createChannelOperation.pipe(
-      tap(() =>
-        console.log(
-          `[createChannel] Step 1: Channel data set for key ${channelKey}.`
-        )
-      ),
       switchMap(() => {
         return this.addChannelKeyToUser(channelCreatorUid, channelKey);
       }),
@@ -330,9 +321,6 @@ export class FirebaseService {
   }
 
   addChannelKeyToUser(uid: string, channelKey: string): Observable<void> {
-    console.log(
-      `[addChannelKeyToUser] Attempting to add key ${channelKey} to user ${uid}`
-    );
     if (!uid || !channelKey) {
       return throwError(
         () =>
@@ -344,29 +332,15 @@ export class FirebaseService {
     return from(get(userChannelKeysRef)).pipe(
       switchMap((snapshot) => {
         const currentKeys: string[] = snapshot.exists() ? snapshot.val() : [];
-        console.log(
-          `[addChannelKeyToUser] User ${uid} current keys:`,
-          currentKeys
-        );
 
         if (currentKeys.includes(channelKey)) {
-          console.log(
-            `[addChannelKeyToUser] Key ${channelKey} already exists for user ${uid}. Skipping add.`
-          );
           return of(void 0);
         } else {
           const updatedKeys: string[] = [...currentKeys, channelKey];
-          console.log(
-            `[addChannelKeyToUser] Key ${channelKey} is new. Updating keys for user ${uid} to:`,
-            updatedKeys
-          );
           return from(set(userChannelKeysRef, updatedKeys));
         }
       }),
       map(() => {
-        console.log(
-          `[addChannelKeyToUser] Operation completed for user ${uid}, key ${channelKey}.`
-        );
         return;
       }),
       catchError((error) => {
@@ -417,14 +391,10 @@ export class FirebaseService {
   updateAvatar(choosenAvatar: string, uid: string): Promise<void> {
     const userRef = ref(this.database, `users/${uid}/avatar`);
 
-    return set(userRef, choosenAvatar)
-      .then(() => {
-        console.log('Avatar updated successfully');
-      })
-      .catch((error) => {
-        console.error('Error updating avatar:', error);
-        return Promise.reject(error);
-      });
+    return set(userRef, choosenAvatar).catch((error) => {
+      console.error('Error updating avatar:', error);
+      return Promise.reject(error);
+    });
   }
 
   async findUser(channelCreatorUid: string): Promise<string | null> {
@@ -473,11 +443,6 @@ export class FirebaseService {
       reactions: [],
     };
 
-    console.log(
-      `[sendMessage] Sende Nachricht zu Channel ${channelKey}:`,
-      newMessage
-    );
-
     return from(set(newMessageRef, newMessage)).pipe(
       map(() => void 0),
       catchError((error) => {
@@ -504,12 +469,6 @@ export class FirebaseService {
     const messagesQuery = query(messagesRef, orderByChild('time'));
 
     return listVal<Message>(messagesQuery, { keyField: 'key' }).pipe(
-      tap((messages) =>
-        console.log(
-          `[getMessagesForChannel] Nachrichten für ${channelKey} empfangen:`,
-          messages.length
-        )
-      ),
       map((messages) => messages || []),
       catchError((error) => {
         console.error(
@@ -558,10 +517,6 @@ export class FirebaseService {
       );
     }
 
-    console.log(
-      `[createThread] Erstelle Thread mit Key: ${threadKey} für Nachricht ${originalMessage.key} in Channel ${channelKey}`
-    );
-
     const timestamp = Date.now();
     const newThreadData: Omit<Thread, 'key' | 'threadMsg'> = {
       originalMessageKey: originalMessage.key,
@@ -589,9 +544,6 @@ export class FirebaseService {
     return createThreadOperation.pipe(
       switchMap(() => updateOriginalMessageOperation),
       map(() => {
-        console.log(
-          `[createThread] Thread ${threadKey} erfolgreich erstellt und Originalnachricht ${originalMessage.key} aktualisiert.`
-        );
         return threadKey;
       }),
       catchError((error) => {
@@ -652,11 +604,6 @@ export class FirebaseService {
       reactions: [],
       threadKey: threadKey,
     };
-
-    console.log(
-      `[sendThreadMessage] Sende Nachricht zu Thread ${threadKey}:`,
-      newThreadMessage
-    );
 
     const sendMessageOperation = from(set(newMessageRef, newThreadMessage));
 
@@ -775,12 +722,6 @@ export class FirebaseService {
     const messagesQuery = query(threadMessagesRef, orderByChild('time'));
 
     return listVal<ThreadMessage>(messagesQuery, { keyField: 'key' }).pipe(
-      tap((messages) =>
-        console.log(
-          `[getThreadMessages] Nachrichten für Thread ${threadKey} empfangen:`,
-          messages?.length || 0
-        )
-      ),
       map((messages) => messages || []),
       catchError((error) => {
         console.error(
@@ -806,18 +747,7 @@ export class FirebaseService {
     );
     const messagesQuery = query(messagesRef, orderByChild('time'));
 
-    console.log(
-      `[getDirectMessages] Lade Nachrichten für DM: ${conversationId}`
-    );
-
     return listVal<Message>(messagesQuery, { keyField: 'key' }).pipe(
-      tap((messages) =>
-        console.log(
-          `[getDirectMessages] ${
-            messages?.length ?? 0
-          } Nachrichten für DM ${conversationId} empfangen.`
-        )
-      ),
       map((messages) => messages || []),
       catchError((error) => {
         console.error(
@@ -862,11 +792,6 @@ export class FirebaseService {
       time: timestamp,
       reactions: [],
     };
-
-    console.log(
-      `[sendDirectMessage] Sende Nachricht zu DM ${conversationId}:`,
-      newMessageData
-    );
 
     const sendMessageOperation = from(set(newMessageRef, newMessageData));
     const conversationMetaRef = ref(
@@ -915,9 +840,6 @@ export class FirebaseService {
         if (snapshot.exists()) {
           return of(conversationId);
         } else {
-          console.log(
-            `[ensureDirectMessageConversation] Erstelle neue DM-Konversation: ${conversationId}`
-          );
           const initialConversationData = {
             participants: {
               [uid1]: true,
@@ -1021,7 +943,6 @@ export class FirebaseService {
       `channels/${channelKey}/messages/${messageKey}/reactions`
     );
 
-    // 1. Aktuelle Reaktionen holen (nur einmal mit 'first()')
     return from(get(reactionsRef)).pipe(
       switchMap((snapshot) => {
         const currentReactions: Reaction[] = snapshot.exists()
@@ -1029,39 +950,26 @@ export class FirebaseService {
           : [];
         let updatedReactions: Reaction[];
 
-        // 2. Prüfen, ob der User bereits mit diesem Emoji reagiert hat
         const existingReactionIndex = currentReactions.findIndex(
           (r) => r.emoji === emoji && r.userId === user.uid
         );
 
         if (existingReactionIndex > -1) {
-          // Reaktion existiert -> Entfernen
           updatedReactions = [
             ...currentReactions.slice(0, existingReactionIndex),
             ...currentReactions.slice(existingReactionIndex + 1),
           ];
-          console.log(
-            `[toggleReaction] Reaktion entfernt: ${emoji} von ${user.uid}`
-          );
         } else {
-          // Reaktion existiert nicht -> Hinzufügen
           const newReaction: Reaction = {
             emoji: emoji,
             userId: user.uid,
-            userName: user.displayName || 'Unbekannt', // Namen für Tooltip speichern
+            userName: user.displayName || 'Unbekannt',
           };
           updatedReactions = [...currentReactions, newReaction];
-          console.log(
-            `[toggleReaction] Reaktion hinzugefügt: ${emoji} von ${user.uid}`
-          );
         }
-
-        // 3. Aktualisierte Liste zurückschreiben
-        // Verwende set() auf reactionsRef, um das gesamte Array zu überschreiben.
-        // Das ist sicherer als push/remove bei Arrays in Firebase RTDB.
         return from(set(reactionsRef, updatedReactions));
       }),
-      map(() => void 0), // Signalisiert Erfolg
+      map(() => void 0),
       catchError((error) => {
         console.error(
           `[toggleReaction] Fehler beim Aktualisieren der Reaktion für Nachricht ${messageKey}:`,
@@ -1090,13 +998,8 @@ export class FirebaseService {
 
     const updateData = {
       message: newText,
-      editedAt: serverTimestamp(), // Füge einen Zeitstempel für die Bearbeitung hinzu
+      editedAt: serverTimestamp(),
     };
-
-    console.log(
-      `[updateMessage] Aktualisiere Nachricht ${messageKey} mit:`,
-      updateData
-    );
 
     return from(update(messageRef, updateData)).pipe(
       map(() => void 0),

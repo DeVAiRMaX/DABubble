@@ -1,7 +1,4 @@
-
-
 .side-nav-container {
- 
   height: calc(100vh - 137px);
   background-color: #fff;
   border-radius: 30px;
@@ -53,7 +50,7 @@
   padding: 10px;
   transition: all 0.1s ease-in-out;
   &:hover {
-    background-color: #ECEEFE;
+    background-color: #eceefe;
     color: #535af1;
   }
 }
@@ -70,6 +67,8 @@
   flex-direction: row;
   align-items: center;
   gap: 10px;
+  transition: all 0.1s ease-in-out;
+
   cursor: pointer;
   &:hover {
     color: #535af1;
@@ -82,7 +81,7 @@
   padding: 10px;
   transition: all 0.1s ease-in-out;
   &:hover {
-    background-color: #ECEEFE;
+    background-color: #eceefe;
     color: #535af1;
   }
 }
@@ -102,7 +101,8 @@
     opacity: 0;
     padding: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out, visibility 0s 0.2s;
+    transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out,
+      visibility 0s 0.2s;
   }
 
   a {
@@ -113,8 +113,10 @@
     border-radius: 20px;
     padding: 4px 0 4px 35px;
     cursor: pointer;
+    transition: all 0.1s ease-in-out;
+
     &:hover {
-      background-color: #ECEEFE;
+      background-color: #eceefe;
       color: #535af1;
       font-weight: 600;
     }
@@ -136,7 +138,8 @@
     opacity: 0;
     padding: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out, visibility 0s 0.2s;
+    transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out,
+      visibility 0s 0.2s;
   }
 }
 
@@ -152,8 +155,8 @@
   border-radius: 35px;
   transition: all 0.1s ease-in-out;
   &:hover {
-    background-color: #ECEEFE;
-    p{
+    background-color: #eceefe;
+    p {
       color: #535af1;
       // font-weight: 600;
     }
@@ -185,7 +188,7 @@
   }
 }
 
-.hide-side-nav-div{
+.hide-side-nav-div {
   width: 55px;
   height: 350px;
   display: flex;
@@ -197,37 +200,36 @@
   gap: 10px;
   z-index: 2;
   box-shadow: 4px 4px 7px 0px #00000033;
-  background: #FFFFFF;
+  background: #ffffff;
   position: absolute;
   bottom: 175px;
   left: 0px;
   user-select: none;
 
->div{
-
-  display: flex;
-  justify-content: center;
-  >span{
+  > div {
     display: flex;
-  writing-mode: sideways-lr;
-  min-width: max-content;
-  width: 32px;
-  font-family: 'Nunito';
-font-weight: 500;
-font-size: 20px;
-line-height: 120%;
-letter-spacing: 0%;
+    justify-content: center;
+    transition: all 0.1s ease-in-out;
 
+    > span {
+      display: flex;
+      writing-mode: sideways-lr;
+      min-width: max-content;
+      width: 32px;
+      font-family: "Nunito";
+      font-weight: 500;
+      font-size: 20px;
+      line-height: 120%;
+      letter-spacing: 0%;
+    }
+  }
 
-}
-}
-
-&:hover{
-  cursor: pointer;
-}
+  &:hover {
+    cursor: pointer;
+  }
 }
 
-.mat-mdc-dialog-container{
+.mat-mdc-dialog-container {
   max-width: unset !important;
   min-width: unset !important;
-  }
+}

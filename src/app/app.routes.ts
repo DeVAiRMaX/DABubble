@@ -4,10 +4,10 @@ import { RegisterComponent } from './features/auth/components/register/register.
 import { MainComponentComponent } from './main-component/main-component.component';
 import { SelectAvatarComponent } from './features/auth/components/register/select-avatar/select-avatar.component';
 import { ResetPasswordComponent } from './features/auth/components/register/reset-password/reset-password.component';
-import { ConfirmResetPasswordComponent } from './features/auth/components/register/reset-password/confirm-reset-password/confirm-reset-password.component';
 import { ImpressumComponent } from './shared/impressum/impressum.component';
 import { DataProtectionComponent } from './shared/data-protection/data-protection.component';
 import { DirectMessageComponent } from './shared/direct-message/direct-message.component';
+import { NewPasswordComponent } from './features/auth/components/register/reset-password/new-password/new-password.component';
 
 export const routes: Routes = [
   {
@@ -39,8 +39,8 @@ export const routes: Routes = [
     component: ResetPasswordComponent,
   },
   {
-    path: 'confirm-new-password',
-    component: ConfirmResetPasswordComponent,
+    path: 'new-password',
+    component: NewPasswordComponent,
   },
   {
     path: 'impressum',
@@ -55,4 +55,5 @@ export const routes: Routes = [
     component: DirectMessageComponent,
   },
   { path: '**', redirectTo: '' },
+  { path: 'confirm-reset-password', component: NewPasswordComponent },
 ];

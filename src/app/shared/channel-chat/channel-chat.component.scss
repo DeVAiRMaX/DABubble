@@ -66,6 +66,7 @@
   gap: 10px;
   cursor: pointer;
   border-radius: 30px;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: #eceefe;
   }
@@ -154,9 +155,8 @@
   width: 100%;
   overflow-y: auto;
   margin: 8px 0;
-  // display: flex;                 AYO max für was ist diese?
-  // justify-content: flex-end;
-  // flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .channel-chat-message-container-left-user-container {
@@ -215,6 +215,7 @@
   color: #535af1;
   text-decoration: none;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
   &:hover {
     font-weight: 700;
   }
@@ -235,12 +236,14 @@
   justify-content: flex-start;
   position: relative;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: rgb(236, 238, 255);
   }
 }
 
 .ownMessage {
+  transition: all 0.1s ease-in-out;
   &:hover .reactionMenu {
     opacity: 1;
   }
@@ -252,6 +255,7 @@
 }
 
 .othersMessage {
+  transition: all 0.1s ease-in-out;
   &:hover .reactionMenu {
     opacity: 1;
   }
@@ -282,6 +286,7 @@
 
 .reactionSmile {
   background: url("/assets/img/icons/add_reaction.png");
+  transition: all 0.1s ease-in-out;
   &:hover {
     background: url("/assets/img/icons/add_reaction_purple.png");
   }
@@ -383,9 +388,10 @@
 .taggedPersonsDiv {
   display: flex;
   width: fit-content;
-  position: absolute;
-  top: 0;
   height: max-content;
+  max-width: 800px;
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 
 .taggedPerson {
@@ -398,6 +404,7 @@
   background-color: #eceefe;
   align-items: center;
   width: fit-content;
+  transition: all 0.1s ease-in-out;
 
   &:hover {
     cursor: pointer;
@@ -439,6 +446,7 @@
 .channel-chat-message-container {
   padding: 0 45px;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
 
   &:hover {
     background-color: rgb(236, 238, 253);
@@ -542,6 +550,7 @@
   color: #535af1;
   text-decoration: none;
   cursor: pointer;
+  transition: all 0.1s ease-in-out;
   &:hover {
     text-decoration: underline;
   }
@@ -590,6 +599,7 @@
   color: #6c757d;
   padding: 5px;
   font-size: 20px;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: #adb0d9;
     color: #535af1;
@@ -642,6 +652,7 @@
   background-size: 20px 20px;
   background-position: center !important;
   background-repeat: no-repeat !important;
+  transition: all 0.1s ease-in-out;
   &:hover {
     background-color: rgb(236, 238, 255);
     cursor: pointer;
@@ -661,6 +672,7 @@
   display: flex;
   position: relative;
   justify-content: space-between;
+  align-items: center;
   > div {
     display: flex;
     justify-content: center;
@@ -673,6 +685,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.1s ease-in-out;
       &:hover {
         cursor: pointer;
         color: #535af1;
@@ -690,7 +703,6 @@
   justify-content: space-between;
   flex-direction: column !important;
   width: 100%;
-  gap: 40px;
   border: 1px solid #adb0d9;
   border-radius: 20px;
   padding: 20px;
@@ -706,7 +718,7 @@
   min-height: unset;
   max-height: 100px;
   overflow-y: auto;
-  overflow-wrap: anywhere; 
+  overflow-wrap: anywhere;
   padding: 8px 0;
   font-family: "Nunito";
   resize: none;
@@ -719,7 +731,6 @@
   justify-content: space-between;
   padding: 0 45px 25px 45px;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 0 0 30px 30px;
   input {
     width: 100%;
@@ -735,7 +746,12 @@
 
   .send-btn {
     cursor: pointer;
+    width: 36px;
+    height: 36px;
     transition: all 0.1s ease-in-out;
+    border-radius: 50%;
+    padding: 6px;
+    box-sizing: border-box;
     &:hover {
       opacity: 0.6;
     }
@@ -772,17 +788,6 @@
   font-family: "Nunito";
 }
 
-.taggedPersonsDiv {
-  display: flex;
-  width: fit-content;
-  position: absolute;
-  bottom: 22px;
-  left: 120px;
-  max-width: 550px;
-  overflow-y: hidden;
-  overflow-x: scroll;
-}
-
 .taggedPerson {
   height: 40px;
   border-radius: 35px;
@@ -793,6 +798,7 @@
   background-color: #eceefe;
   align-items: center;
   width: fit-content;
+  transition: all 0.1s ease-in-out;
 
   &:hover {
     cursor: pointer;
@@ -817,7 +823,7 @@
     height: 30px;
     background: url("/assets/img/closeMenu.png");
     background-position: center;
-
+    transition: all 0.1s ease-in-out;
     background-repeat: no-repeat;
 
     &:hover {
@@ -835,6 +841,7 @@
 
 .add-smiley-button {
   position: relative;
+  transition: all 0.1s ease-in-out;
 
   &:hover emoji-picker {
     opacity: 1 !important;
@@ -977,8 +984,9 @@ emoji-picker {
 
     &:first-of-type {
       background-color: transparent;
-      border-color: #797EF3;
-      color: #444DF2;
+      border-color: #797ef3;
+      color: #444df2;
+      transition: all 0.1s ease-in-out;
       &:hover {
         background-color: #f1f3f5;
       }
@@ -988,6 +996,7 @@ emoji-picker {
       background-color: #535af1;
       color: white;
       border-color: #535af1;
+      transition: all 0.1s ease-in-out;
       &:hover {
         background-color: #4347d0;
         border-color: #4347d0;
@@ -997,12 +1006,45 @@ emoji-picker {
 }
 
 .edited-indicator {
-  font-size: 11px;
-  color: #6c757d;
-  margin-left: 8px;
+  font-size: 12px;
+  color: #000000;
   font-style: italic;
 }
 
-.edit-textbox{
+.edit-textbox {
   min-height: 155px;
+}
+
+.no-messages {
+  padding: 0 45px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 32px;
+}
+
+.no-messages-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  h3 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+  span {
+    font-size: 28px;
+  }
+}
+
+.no-messages-text {
+  font-size: 20px;
+  font-weight: 400;
+  p {
+    i {
+      color: #535af1;
+      font-style: normal;
+      cursor: pointer;
+    }
+  }
 }

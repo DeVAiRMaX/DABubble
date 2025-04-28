@@ -35,16 +35,24 @@
 
         <div class="input-group">
           <div class="email-input">
-            <input type="email" placeholder="beispielname@email.com" [(ngModel)]="userEmail" />
+            <input
+              type="email"
+              placeholder="beispielname@email.com"
+              [(ngModel)]="userEmail"
+            />
           </div>
 
           <div class="password-input">
-            <input type="password" placeholder="Passwort" [(ngModel)]="userPassword" />
+            <input
+              type="password"
+              placeholder="Passwort"
+              [(ngModel)]="userPassword"
+            />
           </div>
         </div>
 
         <div class="forgot-password">
-          <a href="#">Passwort vergessen?</a>
+          <a [routerLink]="['/reset-password']">Passwort vergessen?</a>
         </div>
 
         <div class="divider">
@@ -57,7 +65,9 @@
         </button>
 
         <div class="login-actions">
-          <button class="login-btn" (click)="login(userEmail, userPassword)">Anmelden</button>
+          <button class="login-btn" (click)="login(userEmail, userPassword)">
+            Anmelden
+          </button>
           <button class="guest-login" [routerLink]="['/dashboard']">
             Gast-Login
           </button>
