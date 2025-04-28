@@ -1,0 +1,141 @@
+# Details
+
+Date : 2025-04-28 15:27:19
+
+Directory /Users/avogath/Desktop/DA/DABubble
+
+Total : 126 files,  27494 codes, 183 comments, 1494 blanks, all 29171 lines
+
+[Summary](results.md) / Details / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
+
+## Files
+| filename | language | code | comment | blank | total |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| [README.md](/README.md) | Markdown | 14 | 0 | 14 | 28 |
+| [angular.json](/angular.json) | JSON | 105 | 0 | 1 | 106 |
+| [firebase.json](/firebase.json) | JSON | 5 | 0 | 1 | 6 |
+| [package-lock.json](/package-lock.json) | JSON | 15,519 | 0 | 1 | 15,520 |
+| [package.json](/package.json) | JSON | 42 | 0 | 1 | 43 |
+| [public/assets/fonts/nunito.css](/public/assets/fonts/nunito.css) | CSS | 368 | 46 | 0 | 414 |
+| [src/app/app.component.html](/src/app/app.component.html) | HTML | 3 | 0 | 0 | 3 |
+| [src/app/app.component.scss](/src/app/app.component.scss) | SCSS | 4 | 0 | 0 | 4 |
+| [src/app/app.component.spec.ts](/src/app/app.component.spec.ts) | TypeScript | 25 | 0 | 5 | 30 |
+| [src/app/app.component.ts](/src/app/app.component.ts) | TypeScript | 12 | 0 | 5 | 17 |
+| [src/app/app.config.ts](/src/app/app.config.ts) | TypeScript | 22 | 0 | 3 | 25 |
+| [src/app/app.routes.ts](/src/app/app.routes.ts) | TypeScript | 58 | 0 | 2 | 60 |
+| [src/app/classes/register.class.ts](/src/app/classes/register.class.ts) | TypeScript | 26 | 0 | 4 | 30 |
+| [src/app/features/auth/components/login/login.component.html](/src/app/features/auth/components/login/login.component.html) | HTML | 74 | 0 | 10 | 84 |
+| [src/app/features/auth/components/login/login.component.scss](/src/app/features/auth/components/login/login.component.scss) | SCSS | 341 | 0 | 35 | 376 |
+| [src/app/features/auth/components/login/login.component.spec.ts](/src/app/features/auth/components/login/login.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/features/auth/components/login/login.component.ts](/src/app/features/auth/components/login/login.component.ts) | TypeScript | 143 | 0 | 13 | 156 |
+| [src/app/features/auth/components/register/register.component.html](/src/app/features/auth/components/register/register.component.html) | HTML | 68 | 0 | 12 | 80 |
+| [src/app/features/auth/components/register/register.component.scss](/src/app/features/auth/components/register/register.component.scss) | SCSS | 293 | 0 | 36 | 329 |
+| [src/app/features/auth/components/register/register.component.spec.ts](/src/app/features/auth/components/register/register.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/features/auth/components/register/register.component.ts](/src/app/features/auth/components/register/register.component.ts) | TypeScript | 72 | 0 | 8 | 80 |
+| [src/app/features/auth/components/register/reset-password/new-password/new-password.component.html](/src/app/features/auth/components/register/reset-password/new-password/new-password.component.html) | HTML | 73 | 0 | 8 | 81 |
+| [src/app/features/auth/components/register/reset-password/new-password/new-password.component.scss](/src/app/features/auth/components/register/reset-password/new-password/new-password.component.scss) | SCSS | 174 | 0 | 17 | 191 |
+| [src/app/features/auth/components/register/reset-password/new-password/new-password.component.spec.ts](/src/app/features/auth/components/register/reset-password/new-password/new-password.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/features/auth/components/register/reset-password/new-password/new-password.component.ts](/src/app/features/auth/components/register/reset-password/new-password/new-password.component.ts) | TypeScript | 81 | 0 | 11 | 92 |
+| [src/app/features/auth/components/register/reset-password/reset-password.component.html](/src/app/features/auth/components/register/reset-password/reset-password.component.html) | HTML | 52 | 0 | 6 | 58 |
+| [src/app/features/auth/components/register/reset-password/reset-password.component.scss](/src/app/features/auth/components/register/reset-password/reset-password.component.scss) | SCSS | 176 | 0 | 16 | 192 |
+| [src/app/features/auth/components/register/reset-password/reset-password.component.spec.ts](/src/app/features/auth/components/register/reset-password/reset-password.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/features/auth/components/register/reset-password/reset-password.component.ts](/src/app/features/auth/components/register/reset-password/reset-password.component.ts) | TypeScript | 41 | 0 | 4 | 45 |
+| [src/app/features/auth/components/register/select-avatar/avatars.json](/src/app/features/auth/components/register/select-avatar/avatars.json) | JSON | 11 | 0 | 0 | 11 |
+| [src/app/features/auth/components/register/select-avatar/select-avatar.component.html](/src/app/features/auth/components/register/select-avatar/select-avatar.component.html) | HTML | 48 | 0 | 3 | 51 |
+| [src/app/features/auth/components/register/select-avatar/select-avatar.component.scss](/src/app/features/auth/components/register/select-avatar/select-avatar.component.scss) | SCSS | 194 | 0 | 14 | 208 |
+| [src/app/features/auth/components/register/select-avatar/select-avatar.component.spec.ts](/src/app/features/auth/components/register/select-avatar/select-avatar.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/features/auth/components/register/select-avatar/select-avatar.component.ts](/src/app/features/auth/components/register/select-avatar/select-avatar.component.ts) | TypeScript | 79 | 0 | 7 | 86 |
+| [src/app/main-component/main-component.component.html](/src/app/main-component/main-component.component.html) | HTML | 29 | 4 | 5 | 38 |
+| [src/app/main-component/main-component.component.scss](/src/app/main-component/main-component.component.scss) | SCSS | 50 | 0 | 6 | 56 |
+| [src/app/main-component/main-component.component.spec.ts](/src/app/main-component/main-component.component.spec.ts) | TypeScript | 18 | 0 | 7 | 25 |
+| [src/app/main-component/main-component.component.ts](/src/app/main-component/main-component.component.ts) | TypeScript | 226 | 17 | 23 | 266 |
+| [src/app/shared.ts](/src/app/shared.ts) | TypeScript | 53 | 0 | 1 | 54 |
+| [src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.html](/src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.html) | HTML | 45 | 0 | 3 | 48 |
+| [src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.scss](/src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.scss) | SCSS | 184 | 1 | 19 | 204 |
+| [src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.spec.ts](/src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.ts](/src/app/shared/channel-chat/add-user-to-channel-overlay/add-user-to-channel-overlay.component.ts) | TypeScript | 84 | 0 | 32 | 116 |
+| [src/app/shared/channel-chat/channel-chat.component.html](/src/app/shared/channel-chat/channel-chat.component.html) | HTML | 285 | 0 | 9 | 294 |
+| [src/app/shared/channel-chat/channel-chat.component.scss](/src/app/shared/channel-chat/channel-chat.component.scss) | SCSS | 928 | 4 | 119 | 1,051 |
+| [src/app/shared/channel-chat/channel-chat.component.spec.ts](/src/app/shared/channel-chat/channel-chat.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/channel-chat/channel-chat.component.ts](/src/app/shared/channel-chat/channel-chat.component.ts) | TypeScript | 645 | 1 | 101 | 747 |
+| [src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.html](/src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.html) | HTML | 22 | 0 | 1 | 23 |
+| [src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.scss](/src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.scss) | SCSS | 146 | 0 | 19 | 165 |
+| [src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.spec.ts](/src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.ts](/src/app/shared/channel-chat/channel-members-overlay/channel-members-overlay.component.ts) | TypeScript | 67 | 0 | 13 | 80 |
+| [src/app/shared/channel-chat/edit-channel/edit-channel.component.html](/src/app/shared/channel-chat/edit-channel/edit-channel.component.html) | HTML | 91 | 3 | 8 | 102 |
+| [src/app/shared/channel-chat/edit-channel/edit-channel.component.scss](/src/app/shared/channel-chat/edit-channel/edit-channel.component.scss) | SCSS | 345 | 4 | 33 | 382 |
+| [src/app/shared/channel-chat/edit-channel/edit-channel.component.spec.ts](/src/app/shared/channel-chat/edit-channel/edit-channel.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/channel-chat/edit-channel/edit-channel.component.ts](/src/app/shared/channel-chat/edit-channel/edit-channel.component.ts) | TypeScript | 122 | 4 | 21 | 147 |
+| [src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.html](/src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.html) | HTML | 1 | 0 | 1 | 2 |
+| [src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.scss](/src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.scss) | SCSS | 0 | 0 | 1 | 1 |
+| [src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.spec.ts](/src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.ts](/src/app/shared/channel-chat/smiley-keyboard/smiley-keyboard.component.ts) | TypeScript | 19 | 1 | 3 | 23 |
+| [src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.html](/src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.html) | HTML | 30 | 0 | 4 | 34 |
+| [src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.scss](/src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.scss) | SCSS | 52 | 0 | 11 | 63 |
+| [src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.spec.ts](/src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.ts](/src/app/shared/channel-chat/tagging-persons-dialog/tagging-persons-dialog.component.ts) | TypeScript | 119 | 16 | 25 | 160 |
+| [src/app/shared/channel-create-overlay/channel-create-overlay.component.html](/src/app/shared/channel-create-overlay/channel-create-overlay.component.html) | HTML | 41 | 0 | 5 | 46 |
+| [src/app/shared/channel-create-overlay/channel-create-overlay.component.scss](/src/app/shared/channel-create-overlay/channel-create-overlay.component.scss) | SCSS | 124 | 0 | 14 | 138 |
+| [src/app/shared/channel-create-overlay/channel-create-overlay.component.spec.ts](/src/app/shared/channel-create-overlay/channel-create-overlay.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/channel-create-overlay/channel-create-overlay.component.ts](/src/app/shared/channel-create-overlay/channel-create-overlay.component.ts) | TypeScript | 104 | 3 | 10 | 117 |
+| [src/app/shared/data-protection/data-protection.component.html](/src/app/shared/data-protection/data-protection.component.html) | HTML | 92 | 0 | 3 | 95 |
+| [src/app/shared/data-protection/data-protection.component.scss](/src/app/shared/data-protection/data-protection.component.scss) | SCSS | 99 | 0 | 8 | 107 |
+| [src/app/shared/data-protection/data-protection.component.spec.ts](/src/app/shared/data-protection/data-protection.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/data-protection/data-protection.component.ts](/src/app/shared/data-protection/data-protection.component.ts) | TypeScript | 12 | 0 | 3 | 15 |
+| [src/app/shared/direct-message/direct-message.component.html](/src/app/shared/direct-message/direct-message.component.html) | HTML | 167 | 2 | 7 | 176 |
+| [src/app/shared/direct-message/direct-message.component.scss](/src/app/shared/direct-message/direct-message.component.scss) | SCSS | 417 | 17 | 54 | 488 |
+| [src/app/shared/direct-message/direct-message.component.spec.ts](/src/app/shared/direct-message/direct-message.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/direct-message/direct-message.component.ts](/src/app/shared/direct-message/direct-message.component.ts) | TypeScript | 279 | 6 | 42 | 327 |
+| [src/app/shared/header-dialog-profil/dialog.component.html](/src/app/shared/header-dialog-profil/dialog.component.html) | HTML | 4 | 0 | 1 | 5 |
+| [src/app/shared/header-dialog-profil/dialog.component.scss](/src/app/shared/header-dialog-profil/dialog.component.scss) | SCSS | 35 | 0 | 1 | 36 |
+| [src/app/shared/header-dialog-profil/dialog.component.spec.ts](/src/app/shared/header-dialog-profil/dialog.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/header-dialog-profil/dialog.component.ts](/src/app/shared/header-dialog-profil/dialog.component.ts) | TypeScript | 64 | 0 | 13 | 77 |
+| [src/app/shared/header/header.component.html](/src/app/shared/header/header.component.html) | HTML | 60 | 0 | 5 | 65 |
+| [src/app/shared/header/header.component.scss](/src/app/shared/header/header.component.scss) | SCSS | 146 | 0 | 10 | 156 |
+| [src/app/shared/header/header.component.spec.ts](/src/app/shared/header/header.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/header/header.component.ts](/src/app/shared/header/header.component.ts) | TypeScript | 129 | 12 | 32 | 173 |
+| [src/app/shared/header/user-profil/user-profil.component.html](/src/app/shared/header/user-profil/user-profil.component.html) | HTML | 35 | 0 | 3 | 38 |
+| [src/app/shared/header/user-profil/user-profil.component.scss](/src/app/shared/header/user-profil/user-profil.component.scss) | SCSS | 131 | 0 | 9 | 140 |
+| [src/app/shared/header/user-profil/user-profil.component.spec.ts](/src/app/shared/header/user-profil/user-profil.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/header/user-profil/user-profil.component.ts](/src/app/shared/header/user-profil/user-profil.component.ts) | TypeScript | 33 | 1 | 12 | 46 |
+| [src/app/shared/impressum/impressum.component.html](/src/app/shared/impressum/impressum.component.html) | HTML | 59 | 0 | 1 | 60 |
+| [src/app/shared/impressum/impressum.component.scss](/src/app/shared/impressum/impressum.component.scss) | SCSS | 152 | 0 | 12 | 164 |
+| [src/app/shared/impressum/impressum.component.spec.ts](/src/app/shared/impressum/impressum.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/impressum/impressum.component.ts](/src/app/shared/impressum/impressum.component.ts) | TypeScript | 12 | 0 | 2 | 14 |
+| [src/app/shared/interfaces/channel.ts](/src/app/shared/interfaces/channel.ts) | TypeScript | 16 | 0 | 2 | 18 |
+| [src/app/shared/interfaces/message.ts](/src/app/shared/interfaces/message.ts) | TypeScript | 18 | 0 | 2 | 20 |
+| [src/app/shared/interfaces/thread.ts](/src/app/shared/interfaces/thread.ts) | TypeScript | 14 | 0 | 2 | 16 |
+| [src/app/shared/interfaces/user.ts](/src/app/shared/interfaces/user.ts) | TypeScript | 15 | 0 | 2 | 17 |
+| [src/app/shared/services/auth.service.spec.ts](/src/app/shared/services/auth.service.spec.ts) | TypeScript | 12 | 0 | 5 | 17 |
+| [src/app/shared/services/auth.service.ts](/src/app/shared/services/auth.service.ts) | TypeScript | 218 | 0 | 19 | 237 |
+| [src/app/shared/services/firebase.service.spec.ts](/src/app/shared/services/firebase.service.spec.ts) | TypeScript | 12 | 0 | 5 | 17 |
+| [src/app/shared/services/firebase.service.ts](/src/app/shared/services/firebase.service.ts) | TypeScript | 924 | 0 | 94 | 1,018 |
+| [src/app/shared/services/sub.service.spec.ts](/src/app/shared/services/sub.service.spec.ts) | TypeScript | 12 | 0 | 5 | 17 |
+| [src/app/shared/services/sub.service.ts](/src/app/shared/services/sub.service.ts) | TypeScript | 41 | 1 | 7 | 49 |
+| [src/app/shared/side-nav/side-nav.component.html](/src/app/shared/side-nav/side-nav.component.html) | HTML | 66 | 0 | 6 | 72 |
+| [src/app/shared/side-nav/side-nav.component.scss](/src/app/shared/side-nav/side-nav.component.scss) | SCSS | 216 | 1 | 24 | 241 |
+| [src/app/shared/side-nav/side-nav.component.spec.ts](/src/app/shared/side-nav/side-nav.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/side-nav/side-nav.component.ts](/src/app/shared/side-nav/side-nav.component.ts) | TypeScript | 131 | 20 | 19 | 170 |
+| [src/app/shared/thread/thread.component.html](/src/app/shared/thread/thread.component.html) | HTML | 171 | 0 | 9 | 180 |
+| [src/app/shared/thread/thread.component.scss](/src/app/shared/thread/thread.component.scss) | SCSS | 320 | 0 | 34 | 354 |
+| [src/app/shared/thread/thread.component.spec.ts](/src/app/shared/thread/thread.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/thread/thread.component.ts](/src/app/shared/thread/thread.component.ts) | TypeScript | 379 | 11 | 73 | 463 |
+| [src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.html](/src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.html) | HTML | 32 | 0 | 4 | 36 |
+| [src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.scss](/src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.scss) | SCSS | 134 | 1 | 8 | 143 |
+| [src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.spec.ts](/src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.ts](/src/app/shared/user-profil/profil-dialog/edit-profil-dialog/edit-profil-dialog.component.ts) | TypeScript | 38 | 0 | 10 | 48 |
+| [src/app/shared/user-profil/profil-dialog/profil-dialog.component.html](/src/app/shared/user-profil/profil-dialog/profil-dialog.component.html) | HTML | 34 | 0 | 5 | 39 |
+| [src/app/shared/user-profil/profil-dialog/profil-dialog.component.scss](/src/app/shared/user-profil/profil-dialog/profil-dialog.component.scss) | SCSS | 98 | 1 | 10 | 109 |
+| [src/app/shared/user-profil/profil-dialog/profil-dialog.component.spec.ts](/src/app/shared/user-profil/profil-dialog/profil-dialog.component.spec.ts) | TypeScript | 18 | 0 | 6 | 24 |
+| [src/app/shared/user-profil/profil-dialog/profil-dialog.component.ts](/src/app/shared/user-profil/profil-dialog/profil-dialog.component.ts) | TypeScript | 69 | 0 | 9 | 78 |
+| [src/app/variables.service.spec.ts](/src/app/variables.service.spec.ts) | TypeScript | 12 | 0 | 5 | 17 |
+| [src/app/variables.service.ts](/src/app/variables.service.ts) | TypeScript | 109 | 0 | 29 | 138 |
+| [src/index.html](/src/index.html) | HTML | 19 | 0 | 2 | 21 |
+| [src/main.ts](/src/main.ts) | TypeScript | 6 | 0 | 2 | 8 |
+| [src/styles.scss](/src/styles.scss) | SCSS | 41 | 0 | 15 | 56 |
+| [src/vite.config.ts](/src/vite.config.ts) | TypeScript | 6 | 0 | 3 | 9 |
+| [tsconfig.app.json](/tsconfig.app.json) | JSON | 13 | 2 | 1 | 16 |
+| [tsconfig.json](/tsconfig.json) | JSON with Comments | 30 | 2 | 1 | 33 |
+| [tsconfig.spec.json](/tsconfig.spec.json) | JSON | 13 | 2 | 1 | 16 |
+
+[Summary](results.md) / Details / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
