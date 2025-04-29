@@ -53,12 +53,11 @@ export class SideNavComponent implements OnInit, OnDestroy {
 
   private variableService: VariablesService = inject(VariablesService);
   private dialog: MatDialog = inject(MatDialog);
-  private firebaseService: FirebaseService = inject(FirebaseService); // Injiziert
-  private authService: AuthService = inject(AuthService); // Injiziert
+  private firebaseService: FirebaseService = inject(FirebaseService);
+  private authService: AuthService = inject(AuthService);
   private subService: SubService = inject(SubService);
 
   @Input() userChannels: ChannelWithKey[] = [];
-  // @Input() channel!: ChannelWithKey;
 
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
   @Output() userSelected = new EventEmitter<User>();
@@ -68,7 +67,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
   private readonly SUB_GROUP_NAME = 'sideNavSubs';
 
   ngOnInit() {
-    // Lade gespeicherte Zustände aus dem LocalStorage für Expansion
     const savedChannelState = localStorage.getItem('channelListExpanded');
     const savedMsgState = localStorage.getItem('msgListExpanded');
     this.isChannelListExpanded = savedChannelState
@@ -76,62 +74,41 @@ export class SideNavComponent implements OnInit, OnDestroy {
       : true;
     this.isMsgListExpanded = savedMsgState ? JSON.parse(savedMsgState) : true;
 
-    // SideNav Sichtbarkeit abonnieren
     const sideNavVisSub = this.variableService.sideNavIsVisible$.subscribe(
       (value) => {
         this.sideNavIsVisible = value;
       }
     );
-    this.subService.add(sideNavVisSub, this.SUB_GROUP_NAME); // Subscription verwalten
-
-    // Aktuelle User-UID abonnieren und dann Benutzer laden
+    this.subService.add(sideNavVisSub, this.SUB_GROUP_NAME);
     const authSub = this.authService.uid$.subscribe((uid) => {
       this.currentUserUid = uid;
       if (uid) {
-        this.loadUsers(); // Lade Benutzer, wenn UID bekannt ist
+        this.loadUsers();
       } else {
-        this.displayableUsers = []; // Leere Liste, wenn kein User angemeldet
+        this.displayableUsers = [];
       }
     });
-    this.subService.add(authSub, this.SUB_GROUP_NAME); // Subscription verwalten
+    this.subService.add(authSub, this.SUB_GROUP_NAME);
   }
 
   ngOnDestroy(): void {
-    this.subService.unsubscribeGroup(this.SUB_GROUP_NAME); // Alle Subs dieser Komponente beenden
+    this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
   }
 
   loadUsers(): void {
     this.firebaseService
       .getAllUsers()
       .pipe(
-        map((users) => users.filter((user) => user.uid !== this.currentUserUid)) // Filtere aktuellen User
-      )
-      .subscribe((filteredUsers) => {
-        this.displayableUsers = filteredUsers;
-        console.log('[SideNav] Displayable Users:', this.displayableUsers); // Zum Debuggen
-      });
-    // Wichtig: Diese Subscription wird nicht über SubService verwaltet, da sie sich bei jedem Aufruf selbst beendet (da getAllUsers nicht dauerhaft lauscht).
-    // Wenn getAllUsers ein dauerhaftes Observable wäre (z.B. mit stateChanges), müsste man es auch verwalten.
+        map((users) => users.filter((user) => user.uid !== this.currentUserUid))
+      );
   }
-  constructor() {
-    // private dialog: MatDialog // private variableService: VariablesService,
-    // this.addChannelOverlayIsVisible$ =
-    //   this.variableService.addChannelOverlayIsVisible$;
-    // this.variableService.sideNavIsVisible$.subscribe((value) => {
-    //   this.sideNavIsVisible = value;
-    // });
-  }
+  constructor() {}
 
   selectChannel(channel: ChannelWithKey): void {
     this.channelSelected.emit(channel);
   }
 
-  // selectUser(user: User) {
-  //   this.userSelected.emit(user);
-  // }
-
   selectUserForDm(user: User): void {
-    // console.log('[SideNav] User selected:', user);
     this.userSelected.emit(user);
   }
 
@@ -148,7 +125,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
 
   toggleChannelList(): void {
     this.isChannelListExpanded = !this.isChannelListExpanded;
-    // Speichere neuen Zustand im LocalStorage
     localStorage.setItem(
       'channelListExpanded',
       JSON.stringify(this.isChannelListExpanded)
@@ -162,8 +138,4 @@ export class SideNavComponent implements OnInit, OnDestroy {
       JSON.stringify(this.isMsgListExpanded)
     );
   }
-
-  // showAddChannelOverlay(): void {
-  //   this.variableService.toggleAddChannelOverlay();
-  // }
 }

@@ -12,6 +12,8 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   QueryList,
   ViewChildren,
+  TrackByFunction,
+  HostListener,
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
@@ -22,7 +24,7 @@ import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
 import { ChannelWithKey } from '../interfaces/channel';
-import { Message, Reaction } from '../interfaces/message';
+import { Message, Reaction, GroupedReaction } from '../interfaces/message';
 import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-persons-dialog.component';
 import { SubService } from '../services/sub.service';
 import { FirebaseService } from '../services/firebase.service';
@@ -74,6 +76,9 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
   private readonly SUB_MESSAGES = 'channelMessages';
 
+  isShowingAllReactions = new Map<string, boolean>();
+  isMobileView: boolean = window.innerWidth < 800;
+
   taggedPersonsInChat = this.variableService.getTaggedContactsFromChat();
   taggedPerson: any;
 
@@ -81,6 +86,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   currentUser: User | null = null;
   channelMember: User | null = null;
   memberAvatars: string[] = [];
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event?: Event) {
+    this.isMobileView = window.innerWidth < 768;
+    this.cdRef.markForCheck();
+  }
 
   constructor() {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
@@ -115,6 +126,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
 
     this.getChannelMembers();
+    this.onResize();
   }
 
   ngAfterViewInit() {
@@ -123,16 +135,31 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   scrollToBottom(): void {
     try {
-      this.channelChatBody.nativeElement.scrollTop = this.channelChatBody.nativeElement.scrollHeight;
+      this.channelChatBody.nativeElement.scrollTop =
+        this.channelChatBody.nativeElement.scrollHeight;
     } catch (err) {
       console.warn('Scroll failed', err);
     }
   }
 
+  getReactionLimit(): number {
+    const mobileLimit = 7;
+    const desktopLimit = 20;
+    return this.isMobileView ? mobileLimit : desktopLimit;
+  }
+
+  trackByMessageKey: TrackByFunction<Message> = (
+    index: number,
+    message: Message
+  ): string => {
+    return `<span class="math-inline">\{message\.key\}\-</span>{this.editingMessageKey === message.key}-${
+      message.reactions?.length || 0
+    }`;
+  };
+
   onNewMessageReceived() {
     this.scrollToBottom();
   }
-
 
   getChannelMembers() {
     this.firebaseService
@@ -646,16 +673,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  groupReactions(reactions: Reaction[] | undefined): {
-    emoji: string;
-    count: number;
-    userIds: string[];
-    userNames: string[];
-    reactedByUser: boolean;
-  }[] {
+  groupReactions(reactions: Reaction[] | undefined): GroupedReaction[] {
     if (!reactions || reactions.length === 0) {
       return [];
     }
+
+    const initialAcc: Record<string, GroupedReaction> = {};
 
     const grouped = reactions.reduce((acc, reaction) => {
       if (!acc[reaction.emoji]) {
@@ -669,14 +692,54 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       }
       acc[reaction.emoji].count++;
       acc[reaction.emoji].userIds.push(reaction.userId);
-      acc[reaction.emoji].userNames.push(reaction.userName);
+      if (reaction.userName) {
+        acc[reaction.emoji].userNames.push(reaction.userName);
+      }
       if (reaction.userId === this.currentUser?.uid) {
         acc[reaction.emoji].reactedByUser = true;
       }
       return acc;
-    }, {} as { [key: string]: { emoji: string; count: number; userIds: string[]; userNames: string[]; reactedByUser: boolean } });
+    }, initialAcc);
 
     return Object.values(grouped);
+  }
+
+  getTotalGroupedReactionsCount(message: Message): number {
+    // Cache das Ergebnis von groupReactions, wenn es oft aufgerufen wird
+    // Einfache Variante:
+    return this.groupReactions(message.reactions).length;
+  }
+
+  getDisplayedReactions(message: Message): GroupedReaction[] {
+    const allGrouped = this.groupReactions(message.reactions);
+    const totalCount = allGrouped.length;
+    const limit = this.getReactionLimit();
+
+    if (this.isShowingAll(message)) {
+      return allGrouped;
+    } else {
+      return allGrouped.slice(0, limit);
+    }
+  }
+
+  isShowingAll(message: Message): boolean {
+    if (!message || !message.key) {
+      return false;
+    }
+    return this.isShowingAllReactions.get(message.key) || false;
+  }
+
+  toggleShowAllReactions(message: Message): void {
+    if (!message || !message.key) {
+      console.warn(
+        'Versuch, den Reaktionsstatus für eine Nachricht ohne Key umzuschalten.'
+      );
+      return;
+    }
+
+    const currentState = this.isShowingAll(message);
+    this.isShowingAllReactions.set(message.key, !currentState);
+    this.cdRef.markForCheck();
   }
 
   startEditing(message: Message): void {

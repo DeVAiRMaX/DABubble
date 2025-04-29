@@ -17,3 +17,11 @@ export interface Reaction {
   userId: string;
   userName: string;
 }
+
+export interface GroupedReaction {
+  emoji: string;
+  count: number;
+  userIds: string[];
+  userNames: string[];
+  reactedByUser: boolean;
+}
