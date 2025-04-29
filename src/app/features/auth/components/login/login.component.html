@@ -48,6 +48,9 @@
               placeholder="Passwort"
               [(ngModel)]="userPassword"
             />
+            <span class="loginErrorText" *ngIf="loginError"
+              >E-Mail-Adresse oder Passwort ist ungültig!</span
+            >
           </div>
         </div>
 

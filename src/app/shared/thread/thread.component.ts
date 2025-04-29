@@ -171,7 +171,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   sendThreadMessage(): void {
     const text = this.threadMessageText.trim(); // Hole Text aus Input (z.B. ngModel oder ViewChild)
-    if (!text || !this.currentThreadKey || !this.currentUser || text.length < 1) {
+    if (!text || !this.currentThreadKey || !this.currentUser || text === '&nbsp;') {
       console.warn('Kann Thread-Nachricht nicht senden: Fehlende Daten');
       return;
     }
@@ -180,6 +180,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       .sendThreadMessage(this.currentThreadKey, text, this.currentUser)
       .subscribe({
         next: () => {
+          
           console.log('Thread-Nachricht erfolgreich gesendet.');
           this.threadMessageText = ''; // Input leeren
           // Optional: Scroll zum Ende

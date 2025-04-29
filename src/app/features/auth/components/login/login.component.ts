@@ -10,11 +10,12 @@ import {
 } from '@angular/animations';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { FirebaseService } from '../../../../shared/services/firebase.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, CommonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   animations: [
@@ -114,6 +115,7 @@ export class LoginComponent implements OnInit {
 
   userEmail: string = '';
   userPassword: string = '';
+  loginError: string | null = null;
 
   ngOnInit(): void {
     this.startAnimation();
@@ -149,7 +151,26 @@ export class LoginComponent implements OnInit {
     }, 3500);
   }
 
-  login(userEmail: string, userPassword: string) {
-    this.authService.loginWithEmailPassword(userEmail, userPassword);
+  async login(userEmail: string, userPassword: string) { // Methode als async markieren
+    this.loginError = null; // Fehler zurücksetzen vor neuem Versuch
+    try {
+      await this.authService.loginWithEmailPassword(userEmail, userPassword);
+      // Navigation erfolgt im AuthService bei Erfolg
+    } catch (error: any) {
+      console.error('Login fehlgeschlagen:', error);
+      // Hier den Fehler behandeln und eine benutzerfreundliche Nachricht setzen
+      this.handleLoginError(error);
+      
+    }
   }
+
+
+  private handleLoginError(error: any) : void {
+    if (error.code === 'auth/user-not-found' ||
+      error.code === 'auth/wrong-password' ||
+      error.code === 'auth/invalid-credential') {
+    this.loginError = 'E-Mail-Adresse oder Passwort ist ungültig.';
+    console.log(this.loginError);
+  }
+}
 }

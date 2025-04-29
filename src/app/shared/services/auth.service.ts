@@ -150,6 +150,7 @@ export class AuthService {
       this.router.navigate(['/dashboard']);
     } catch (error: any) {
       console.error('Error during email/password login:', error);
+   
       throw error;
     }
   }

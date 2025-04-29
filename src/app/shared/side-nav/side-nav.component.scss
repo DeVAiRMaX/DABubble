@@ -5,6 +5,7 @@
   padding: 32px 30px;
   display: flex;
   gap: 25px;
+  overflow-y: scroll;
   flex-direction: column;
   animation: slideIn 200ms ease-out-forwards;
 }
@@ -221,6 +222,11 @@
       font-size: 20px;
       line-height: 120%;
       letter-spacing: 0%;
+
+      @supports not (writing-mode: sideways-lr) {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+      }
     }
   }
 
