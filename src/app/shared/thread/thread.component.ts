@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy, Input, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  Input,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { VariablesService } from '../../variables.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -19,21 +28,20 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { Message } from '../interfaces/message';
+import { Message, Reaction, GroupedReaction } from '../interfaces/message';
 import { get, ref } from '@angular/fire/database';
 import { FormsModule } from '@angular/forms';
 import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-keyboard.component';
 import { ChannelWithKey } from '../interfaces/channel';
 import { fromEvent } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-
-
-
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { objectVal, DatabaseReference } from '@angular/fire/database';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, FormsModule],
+  imports: [CommonModule, MatDialogModule, FormsModule, MatTooltipModule],
   templateUrl: './thread.component.html',
   styleUrl: './thread.component.scss',
   animations: [
@@ -56,44 +64,33 @@ import { takeUntil } from 'rxjs/operators';
   ],
 })
 export class ThreadComponent implements OnInit, OnDestroy {
+  @Input() channel!: ChannelWithKey;
+  @ViewChild('editableDiv') editableDiv!: ElementRef<HTMLDivElement>;
 
-   @Input() channel!: ChannelWithKey;
-   @ViewChild('editableDiv') editableDiv!:ElementRef<HTMLDivElement>;
   private variableService: VariablesService = inject(VariablesService);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private dialog: MatDialog = inject(MatDialog);
   private savedRange: Range | null = null;
   private destroy$ = new Subject<void>();
+  private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
 
   isOpen: boolean = false;
   currentThreadKey: string | null = null;
   threadMessages$: Observable<ThreadMessage[]> = of([]);
   originalMessage$: Observable<Message | null> = of(null);
   currentUser: User | null = null;
+  originalMessageDetails: Message | null = null;
+  originalMessageChannelKey: string | null = null;
 
   private subscriptions = new Subscription();
 
   threadMessageText: string = '';
   lastInputValue: string = '';
   taggedPersonsInThreads = this.variableService.getTaggedcontactsFromThreads();
+  isShowingAllReactions = new Map<string, boolean>();
+
   constructor() {}
-
-  ngAfterViewInit(){
-    const el = this.editableDiv.nativeElement;
-
-
-    fromEvent(el, 'keyup').pipe(takeUntil(this.destroy$)).subscribe(() => this.cacheCurrentRange());
-    fromEvent(el, 'mouseup').pipe(takeUntil(this.destroy$)).subscribe(() => this.cacheCurrentRange());
-
-  }
-
-  private cacheCurrentRange() {
-    const sel = window.getSelection();
-    if(sel && sel.rangeCount > 0) {
-      this.savedRange = sel.getRangeAt(0).cloneRange();
-    }
-  }
 
   ngOnInit(): void {
     const openSub = this.variableService.threadIsOpen$.subscribe(
@@ -104,11 +101,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
         tap((key) => (this.currentThreadKey = key)),
         switchMap((key) => {
           if (key) {
-            // Lade Thread-Nachrichten
             this.threadMessages$ = this.firebaseService.getThreadMessages(key);
-            // Lade Original-Nachricht (optional, für Kontext)
             this.originalMessage$ = this.loadOriginalMessage(key);
-            return of(key); // Nur um die Pipe am Laufen zu halten
+            return of(key);
           } else {
             this.threadMessages$ = of([]);
             this.originalMessage$ = of(null);
@@ -127,6 +122,24 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.subscriptions.add(userSub);
   }
 
+  ngAfterViewInit() {
+    const el = this.editableDiv.nativeElement;
+
+    fromEvent(el, 'keyup')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cacheCurrentRange());
+    fromEvent(el, 'mouseup')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cacheCurrentRange());
+  }
+
+  private cacheCurrentRange() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      this.savedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -134,32 +147,81 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   loadOriginalMessage(threadKey: string): Observable<Message | null> {
+    console.log(
+      `[ThreadComponent] Lade Originalnachricht für Thread: ${threadKey}`
+    );
     const threadRef = ref(
       this.firebaseService['database'],
       `Threads/${threadKey}`
     );
+
     return from(get(threadRef)).pipe(
+      tap((snapshot) =>
+        console.log(
+          `[ThreadComponent] Thread-Metadaten geholt, existiert: ${snapshot.exists()}`
+        )
+      ),
       switchMap((threadSnapshot) => {
         if (threadSnapshot.exists()) {
           const threadData = threadSnapshot.val() as Thread;
+          this.originalMessageChannelKey = threadData.channelKey;
+
           if (threadData.channelKey && threadData.originalMessageKey) {
+            console.log(
+              `[ThreadComponent] Originalnachricht Pfad: channels/${threadData.channelKey}/messages/${threadData.originalMessageKey}`
+            );
             const messageRef = ref(
               this.firebaseService['database'],
               `channels/${threadData.channelKey}/messages/${threadData.originalMessageKey}`
             );
-            return from(get(messageRef)).pipe(
-              map((messageSnapshot) =>
-                messageSnapshot.exists()
-                  ? (messageSnapshot.val() as Message)
-                  : null
-              )
+
+            return objectVal<Message>(messageRef).pipe(
+              tap((msg) =>
+                console.log(
+                  `[ThreadComponent] Originalnachricht Update von objectVal:`,
+                  msg
+                )
+              ),
+              map((msg) => {
+                if (msg) {
+                  const messageWithKey = {
+                    ...msg,
+                    key: threadData.originalMessageKey,
+                  };
+                  this.originalMessageDetails = messageWithKey;
+                  return messageWithKey;
+                } else {
+                  console.warn(
+                    `[ThreadComponent] Originalnachricht bei ${messageRef.toString()} nicht gefunden.`
+                  );
+                  this.originalMessageDetails = null;
+                  return null;
+                }
+              })
             );
+            // --- Ende objectVal ---
+          } else {
+            console.warn(
+              `[ThreadComponent] Thread ${threadKey} fehlen channelKey oder originalMessageKey.`
+            );
+            this.originalMessageChannelKey = null;
+            this.originalMessageDetails = null;
+            return of(null);
           }
+        } else {
+          console.warn(`[ThreadComponent] Thread ${threadKey} nicht gefunden.`);
+          this.originalMessageChannelKey = null;
+          this.originalMessageDetails = null;
+          return of(null);
         }
-        return of(null); // Thread oder Keys nicht gefunden
       }),
       catchError((error) => {
-        console.error('Fehler beim Laden der Originalnachricht:', error);
+        console.error(
+          '[ThreadComponent] Fehler in loadOriginalMessage Pipe:',
+          error
+        );
+        this.originalMessageChannelKey = null;
+        this.originalMessageDetails = null;
         return of(null);
       })
     );
@@ -171,7 +233,12 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   sendThreadMessage(): void {
     const text = this.threadMessageText.trim(); // Hole Text aus Input (z.B. ngModel oder ViewChild)
-    if (!text || !this.currentThreadKey || !this.currentUser || text === '&nbsp;') {
+    if (
+      !text ||
+      !this.currentThreadKey ||
+      !this.currentUser ||
+      text === '&nbsp;'
+    ) {
       console.warn('Kann Thread-Nachricht nicht senden: Fehlende Daten');
       return;
     }
@@ -180,7 +247,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
       .sendThreadMessage(this.currentThreadKey, text, this.currentUser)
       .subscribe({
         next: () => {
-          
           console.log('Thread-Nachricht erfolgreich gesendet.');
           this.threadMessageText = ''; // Input leeren
           // Optional: Scroll zum Ende
@@ -190,7 +256,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
         },
       });
 
-      this.editableDiv.nativeElement.innerHTML = '';
+    this.editableDiv.nativeElement.innerHTML = '';
   }
 
   closeThread(): void {
@@ -218,8 +284,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
         panelClass: ['tagging-dialog'],
         backdropClass: 'transparentBackdrop',
         autoFocus: false,
-        data:{
-          mode: 'thread'
+        data: {
+          mode: 'thread',
         },
       });
 
@@ -247,6 +313,166 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
   }
 
+  groupReactions(reactions: Reaction[] | undefined): GroupedReaction[] {
+    if (!reactions || reactions.length === 0) {
+      return [];
+    }
+    const initialAcc: Record<string, GroupedReaction> = {};
+    const grouped = reactions.reduce((acc, reaction) => {
+      if (!acc[reaction.emoji]) {
+        acc[reaction.emoji] = {
+          emoji: reaction.emoji,
+          count: 0,
+          userIds: [],
+          userNames: [],
+          reactedByUser: false,
+        };
+      }
+      acc[reaction.emoji].count++;
+      acc[reaction.emoji].userIds.push(reaction.userId);
+      if (reaction.userName) {
+        acc[reaction.emoji].userNames.push(reaction.userName);
+      }
+      if (reaction.userId === this.currentUser?.uid) {
+        acc[reaction.emoji].reactedByUser = true;
+      }
+      return acc;
+    }, initialAcc);
+    return Object.values(grouped);
+  }
+
+  // getTotalGroupedReactionsCount - direkt kopiert (Typ Message | ThreadMessage angepasst)
+  getTotalGroupedReactionsCount(
+    message: Message | ThreadMessage | null
+  ): number {
+    if (!message) return 0;
+    return this.groupReactions(message.reactions).length;
+  }
+
+  // NEU: getReactionLimit für Thread - gibt *immer* 7 zurück
+  getReactionLimit(): number {
+    return 7; // Festes Limit für Threads
+  }
+
+  // getDisplayedReactions - angepasst für Thread (Typ Message | ThreadMessage und festes Limit)
+  getDisplayedReactions(
+    message: Message | ThreadMessage | null
+  ): GroupedReaction[] {
+    if (!message) return [];
+    const allGrouped = this.groupReactions(message.reactions);
+    const totalCount = allGrouped.length;
+    const limit = this.getReactionLimit(); // Nutzt die Thread-spezifische Limit-Funktion
+
+    if (this.isShowingAll(message)) {
+      return allGrouped; // Zeige alle, wenn erweitert
+    } else {
+      return allGrouped.slice(0, limit); // Zeige initial nur 7
+    }
+  }
+
+  // isShowingAll - direkt kopiert (Typ Message | ThreadMessage angepasst)
+  isShowingAll(message: Message | ThreadMessage | null): boolean {
+    if (!message || !message.key) {
+      return false;
+    }
+    return this.isShowingAllReactions.get(message.key) || false;
+  }
+
+  // toggleShowAllReactions - direkt kopiert (Typ Message | ThreadMessage angepasst)
+  toggleShowAllReactions(message: Message | ThreadMessage | null): void {
+    if (!message || !message.key) {
+      console.warn(
+        'Versuch, den Reaktionsstatus für eine Nachricht ohne Key umzuschalten.'
+      );
+      return;
+    }
+    const currentState = this.isShowingAll(message);
+    this.isShowingAllReactions.set(message.key, !currentState);
+    this.cdRef.markForCheck(); // Wichtig!
+  }
+
+  toggleReaction(message: Message | ThreadMessage | null, emoji: string): void {
+    // Basis-Prüfungen
+    if (!message || !message.key || !this.currentUser) {
+      console.warn(
+        'toggleReaction: Fehlende Nachrichten- oder Benutzerdaten.',
+        { message, emoji, user: this.currentUser }
+      );
+      return;
+    }
+
+    if (
+      this.originalMessageDetails &&
+      message.key === this.originalMessageDetails.key
+    ) {
+      if (!this.originalMessageChannelKey) {
+        console.error(
+          'toggleReaction: Channel Key für Originalnachricht nicht gefunden!',
+          this.originalMessageDetails
+        );
+        return;
+      }
+      console.log(
+        `Toggle Reaktion für ORIGINAL Nachricht (${message.key}) in Channel ${this.originalMessageChannelKey}`
+      );
+      this.firebaseService
+        .toggleReaction(
+          this.originalMessageChannelKey,
+          message.key,
+          emoji,
+          this.currentUser
+        )
+        .subscribe({
+          next: () =>
+            console.log(
+              `Reaktion ${emoji} für Originalnachricht ${message.key} getoggelt.`
+            ),
+          error: (err) =>
+            console.error('Fehler bei Originalnachricht-Reaktion:', err),
+        });
+    } else if (this.currentThreadKey) {
+      console.log(
+        `Toggle Reaktion für THREAD Nachricht (${message.key}) in Thread ${this.currentThreadKey}`
+      );
+
+      this.firebaseService
+        .toggleThreadReaction(
+          this.currentThreadKey,
+          message.key,
+          emoji,
+          this.currentUser
+        )
+        .subscribe({
+          next: () =>
+            console.log(
+              `Reaktion ${emoji} für Threadnachricht ${message.key} getoggelt.`
+            ),
+          error: (err) => console.error('Fehler bei Thread-Reaktion:', err),
+        });
+    } else {
+      console.error(
+        'toggleReaction: Weder Originalnachricht noch gültiger Thread-Kontext gefunden.',
+        { message, currentThreadKey: this.currentThreadKey }
+      );
+    }
+  }
+
+  openEmojiPickerForReaction(message: Message | ThreadMessage | null): void {
+    if (!message || !message.key || !this.currentThreadKey || !this.currentUser)
+      return;
+
+    const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+      panelClass: 'emoji-picker-dialog-reaction',
+      backdropClass: 'transparentBackdrop',
+    });
+
+    dialogRef.componentInstance.emojiSelected.subscribe(
+      (selectedEmoji: string) => {
+        this.toggleReaction(message, selectedEmoji);
+      }
+    );
+  }
+
   checkForMention(event: Event) {
     const inputElement = event.target as HTMLElement;
     if (
@@ -268,7 +494,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.lastInputValue = inputElement.innerHTML;
     this.variableService.setNameToFilter(this.lastInputValue);
   }
-
 
   preventEdit(event: MouseEvent) {
     event.preventDefault();
@@ -340,124 +565,111 @@ export class ThreadComponent implements OnInit, OnDestroy {
     } else {
       console.warn('No selection range available to save.');
     }
-
-    // Öffne den Emoji-Dialog (z. B. zum Hinzufügen eines Smileys)
     this.openAddSmileyToChannelDialog();
   }
 
+  openAddSmileyToChannelDialog() {
+    const targetElement = document.querySelector('.threadwrapper');
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+        panelClass: '',
+        backdropClass: 'transparentBackdrop',
+        position: {
+          bottom: `${rect.top - 20 + window.scrollY}px`,
+          left: `${rect.left + 20 + window.scrollX}px`,
+        },
+        data: { channelKey: this.channel?.key },
+      });
 
-    openAddSmileyToChannelDialog() {
-      const targetElement = document.querySelector('.threadwrapper');
-      if (targetElement) {
-        const rect = targetElement.getBoundingClientRect();
-        const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
-          panelClass: '',
-          backdropClass: 'transparentBackdrop',
-          position: {
-            bottom: `${rect.top - 20 + window.scrollY}px`,
-            left: `${rect.left + 20 + window.scrollX}px`,
-          },
-          data: { channelKey: this.channel?.key },
-        });
-  
-        // Listen for the emojiSelected event
-        const componentInstance =
-          dialogRef.componentInstance as SmileyKeyboardComponent;
-        componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
-          this.insertEmojiAtCursor(selectedEmoji); // Insert the emoji at the cursor position
-        });
-  
-        // Optionally, handle dialog close if needed
-        dialogRef.afterClosed().subscribe(() => {
-          console.log('Smiley keyboard dialog closed');
-        });
-  
-        setTimeout(() => {
-          const dialogElement = document.querySelector(
-            'mat-dialog-container'
-          ) as HTMLElement;
-          if (dialogElement) {
-            const dialogRect = dialogElement.getBoundingClientRect();
-  
-            const newTop = rect.top - dialogRect.height + window.scrollY;
-            const newLeft = rect.right - dialogRect.width + window.scrollX;
-  
-            dialogElement.style.position = 'absolute';
-  
-            dialogElement.style.height = 'fit-content';
-            dialogElement.style.width = 'fit-content';
-          }
-        }, 0);
-      }
+      const componentInstance =
+        dialogRef.componentInstance as SmileyKeyboardComponent;
+      componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
+        this.insertEmojiAtCursor(selectedEmoji);
+      });
+
+      dialogRef.afterClosed().subscribe(() => {
+        console.log('Smiley keyboard dialog closed');
+      });
+
+      setTimeout(() => {
+        const dialogElement = document.querySelector(
+          'mat-dialog-container'
+        ) as HTMLElement;
+        if (dialogElement) {
+          const dialogRect = dialogElement.getBoundingClientRect();
+
+          const newTop = rect.top - dialogRect.height + window.scrollY;
+          const newLeft = rect.right - dialogRect.width + window.scrollX;
+
+          dialogElement.style.position = 'absolute';
+
+          dialogElement.style.height = 'fit-content';
+          dialogElement.style.width = 'fit-content';
+        }
+      }, 0);
+    }
+  }
+
+  insertEmojiAtCursor(emoji: string) {
+    const input = this.editableDiv.nativeElement;
+    input.focus();
+
+    if (!input) {
+      console.error('Input field not found!');
+      return;
     }
 
-    insertEmojiAtCursor(emoji: string) {
-      const input = this.editableDiv.nativeElement;
+    if (!this.savedRange) {
+      const range = document.createRange();
+      range.selectNodeContents(input);
+      range.collapse(false);
+      this.savedRange = range;
+      console.error('No saved cursor position available.');
       input.focus();
-  
-      if (!input) {
-        console.error('Input field not found!');
-        return;
-      }
-  
-      if (!this.savedRange) {
-        const range = document.createRange();
-        range.selectNodeContents(input);
-        range.collapse(false); // Collapse to the end of the input field
-        this.savedRange = range;
-        console.error('No saved cursor position available.');
-        input.focus(); // Focus the input field if no range is saved
-        return;
-      }
-  
-      const selection = window.getSelection();
-      if (!selection) return;
-  
-      try {
-        // Restore the saved range
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
-  
-        const range = selection.getRangeAt(0);
-        range.deleteContents(); // Delete content at the cursor position
-  
-        // Insert the emoji as a text node
-        const emojiNode = document.createTextNode(emoji);
-        range.insertNode(emojiNode);
-  
-        // Move the cursor after the inserted emoji
-        range.setStartAfter(emojiNode);
-        range.collapse(true); // Collapse the range to the end of the emoji
-  
-        // Save the updated range
-        this.savedRange = range.cloneRange();
-        this.threadMessageText = input.innerHTML;
-        // Focus the input field for further typing
-        input.focus();
-      } catch (error) {
-        console.error('Error inserting emoji:', error);
-      }
+      return;
     }
 
-    onInput(event: Event): void {
-       this.checkForMention(event);
-      const target = event.target as HTMLElement;
-      this.threadMessageText = target.innerHTML;
-      console.log(this.threadMessageText);
-    
-     
-    }
-    
-    onEnter(event: Event): void {
-      event.preventDefault(); // verhindert Zeilenumbruch
-      this.sendThreadMessage();
-    }
+    const selection = window.getSelection();
+    if (!selection) return;
 
-    onContentChanged(event: Event):void{
-      const el= this.editableDiv.nativeElement;
-      this.threadMessageText = el.innerHTML || '';
-      this.checkForMention(event);
-      this.editableDiv.nativeElement.focus()
+    try {
+      selection.removeAllRanges();
+      selection.addRange(this.savedRange);
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+
+      const emojiNode = document.createTextNode(emoji);
+      range.insertNode(emojiNode);
+
+      range.setStartAfter(emojiNode);
+      range.collapse(true);
+
+      this.savedRange = range.cloneRange();
+      this.threadMessageText = input.innerHTML;
+      input.focus();
+    } catch (error) {
+      console.error('Error inserting emoji:', error);
     }
+  }
+
+  onInput(event: Event): void {
+    this.checkForMention(event);
+    const target = event.target as HTMLElement;
+    this.threadMessageText = target.innerHTML;
+    console.log(this.threadMessageText);
+  }
+
+  onEnter(event: Event): void {
+    event.preventDefault();
+    this.sendThreadMessage();
+  }
+
+  onContentChanged(event: Event): void {
+    const el = this.editableDiv.nativeElement;
+    this.threadMessageText = el.innerHTML || '';
+    this.checkForMention(event);
+    this.editableDiv.nativeElement.focus();
+  }
 }
-

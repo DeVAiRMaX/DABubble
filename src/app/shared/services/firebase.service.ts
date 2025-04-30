@@ -982,6 +982,79 @@ export class FirebaseService {
     );
   }
 
+  toggleThreadReaction(
+    threadKey: string,
+    messageKey: string, // Key der Thread-Antwort-Nachricht
+    emoji: string,
+    user: CustomUser
+  ): Observable<void> {
+    if (!threadKey || !messageKey || !emoji || !user || !user.uid) {
+      return throwError(
+        () => new Error('toggleThreadReaction: Ungültige Eingabe.')
+      );
+    }
+
+    // --- Korrekter Pfad für Reaktionen auf Thread-Antworten ---
+    const reactionsRef = ref(
+      this.database,
+      `Threads/${threadKey}/threadMsg/${messageKey}/reactions`
+    );
+    // --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    // Die Logik zum Holen, Ändern und Setzen ist identisch zur toggleReaction
+    return from(get(reactionsRef)).pipe(
+      switchMap((snapshot) => {
+        // Verwende 'any' oder bessere Typ-Prüfung, falls Firebase Arrays als Objekte speichert
+        const currentReactionsVal = snapshot.val();
+        let currentReactions: Reaction[] = [];
+        if (Array.isArray(currentReactionsVal)) {
+          currentReactions = currentReactionsVal;
+        } else if (
+          typeof currentReactionsVal === 'object' &&
+          currentReactionsVal !== null
+        ) {
+          // Handle Firebase Object-Storage für sparse Arrays
+          currentReactions = Object.values(currentReactionsVal);
+        }
+
+        let updatedReactions: Reaction[];
+        const existingReactionIndex = currentReactions.findIndex(
+          (r) => r.emoji === emoji && r.userId === user.uid
+        );
+
+        if (existingReactionIndex > -1) {
+          // Reaktion entfernen
+          updatedReactions = [
+            ...currentReactions.slice(0, existingReactionIndex),
+            ...currentReactions.slice(existingReactionIndex + 1),
+          ];
+        } else {
+          // Reaktion hinzufügen
+          const newReaction: Reaction = {
+            emoji: emoji,
+            userId: user.uid,
+            userName: user.displayName || 'Unbekannt',
+          };
+          updatedReactions = [...currentReactions, newReaction];
+        }
+        // Setze null, wenn Array leer ist, um Firebase-Probleme zu vermeiden
+        const reactionsToSet =
+          updatedReactions.length > 0 ? updatedReactions : null;
+        return from(set(reactionsRef, reactionsToSet));
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        console.error(
+          `[toggleThreadReaction] Fehler bei Reaktion für Thread-Msg ${messageKey} in Thread ${threadKey}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Fehler beim Aktualisieren der Thread-Reaktion.')
+        );
+      })
+    );
+  }
+
   updateMessage(
     channelKey: string,
     messageKey: string,

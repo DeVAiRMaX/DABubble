@@ -53,11 +53,12 @@ export class SideNavComponent implements OnInit, OnDestroy {
 
   private variableService: VariablesService = inject(VariablesService);
   private dialog: MatDialog = inject(MatDialog);
-  private firebaseService: FirebaseService = inject(FirebaseService);
-  private authService: AuthService = inject(AuthService);
+  private firebaseService: FirebaseService = inject(FirebaseService); // Injiziert
+  private authService: AuthService = inject(AuthService); // Injiziert
   private subService: SubService = inject(SubService);
 
   @Input() userChannels: ChannelWithKey[] = [];
+  // @Input() channel!: ChannelWithKey;
 
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
   @Output() userSelected = new EventEmitter<User>();
@@ -80,6 +81,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
       }
     );
     this.subService.add(sideNavVisSub, this.SUB_GROUP_NAME);
+
     const authSub = this.authService.uid$.subscribe((uid) => {
       this.currentUserUid = uid;
       if (uid) {
@@ -100,7 +102,11 @@ export class SideNavComponent implements OnInit, OnDestroy {
       .getAllUsers()
       .pipe(
         map((users) => users.filter((user) => user.uid !== this.currentUserUid))
-      );
+      )
+      .subscribe((filteredUsers) => {
+        this.displayableUsers = filteredUsers;
+        console.log('[SideNav] Displayable Users:', this.displayableUsers);
+      });
   }
   constructor() {}
 

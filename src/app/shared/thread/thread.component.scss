@@ -127,26 +127,69 @@
 
 .reaction-container {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  position: relative;
+  justify-content: flex-start;
+
+  &.own-thread-reactions {
+    justify-content: flex-end;
+  }
+}
+
+.reaction-overflow-btn,
+.reaction-show-less-btn {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #adb0d9;
+  background-color: #f1f3f5;
+  cursor: pointer;
+  font-size: 12px;
+  color: #535af1;
+  margin-left: 5px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
 }
 
 .reaction {
-  max-height: 36px;
-  background-color: #fff !important;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  padding: 5px 10px;
-  border-radius: 30px;
-  border: 1px solid #adb0d9;
-  gap: 10px;
-  position: relative;
+  padding: 4px 8px;
+  border-radius: 20px;
+  max-height: 28px;
+  background-color: rgba(236, 238, 254, 0.6);
+  border: 1px solid transparent;
+  gap: 4px;
+  cursor: pointer;
   transition: all 0.1s ease-in-out;
+  position: relative;
+
+  &.reacted-by-user {
+    background-color: #e0e7ff;
+    border-color: #797ef3;
+  }
 
   &:hover {
-    .reaction-information-overlay {
-      display: block;
-    }
+    border-color: #adb0d9;
+    background-color: #e9ecef;
+  }
+
+  span:first-of-type {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  p {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    line-height: 1;
   }
 }
 
@@ -180,16 +223,36 @@
 }
 
 .add_reaction_btn {
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9ecef;
+  color: #6c757d;
+  padding: 5px;
+  font-size: 20px;
   border-radius: 50%;
-  padding: 10px;
+  cursor: pointer;
   transition: all 0.1s ease-in-out;
-  background-color: #fff;
-  transition: all 0.1s ease-in-out;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
 
   &:hover {
+    background-color: #adb0d9;
     color: #535af1;
   }
+}
+
+.reaction-tooltip {
+  position: absolute;
+}
+
+.edited-indicator {
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+  margin-left: 5px;
 }
 
 .no-thread-messages {

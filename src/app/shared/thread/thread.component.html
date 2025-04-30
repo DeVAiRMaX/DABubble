@@ -33,11 +33,57 @@
           </div>
           <div class="msg-content-left">
             <p>{{ originalMsg.message }}</p>
+            <span class="edited-indicator" *ngIf="originalMsg.editedAt"
+              >(bearbeitet)</span
+            >
           </div>
           <div
-            class="reaction-container"
+            class="reaction-container original-reactions"
             *ngIf="originalMsg.reactions && originalMsg.reactions.length > 0"
-          ></div>
+          >
+            <div
+              class="reaction"
+              *ngFor="let reaction of getDisplayedReactions(originalMsg)"
+              (click)="toggleReaction(originalMsg, reaction.emoji)"
+              [class.reacted-by-user]="reaction.reactedByUser"
+              matTooltip="{{ reaction.userNames.join(',\\n') }}"
+              matTooltipPosition="above"
+            >
+              <span>{{ reaction.emoji }}</span>
+              <p>{{ reaction.count }}</p>
+            </div>
+
+            <button
+              class="reaction-overflow-btn"
+              *ngIf="
+                !isShowingAll(originalMsg) &&
+                getTotalGroupedReactionsCount(originalMsg) > 7
+              "
+              (click)="toggleShowAllReactions(originalMsg)"
+            >
+              +{{ getTotalGroupedReactionsCount(originalMsg) - 7 }} weitere
+            </button>
+
+            <button
+              class="reaction-show-less-btn"
+              *ngIf="
+                isShowingAll(originalMsg) &&
+                getTotalGroupedReactionsCount(originalMsg) > 7
+              "
+              (click)="toggleShowAllReactions(originalMsg)"
+            >
+              Weniger anzeigen
+            </button>
+
+            <span
+              class="material-symbols-outlined add_reaction_btn"
+              (click)="openEmojiPickerForReaction(originalMsg)"
+              matTooltip="Reaktion hinzufügen"
+              matTooltipPosition="above"
+            >
+              add_reaction
+            </span>
+          </div>
         </div>
       </div>
     </ng-container>
@@ -68,18 +114,56 @@
           </div>
           <div class="msg-content-left">
             <p>{{ threadMsg.message }}</p>
+            <span class="edited-indicator" *ngIf="threadMsg.editedAt"
+              >(bearbeitet)</span
+            >
           </div>
           <div
-            class="reaction-container"
+            class="reaction-container other-thread-reactions"
             *ngIf="threadMsg.reactions && threadMsg.reactions.length > 0"
           >
-            <div class="reaction">
-              <img src="./assets/img/emoji.png" alt="reaction" />
-              <p>1</p>
-            </div>
-            <span class="material-symbols-outlined add_reaction_btn"
-              >add_reaction</span
+            <div
+              class="reaction"
+              *ngFor="let reaction of getDisplayedReactions(threadMsg)"
+              (click)="toggleReaction(threadMsg, reaction.emoji)"
+              [class.reacted-by-user]="reaction.reactedByUser"
+              matTooltip="{{ reaction.userNames.join(',\\n') }}"
+              matTooltipPosition="above"
             >
+              <span>{{ reaction.emoji }}</span>
+              <p>{{ reaction.count }}</p>
+            </div>
+
+            <button
+              class="reaction-overflow-btn"
+              *ngIf="
+                !isShowingAll(threadMsg) &&
+                getTotalGroupedReactionsCount(threadMsg) > 7
+              "
+              (click)="toggleShowAllReactions(threadMsg)"
+            >
+              +{{ getTotalGroupedReactionsCount(threadMsg) - 7 }} weitere
+            </button>
+
+            <button
+              class="reaction-show-less-btn"
+              *ngIf="
+                isShowingAll(threadMsg) &&
+                getTotalGroupedReactionsCount(threadMsg) > 7
+              "
+              (click)="toggleShowAllReactions(threadMsg)"
+            >
+              Weniger anzeigen
+            </button>
+
+            <span
+              class="material-symbols-outlined add_reaction_btn"
+              (click)="openEmojiPickerForReaction(threadMsg)"
+              matTooltip="Reaktion hinzufügen"
+              matTooltipPosition="above"
+            >
+              add_reaction
+            </span>
           </div>
         </div>
       </div>
@@ -100,18 +184,56 @@
           </div>
           <div class="msg-content-right">
             <p>{{ threadMsg.message }}</p>
+            <span class="edited-indicator" *ngIf="threadMsg.editedAt"
+              >(bearbeitet)</span
+            >
           </div>
           <div
-            class="reaction-container"
+            class="reaction-container own-thread-reactions"
             *ngIf="threadMsg.reactions && threadMsg.reactions.length > 0"
           >
-            <div class="reaction">
-              <img src="./assets/img/thumb_up.png" alt="reaction" />
-              <p>1</p>
-            </div>
-            <span class="material-symbols-outlined add_reaction_btn"
-              >add_reaction</span
+            <div
+              class="reaction"
+              *ngFor="let reaction of getDisplayedReactions(threadMsg)"
+              (click)="toggleReaction(threadMsg, reaction.emoji)"
+              [class.reacted-by-user]="reaction.reactedByUser"
+              matTooltip="{{ reaction.userNames.join(',\\n') }}"
+              matTooltipPosition="above"
             >
+              <span>{{ reaction.emoji }}</span>
+              <p>{{ reaction.count }}</p>
+            </div>
+
+            <button
+              class="reaction-overflow-btn"
+              *ngIf="
+                !isShowingAll(threadMsg) &&
+                getTotalGroupedReactionsCount(threadMsg) > 7
+              "
+              (click)="toggleShowAllReactions(threadMsg)"
+            >
+              +{{ getTotalGroupedReactionsCount(threadMsg) - 7 }} weitere
+            </button>
+
+            <button
+              class="reaction-show-less-btn"
+              *ngIf="
+                isShowingAll(threadMsg) &&
+                getTotalGroupedReactionsCount(threadMsg) > 7
+              "
+              (click)="toggleShowAllReactions(threadMsg)"
+            >
+              Weniger anzeigen
+            </button>
+
+            <span
+              class="material-symbols-outlined add_reaction_btn"
+              (click)="openEmojiPickerForReaction(threadMsg)"
+              matTooltip="Reaktion hinzufügen"
+              matTooltipPosition="above"
+            >
+              add_reaction
+            </span>
           </div>
         </div>
       </div>
