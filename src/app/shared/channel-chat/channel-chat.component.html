@@ -133,7 +133,14 @@
               *ngIf="message.senderUid !== 'DABubble' && message.threadKey"
             >
               <a (click)="startOrOpenThread(message)" class="msg-count">
-                <span>{{ message.threadReplyCount || 0 }} Antworten</span>
+                <span *ngIf="!message.threadKey">Thread starten</span>
+                <span *ngIf="message.threadKey">
+                  {{
+                    message.threadReplyCount === 0
+                      ? "Thread starten"
+                      : message.threadReplyCount + " Antworten"
+                  }}
+                </span>
               </a>
               <p
                 class="last-msg-time"
@@ -282,7 +289,14 @@
             </div>
             <div class="message-footer own-footer" *ngIf="message.threadKey">
               <a (click)="startOrOpenThread(message)" class="msg-count">
-                {{ message.threadReplyCount || 0 }} Antworten
+                <span *ngIf="!message.threadKey">Thread starten</span>
+                <span *ngIf="message.threadKey">
+                  {{
+                    message.threadReplyCount === 0
+                      ? "Thread starten"
+                      : message.threadReplyCount + " Antworten"
+                  }}
+                </span>
               </a>
               <p class="last-msg-time" *ngIf="message.threadLastReplyAt">
                 Letzte Antwort
