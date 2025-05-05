@@ -257,7 +257,11 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         const dialogRect = dialogElement.getBoundingClientRect();
         dialogElement.style.position = 'absolute';
         const newTop = rect.top - dialogRect.height + window.scrollY;
-        const newLeft = rect.right - dialogRect.width - window.scrollX;
+        const newLeft = rect.left - window.scrollX;
+        dialogElement.style.width = `unset`;
+        dialogElement.style.height = `unset`;
+        dialogElement.style.top = `${newTop}px`;
+        dialogElement.style.left = `${newLeft}px`;
       }
     }, 0);
     }
