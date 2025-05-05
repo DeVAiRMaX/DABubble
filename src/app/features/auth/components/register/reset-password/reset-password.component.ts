@@ -18,7 +18,7 @@ export class ResetPasswordComponent {
   authService: AuthService = inject(AuthService);
 
   async sendPasswordResetEmail() {
-    this.resetError = ''; // Reset error message
+    this.resetError = '';
     try {
       await this.authService.sendPasswordResetEmail(this.email);
       this.resetSuccess = true;

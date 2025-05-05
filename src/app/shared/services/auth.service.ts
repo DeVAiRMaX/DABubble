@@ -150,7 +150,7 @@ export class AuthService {
       this.router.navigate(['/dashboard']);
     } catch (error: any) {
       console.error('Error during email/password login:', error);
-   
+
       throw error;
     }
   }
@@ -208,10 +208,6 @@ export class AuthService {
     try {
       await firebaseSendPasswordResetEmail(this.auth, email);
     } catch (error) {
-      console.error(
-        'Fehler beim Senden der Passwortzurücksetzungs-E-Mail:',
-        error
-      );
       throw error;
     }
   }

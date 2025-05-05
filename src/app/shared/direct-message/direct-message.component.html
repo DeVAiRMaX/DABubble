@@ -56,32 +56,82 @@
             </div>
             <div class="msg-bubble msg-left">
               <p>{{ message.message }}</p>
+              <span class="edited-indicator" *ngIf="message.editedAt"
+                >(bearbeitet)</span
+              >
             </div>
+
             <div
               class="message-footer other-footer msg-reaction-container"
               *ngIf="message.reactions && message.reactions.length > 0"
             >
               <div
                 class="reaction"
-                *ngFor="let reaction of getUniqueReactions(message.reactions)"
+                *ngFor="let reaction of getDisplayedReactions(message)"
+                (click)="toggleReaction(message, reaction.emoji)"
+                [class.reacted-by-user]="reaction.reactedByUser"
+                matTooltip="{{ reaction.userNames.join(',\\n') }}"
+                matTooltipPosition="above"
               >
                 <span>{{ reaction.emoji }}</span>
                 <p>{{ reaction.count }}</p>
               </div>
-              <span class="material-symbols-outlined add_reaction_btn"
-                >add_reaction</span
+
+              <button
+                class="reaction-overflow-btn"
+                *ngIf="
+                  !isShowingAll(message) &&
+                  getTotalGroupedReactionsCount(message) > 7
+                "
+                (click)="toggleShowAllReactions(message)"
               >
+                +{{ getTotalGroupedReactionsCount(message) - 7 }} weitere
+              </button>
+
+              <button
+                class="reaction-show-less-btn"
+                *ngIf="
+                  isShowingAll(message) &&
+                  getTotalGroupedReactionsCount(message) > 7
+                "
+                (click)="toggleShowAllReactions(message)"
+              >
+                Weniger anzeigen
+              </button>
+
+              <span
+                class="material-symbols-outlined add_reaction_btn"
+                (click)="openEmojiPickerForReaction(message)"
+                matTooltip="Reaktion hinzufügen"
+                matTooltipPosition="above"
+              >
+                add_reaction
+              </span>
             </div>
           </div>
           <div class="reactionMenu">
-            <button class="reactionMenuBtn reactionSmile"></button>
+            <button
+              class="reactionMenuBtn reactionSmile"
+              (click)="openEmojiPickerForReaction(message)"
+              matTooltip="Reaktion hinzufügen"
+              matTooltipPosition="above"
+            ></button>
           </div>
         </div>
 
         <div class="message-layout own-message" *ngIf="isOwnMessage(message)">
           <div class="reactionMenu">
-            <button class="reactionMenuBtn reactionSmile"></button>
-            <button class="reactionMenuBtn editMsg"></button>
+            <button
+              class="reactionMenuBtn reactionSmile"
+              (click)="openEmojiPickerForReaction(message)"
+              matTooltip="Reaktion hinzufügen"
+              matTooltipPosition="above"
+            ></button>
+            <button
+              class="reactionMenuBtn editMsg"
+              matTooltip="Nachricht bearbeiten"
+              matTooltipPosition="above"
+            ></button>
           </div>
           <div class="message-content-wrapper">
             <div class="message-header own-header">
@@ -90,6 +140,9 @@
             </div>
             <div class="msg-bubble msg-right">
               <p>{{ message.message }}</p>
+              <span class="edited-indicator" *ngIf="message.editedAt"
+                >(bearbeitet)</span
+              >
             </div>
             <div
               class="message-footer own-footer msg-reaction-container"
@@ -97,14 +150,43 @@
             >
               <div
                 class="reaction"
-                *ngFor="let reaction of getUniqueReactions(message.reactions)"
+                *ngFor="let reaction of getDisplayedReactions(message)"
+                (click)="toggleReaction(message, reaction.emoji)"
+                [class.reacted-by-user]="reaction.reactedByUser"
+                matTooltip="{{ reaction.userNames.join(',\\n') }}"
+                matTooltipPosition="above"
               >
                 <span>{{ reaction.emoji }}</span>
                 <p>{{ reaction.count }}</p>
               </div>
-              <span class="material-symbols-outlined add_reaction_btn"
-                >add_reaction</span
+              <button
+                class="reaction-overflow-btn"
+                *ngIf="
+                  !isShowingAll(message) &&
+                  getTotalGroupedReactionsCount(message) > 7
+                "
+                (click)="toggleShowAllReactions(message)"
               >
+                +{{ getTotalGroupedReactionsCount(message) - 7 }} weitere
+              </button>
+              <button
+                class="reaction-show-less-btn"
+                *ngIf="
+                  isShowingAll(message) &&
+                  getTotalGroupedReactionsCount(message) > 7
+                "
+                (click)="toggleShowAllReactions(message)"
+              >
+                Weniger anzeigen
+              </button>
+              <span
+                class="material-symbols-outlined add_reaction_btn"
+                (click)="openEmojiPickerForReaction(message)"
+                matTooltip="Reaktion hinzufügen"
+                matTooltipPosition="above"
+              >
+                add_reaction
+              </span>
             </div>
           </div>
           <div class="message-avatar">
@@ -118,9 +200,6 @@
         </div>
       </div>
     </ng-container>
-
-    <!-- <p>Beginne deine Unterhaltung mit {{ otherUser?.displayName }}.</p>
-      <p>Nachrichten, die du hier sendest, sind privat.</p> -->
 
     <div *ngIf="(dmMessages$ | async)?.length === 0" class="no-messages">
       <div class="no-messages-container">

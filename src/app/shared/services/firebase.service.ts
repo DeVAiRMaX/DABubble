@@ -1087,4 +1087,76 @@ export class FirebaseService {
       })
     );
   }
+
+  // reactions von direct messages:
+
+  toggleDirectMessageReaction(
+    conversationId: string, // ID der DM-Konversation
+    messageKey: string, // Key der Nachricht innerhalb der DM
+    emoji: string,
+    user: CustomUser
+  ): Observable<void> {
+    if (!conversationId || !messageKey || !emoji || !user || !user.uid) {
+      return throwError(
+        () => new Error('toggleDirectMessageReaction: Ungültige Eingabe.')
+      );
+    }
+
+    // --- Korrekter Pfad für Reaktionen auf Direktnachrichten ---
+    const reactionsRef = ref(
+      this.database,
+      `direct-messages/${conversationId}/messages/${messageKey}/reactions`
+    );
+    // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    // Die Logik zum Holen, Ändern und Setzen ist identisch zu den anderen toggle-Methoden
+    return from(get(reactionsRef)).pipe(
+      switchMap((snapshot) => {
+        const currentReactionsVal = snapshot.val();
+        let currentReactions: Reaction[] = [];
+        if (Array.isArray(currentReactionsVal)) {
+          currentReactions = currentReactionsVal;
+        } else if (
+          typeof currentReactionsVal === 'object' &&
+          currentReactionsVal !== null
+        ) {
+          currentReactions = Object.values(currentReactionsVal);
+        }
+
+        let updatedReactions: Reaction[];
+        const existingReactionIndex = currentReactions.findIndex(
+          (r) => r.emoji === emoji && r.userId === user.uid
+        );
+
+        if (existingReactionIndex > -1) {
+          // Reaktion entfernen
+          updatedReactions = [
+            ...currentReactions.slice(0, existingReactionIndex),
+            ...currentReactions.slice(existingReactionIndex + 1),
+          ];
+        } else {
+          // Reaktion hinzufügen
+          const newReaction: Reaction = {
+            emoji: emoji,
+            userId: user.uid,
+            userName: user.displayName || 'Unbekannt',
+          };
+          updatedReactions = [...currentReactions, newReaction];
+        }
+        const reactionsToSet =
+          updatedReactions.length > 0 ? updatedReactions : null;
+        return from(set(reactionsRef, reactionsToSet));
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        console.error(
+          `[toggleDirectMessageReaction] Fehler bei Reaktion für DM ${conversationId}, Msg ${messageKey}:`,
+          error
+        );
+        return throwError(
+          () => new Error('Fehler beim Aktualisieren der DM-Reaktion.')
+        );
+      })
+    );
+  }
 }

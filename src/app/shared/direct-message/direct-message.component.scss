@@ -115,10 +115,6 @@
   padding: 10px 0;
 }
 
-// .othersMessage {
-//anpassen hover
-// }
-
 .ownMessage {
   flex-direction: row-reverse;
 }
@@ -138,7 +134,6 @@
   max-width: calc(100% - 65px);
 }
 
-// Nachrichten-Header (Wiederverwendet/Adaptiert)
 .message-header {
   display: flex;
   align-items: center;
@@ -147,16 +142,15 @@
 }
 
 .message-header.own-header {
-  flex-direction: row-reverse; // Zeit rechts für eigene Nachrichten
+  flex-direction: row-reverse;
 }
 
 .msg-time {
-  font-size: 12px; // Kleinere Zeitangabe
+  font-size: 12px;
   font-weight: 400;
   color: #686868;
 }
 
-// Nachrichten-Blase (Wiederverwendet von channel-chat)
 .msg-bubble {
   padding: 15px;
   width: fit-content;
@@ -192,13 +186,12 @@
   }
 }
 
-// Nachrichten-Footer und Reaktionen (Wiederverwendet/Adaptiert)
 .message-footer {
   display: flex;
   align-items: center;
-  gap: 8px; // Kleinerer Gap
+  gap: 8px;
   padding-top: 5px;
-  min-height: 28px; // Mindesthöhe, damit Layout stabil bleibt
+  min-height: 28px;
 }
 
 .other-footer {
@@ -209,125 +202,11 @@
   justify-content: flex-end;
 }
 
-.msg-reaction-container {
-  // Styles wie in channel-chat, ggf. anpassen
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 5px; // Kleinerer Abstand zwischen Reactions
-  position: relative; // Für Overlays
-  // align-self: flex-start; // oder flex-end je nach own/other
-}
-
 .own-message .msg-reaction-container {
-  align-self: flex-end; // Rechts bei eigenen Nachrichten
+  align-self: flex-end;
 }
 .othersMessage .msg-reaction-container {
-  align-self: flex-start; // Links bei anderen Nachrichten
-}
-
-.reaction {
-  // Styles wie in channel-chat
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 4px 8px; // Kleineres Padding
-  border-radius: 20px;
-  max-height: 28px; // Angepasst an Padding/Font-Size
-  background-color: #ffffff;
-  border: 1px solid #dee2e6; // Hellerer Rand
-  gap: 4px;
-  cursor: pointer;
-  transition: background-color 0.1s ease-in-out;
-
-  &:hover {
-    border-color: #adb0d9;
-  }
-
-  span {
-    // Emoji
-    font-size: 14px;
-  }
-  p {
-    // Count
-    font-size: 12px;
-    font-weight: 600;
-    color: #495057;
-    margin: 0;
-  }
-}
-
-.add_reaction_btn {
-  // Styles wie in channel-chat, ggf. Größe anpassen
-  display: inline-flex; // Damit es in der Zeile bleibt
-  align-items: center;
-  justify-content: center;
-  background-color: #f1f3f5;
-  color: #6c757d;
-  padding: 4px;
-  border-radius: 50%;
-  font-size: 18px; // Icon Größe
-  cursor: pointer;
-  transition: all 0.1s ease-in-out;
-  line-height: 1; // Verhindert zusätzlichen Leerraum
-
-  &:hover {
-    background-color: #e9ecef;
-    color: #535af1;
-  }
-}
-
-.message-layout:hover .reactionMenu {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.reactionMenu {
-  display: flex;
-  min-width: max-content;
-  opacity: 0;
-  align-items: center;
-  gap: 4px;
-  position: absolute;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  background-color: white;
-  border: 1px solid #adb0d9;
-  padding: 4px 8px;
-  height: auto;
-  transition: opacity 0.1s ease-out, transform 0.1s ease-out;
-  transform: scale(0.9);
-  z-index: 10;
-
-  .othersMessage & {
-    top: -15px;
-    right: 0px;
-    transform-origin: top right;
-    border-radius: 20px 20px 0 20px;
-  }
-  .ownMessage & {
-    top: -15px;
-    left: 0px;
-    transform-origin: top left;
-    border-radius: 20px 20px 20px 0;
-  }
-}
-
-.reactionMenuBtn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  box-sizing: border-box;
-  padding: 6px;
-  background-size: 18px 18px;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-color: transparent;
-  cursor: pointer;
-
-  &:hover {
-    background-color: rgb(236, 238, 255);
-  }
+  align-self: flex-start;
 }
 
 .reactionSmile {
@@ -482,6 +361,165 @@
   overflow: visible;
 }
 
-// ::ng-deep .emoji-picker-dialog {
-//anpassen
-// }
+.msg-reaction-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  position: relative;
+  min-height: 28px;
+  justify-content: flex-start; // Standard (für andere)
+
+  .ownMessage & {
+    // Für eigene Nachrichten
+    justify-content: flex-end;
+  }
+}
+
+.reaction {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 20px;
+  max-height: 28px;
+  background-color: rgba(236, 238, 254, 0.8);
+  border: 1px solid transparent;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  position: relative;
+
+  &.reacted-by-user {
+    background-color: #e0e7ff;
+    border-color: #797ef3;
+  }
+
+  &:hover {
+    border-color: #adb0d9;
+    background-color: #e9ecef;
+  }
+
+  span:first-of-type {
+    font-size: 14px;
+    line-height: 1;
+  }
+  p {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    line-height: 1;
+  }
+}
+
+.reaction-overflow-btn,
+.reaction-show-less-btn {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #adb0d9;
+  background-color: #f1f3f5;
+  cursor: pointer;
+  font-size: 12px;
+  color: #535af1;
+  margin-left: 5px;
+  transition: background-color 0.1s ease;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
+}
+
+.add_reaction_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9ecef;
+  color: #6c757d;
+  padding: 10px;
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  line-height: 1;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: #adb0d9;
+    color: #535af1;
+  }
+}
+
+.edited-indicator {
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+  margin-left: 8px;
+}
+
+.message-layout:hover .reactionMenu {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.reactionMenu {
+  display: flex;
+  min-width: max-content;
+  opacity: 0;
+  align-items: center;
+  gap: 5px;
+  position: absolute;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  border: 1px solid #adb0d9;
+  padding: 5px 10px;
+  height: auto;
+  transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+  transform: scale(0.9); // Startet kleiner
+  z-index: 10; // Sollte über Nachricht liegen
+
+  .othersMessage & {
+    top: -15px;
+    transform-origin: top right;
+    border-radius: 20px 20px 0 20px;
+  }
+
+  .ownMessage & {
+    top: -15px;
+    left: 0px;
+    transform-origin: top left;
+    border-radius: 20px 20px 20px 0;
+  }
+}
+
+.reactionMenuBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  box-sizing: border-box;
+  padding: 10px;
+  background-size: 20px 20px;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+
+  &:hover {
+    background-color: rgb(236, 238, 255);
+  }
+}
+
+.reactionSmile {
+  background: url("/assets/img/icons/add_reaction.png");
+}
+.reactionSmile:hover {
+  background: url("/assets/img/icons/add_reaction_purple.png");
+}
+.editMsg {
+  background: url("/assets/img/icons/dotMenu.png");
+  background-size: unset !important;
+}
