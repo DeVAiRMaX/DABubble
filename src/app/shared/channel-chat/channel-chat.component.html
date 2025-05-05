@@ -130,15 +130,16 @@
             </div>
             <div
               class="message-footer other-footer"
-              *ngIf="message.senderUid !== 'DABubble' && message.threadKey"
+              *ngIf="message.senderUid !== 'DABubble'"
             >
               <a (click)="startOrOpenThread(message)" class="msg-count">
-                <span *ngIf="!message.threadKey">Thread starten</span>
-                <span *ngIf="message.threadKey">
+                <span>
                   {{
-                    message.threadReplyCount === 0
-                      ? "Thread starten"
-                      : message.threadReplyCount + " Antworten"
+                    message.threadKey
+                      ? (message?.threadReplyCount ?? 0) > 0
+                        ? message.threadReplyCount + " Antworten"
+                        : "Thread starten"
+                      : "Thread starten"
                   }}
                 </span>
               </a>
@@ -150,14 +151,14 @@
                 {{ message.threadLastReplyAt | date : "HH:mm" }}
               </p>
             </div>
-            <div
+            <!-- <div
               class="message-footer other-footer"
               *ngIf="message.senderUid !== 'DABubble' && !message.threadKey"
             >
               <a (click)="startOrOpenThread(message)" class="msg-count">
                 <span>Antworten</span>
               </a>
-            </div>
+            </div> -->
           </div>
 
           <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">
@@ -287,18 +288,23 @@
                 >add_reaction</span
               >
             </div>
-            <div class="message-footer own-footer" *ngIf="message.threadKey">
+            <div class="message-footer own-footer">
               <a (click)="startOrOpenThread(message)" class="msg-count">
-                <span *ngIf="!message.threadKey">Thread starten</span>
-                <span *ngIf="message.threadKey">
+                <span>
                   {{
-                    message.threadReplyCount === 0
-                      ? "Thread starten"
-                      : message.threadReplyCount + " Antworten"
+                    message.threadKey
+                      ? (message?.threadReplyCount ?? 0) > 0
+                        ? message.threadReplyCount + " Antworten"
+                        : "Thread starten"
+                      : "Thread starten"
                   }}
                 </span>
               </a>
-              <p class="last-msg-time" *ngIf="message.threadLastReplyAt">
+
+              <p
+                class="last-msg-time"
+                *ngIf="message.threadKey && message.threadLastReplyAt"
+              >
                 Letzte Antwort
                 {{ message.threadLastReplyAt | date : "HH:mm" }}
               </p>
