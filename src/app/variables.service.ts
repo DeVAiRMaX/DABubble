@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { User } from './shared/interfaces/user';
+import { ChannelWithKey } from './shared/interfaces/channel';
 
 @Injectable({
   providedIn: 'root',
@@ -7,6 +9,38 @@ import { BehaviorSubject, Subject } from 'rxjs';
 export class VariablesService {
   constructor() {
     this.loadState();
+  }
+
+  private activeDmUserSubject = new BehaviorSubject<User | null>(null);
+  activeDmUser$ = this.activeDmUserSubject.asObservable();
+
+  private activeChannelSubject = new BehaviorSubject<ChannelWithKey | null>(
+    null
+  );
+  activeChannel$ = this.activeChannelSubject.asObservable();
+
+  setActiveDmUser(user: User | null): void {
+    if (user) {
+      this.setActiveChannel(null);
+      this.closeThread();
+    }
+    this.activeDmUserSubject.next(user);
+  }
+
+  getActiveDmUser(): User | null {
+    return this.activeDmUserSubject.getValue();
+  }
+
+  setActiveChannel(channel: ChannelWithKey | null): void {
+    if (channel) {
+      this.setActiveDmUser(null);
+      this.closeThread();
+    }
+    this.activeChannelSubject.next(channel);
+  }
+
+  getActiveChannel(): ChannelWithKey | null {
+    return this.activeChannelSubject.getValue();
   }
 
   private isClosedSubject = new BehaviorSubject<boolean>(
@@ -121,6 +155,8 @@ export class VariablesService {
   openThread(threadKey: string) {
     this.activeThreadKeySubject.next(threadKey);
     this.threadOpenSubject.next(true);
+    this.setActiveChannel(null);
+    this.setActiveDmUser(null);
   }
 
   closeThread() {
@@ -129,9 +165,13 @@ export class VariablesService {
   }
 
   toggleThreadVisibility() {
-    this.threadOpenSubject.next(!this.threadOpenSubject.value);
-    if (!this.threadOpenSubject.value) {
+    const willBeOpen = !this.threadOpenSubject.value;
+    this.threadOpenSubject.next(willBeOpen);
+    if (!willBeOpen) {
       this.activeThreadKeySubject.next(null);
+    } else {
+      this.setActiveChannel(null);
+      this.setActiveDmUser(null);
     }
   }
 }

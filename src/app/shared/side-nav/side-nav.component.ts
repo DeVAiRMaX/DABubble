@@ -51,21 +51,21 @@ export class SideNavComponent implements OnInit, OnDestroy {
   isMsgListExpanded: boolean = true;
   sideNavIsVisible: boolean = true;
 
-  private variableService: VariablesService = inject(VariablesService);
+  public variableService: VariablesService = inject(VariablesService);
   private dialog: MatDialog = inject(MatDialog);
-  private firebaseService: FirebaseService = inject(FirebaseService); // Injiziert
-  private authService: AuthService = inject(AuthService); // Injiziert
+  private firebaseService: FirebaseService = inject(FirebaseService);
+  private authService: AuthService = inject(AuthService);
   private subService: SubService = inject(SubService);
 
   @Input() userChannels: ChannelWithKey[] = [];
-  // @Input() channel!: ChannelWithKey;
-
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
   @Output() userSelected = new EventEmitter<User>();
 
   displayableUsers: User[] = [];
-  currentUserUid: string | null = null;
+  currentUser: User | null = null;
   private readonly SUB_GROUP_NAME = 'sideNavSubs';
+
+  constructor() {}
 
   ngOnInit() {
     const savedChannelState = localStorage.getItem('channelListExpanded');
@@ -82,15 +82,15 @@ export class SideNavComponent implements OnInit, OnDestroy {
     );
     this.subService.add(sideNavVisSub, this.SUB_GROUP_NAME);
 
-    const authSub = this.authService.uid$.subscribe((uid) => {
-      this.currentUserUid = uid;
-      if (uid) {
+    const userSub = this.authService.user$.subscribe((user) => {
+      this.currentUser = user;
+      if (user) {
         this.loadUsers();
       } else {
         this.displayableUsers = [];
       }
     });
-    this.subService.add(authSub, this.SUB_GROUP_NAME);
+    this.subService.add(userSub, this.SUB_GROUP_NAME);
   }
 
   ngOnDestroy(): void {
@@ -98,17 +98,18 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
+    if (!this.currentUser || !this.currentUser.uid) {
+      this.displayableUsers = [];
+      return;
+    }
+    const currentUid = this.currentUser.uid;
     this.firebaseService
       .getAllUsers()
-      .pipe(
-        map((users) => users.filter((user) => user.uid !== this.currentUserUid))
-      )
+      .pipe(map((users) => users.filter((user) => user.uid !== currentUid)))
       .subscribe((filteredUsers) => {
         this.displayableUsers = filteredUsers;
-        console.log('[SideNav] Displayable Users:', this.displayableUsers);
       });
   }
-  constructor() {}
 
   selectChannel(channel: ChannelWithKey): void {
     this.channelSelected.emit(channel);
@@ -116,6 +117,14 @@ export class SideNavComponent implements OnInit, OnDestroy {
 
   selectUserForDm(user: User): void {
     this.userSelected.emit(user);
+  }
+
+  selectSelfChat(): void {
+    if (this.currentUser) {
+      this.userSelected.emit(this.currentUser);
+    } else {
+      console.error('[SideNav] Cannot select self-chat, currentUser is null.');
+    }
   }
 
   openDialog(): void {

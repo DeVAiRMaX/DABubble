@@ -10,7 +10,11 @@
   <div class="channel-list-container">
     <div class="channel-list-header"></div>
     <div class="channel-list-body" [class.collapsed]="!isChannelListExpanded">
-      <a *ngFor="let chan of userChannels" (click)="selectChannel(chan)">
+      <a
+        *ngFor="let chan of userChannels"
+        (click)="selectChannel(chan)"
+        [class.selected]="variableService.getActiveChannel()?.key === chan.key"
+      >
         <span class="material-icons"> tag </span> {{ chan.channelName }}
       </a>
       <a (click)="openDialog()">
@@ -35,20 +39,45 @@
 
     <div class="msg-list-body" [class.collapsed]="!isMsgListExpanded">
       <div
+        class="msg-container self-chat-entry"
+        *ngIf="currentUser"
+        (click)="selectSelfChat()"
+        [class.selected]="
+          variableService.getActiveDmUser()?.uid === currentUser.uid
+        "
+      >
+        <div class="msg-container-avatar">
+          <img
+            [src]="
+              currentUser.avatar || './assets/img/character/bsp-avatar.png'
+            "
+            [alt]="currentUser.displayName"
+          />
+          <span class="online-status-indicator"></span>
+        </div>
+        <p>{{ currentUser.displayName }} <span>(Du)</span></p>
+      </div>
+
+      <div
         class="msg-container"
         *ngFor="let user of displayableUsers"
         (click)="selectUserForDm(user)"
+        [class.selected]="variableService.getActiveDmUser()?.uid === user.uid"
       >
         <div class="msg-container-avatar">
           <img
             [src]="user.avatar || './assets/img/character/bsp-avatar.png'"
             [alt]="user.displayName"
           />
+          <span class="online-status-indicator" *ngIf="user"></span>
         </div>
         <p>{{ user.displayName }}</p>
       </div>
 
-      <div *ngIf="displayableUsers.length === 0" class="no-dms-message">
+      <div
+        *ngIf="displayableUsers.length === 0 && currentUser"
+        class="no-dms-message"
+      >
         <p>Keine anderen Benutzer gefunden.</p>
       </div>
     </div>
