@@ -88,9 +88,10 @@ export class MainComponentComponent implements OnInit, OnDestroy {
         if (this.threadIsVisible !== isOpenValue) {
           this.threadIsVisible = isOpenValue;
           if (isOpenValue) {
-            this.selectedChannel = null;
-            this.selectedOtherUser = null;
-            this.variableService.setActiveDmUser(null);
+            if (this.selectedOtherUser) {
+              this.selectedOtherUser = null;
+              this.variableService.setActiveDmUser(null);
+            }
           }
           this.cdRef.markForCheck();
         }
@@ -144,19 +145,36 @@ export class MainComponentComponent implements OnInit, OnDestroy {
           channelToSelect =
             this.userChannels.find((c) => c.key === oldSelectedKey) || null;
         }
-        if (!channelToSelect && this.userChannels.length > 0) {
+        if (
+          !channelToSelect &&
+          this.userChannels.length > 0 &&
+          !this.threadIsVisible &&
+          !this.selectedOtherUser
+        ) {
           channelToSelect = this.userChannels[0];
         }
-
-        if (
-          channelToSelect &&
+        if (channelToSelect && !this.selectedOtherUser) {
+          if (
+            this.threadIsVisible &&
+            oldSelectedKey &&
+            this.selectedChannel?.key === oldSelectedKey
+          ) {
+          } else if (!this.threadIsVisible) {
+            this.onChannelSelected(channelToSelect);
+          } else if (
+            this.threadIsVisible &&
+            !this.selectedChannel &&
+            oldSelectedKey
+          ) {
+            this.onChannelSelected(channelToSelect);
+          }
+        } else if (
+          !channelToSelect &&
           !this.selectedOtherUser &&
-          (!this.selectedChannel ||
-            this.selectedChannel.key !== channelToSelect.key)
+          !this.threadIsVisible
         ) {
-          this.onChannelSelected(channelToSelect);
-        } else if (!channelToSelect && !this.selectedOtherUser) {
           this.selectedChannel = null;
+          this.variableService.setActiveChannel(null);
         }
 
         this.cdRef.markForCheck();
@@ -174,7 +192,9 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   onChannelSelected(channel: ChannelWithKey | null): void {
     if (channel) {
       this.selectedChannel = { ...channel };
-      this.selectedOtherUser = null;
+      if (this.selectedOtherUser) {
+        this.selectedOtherUser = null;
+      }
       this.variableService.setActiveChannel(channel);
     } else {
       this.selectedChannel = null;
@@ -186,7 +206,9 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   onUserSelected(user: User | null): void {
     if (user) {
       this.selectedOtherUser = { ...user };
-      this.selectedChannel = null;
+      if (this.selectedChannel) {
+        this.selectedChannel = null;
+      }
       this.variableService.setActiveDmUser(user);
     } else {
       this.selectedOtherUser = null;

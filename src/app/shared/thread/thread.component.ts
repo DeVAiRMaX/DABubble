@@ -147,41 +147,24 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   loadOriginalMessage(threadKey: string): Observable<Message | null> {
-    console.log(
-      `[ThreadComponent] Lade Originalnachricht für Thread: ${threadKey}`
-    );
     const threadRef = ref(
       this.firebaseService['database'],
       `Threads/${threadKey}`
     );
 
     return from(get(threadRef)).pipe(
-      tap((snapshot) =>
-        console.log(
-          `[ThreadComponent] Thread-Metadaten geholt, existiert: ${snapshot.exists()}`
-        )
-      ),
       switchMap((threadSnapshot) => {
         if (threadSnapshot.exists()) {
           const threadData = threadSnapshot.val() as Thread;
           this.originalMessageChannelKey = threadData.channelKey;
 
           if (threadData.channelKey && threadData.originalMessageKey) {
-            console.log(
-              `[ThreadComponent] Originalnachricht Pfad: channels/${threadData.channelKey}/messages/${threadData.originalMessageKey}`
-            );
             const messageRef = ref(
               this.firebaseService['database'],
               `channels/${threadData.channelKey}/messages/${threadData.originalMessageKey}`
             );
 
             return objectVal<Message>(messageRef).pipe(
-              tap((msg) =>
-                console.log(
-                  `[ThreadComponent] Originalnachricht Update von objectVal:`,
-                  msg
-                )
-              ),
               map((msg) => {
                 if (msg) {
                   const messageWithKey = {
@@ -247,9 +230,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
       .sendThreadMessage(this.currentThreadKey, text, this.currentUser)
       .subscribe({
         next: () => {
-          console.log('Thread-Nachricht erfolgreich gesendet.');
-          this.threadMessageText = ''; // Input leeren
-          // Optional: Scroll zum Ende
+          this.threadMessageText = '';
+          // nach unten scrollen
         },
         error: (err) => {
           console.error('Fehler beim Senden der Thread-Nachricht:', err);
@@ -412,9 +394,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
         );
         return;
       }
-      console.log(
-        `Toggle Reaktion für ORIGINAL Nachricht (${message.key}) in Channel ${this.originalMessageChannelKey}`
-      );
       this.firebaseService
         .toggleReaction(
           this.originalMessageChannelKey,
@@ -423,18 +402,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
           this.currentUser
         )
         .subscribe({
-          next: () =>
-            console.log(
-              `Reaktion ${emoji} für Originalnachricht ${message.key} getoggelt.`
-            ),
           error: (err) =>
             console.error('Fehler bei Originalnachricht-Reaktion:', err),
         });
     } else if (this.currentThreadKey) {
-      console.log(
-        `Toggle Reaktion für THREAD Nachricht (${message.key}) in Thread ${this.currentThreadKey}`
-      );
-
       this.firebaseService
         .toggleThreadReaction(
           this.currentThreadKey,
@@ -443,10 +414,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
           this.currentUser
         )
         .subscribe({
-          next: () =>
-            console.log(
-              `Reaktion ${emoji} für Threadnachricht ${message.key} getoggelt.`
-            ),
           error: (err) => console.error('Fehler bei Thread-Reaktion:', err),
         });
     } else {
@@ -524,9 +491,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
     if (index !== -1) {
       this.taggedPersonsInThreads.splice(index, 1);
-      console.log(`Person ${name} entfernt.`);
-    } else {
-      console.log(`Person ${name} nicht gefunden.`);
     }
   }
 
@@ -544,12 +508,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0).cloneRange();
 
-      if (range.collapsed) {
-        console.log('Cursor position is collapsed, saving current position...');
-      } else {
-        console.log('Text range saved:', range);
-      }
-
       this.savedRange = range;
 
       const lastChild = input.lastChild;
@@ -557,11 +515,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
         this.savedRange.setStart(lastChild, (lastChild as Text).length);
         this.savedRange.setEnd(lastChild, (lastChild as Text).length);
       }
-
-      console.log(
-        'Cursor position saved at end of input field or current position:',
-        this.savedRange.endOffset
-      );
     } else {
       console.warn('No selection range available to save.');
     }
@@ -586,10 +539,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
         dialogRef.componentInstance as SmileyKeyboardComponent;
       componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
         this.insertEmojiAtCursor(selectedEmoji);
-      });
-
-      dialogRef.afterClosed().subscribe(() => {
-        console.log('Smiley keyboard dialog closed');
       });
 
       setTimeout(() => {
@@ -658,7 +607,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.checkForMention(event);
     const target = event.target as HTMLElement;
     this.threadMessageText = target.innerHTML;
-    console.log(this.threadMessageText);
   }
 
   onEnter(event: Event): void {

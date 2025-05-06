@@ -155,7 +155,6 @@ export class VariablesService {
   openThread(threadKey: string) {
     this.activeThreadKeySubject.next(threadKey);
     this.threadOpenSubject.next(true);
-    this.setActiveChannel(null);
     this.setActiveDmUser(null);
   }
 
@@ -170,7 +169,6 @@ export class VariablesService {
     if (!willBeOpen) {
       this.activeThreadKeySubject.next(null);
     } else {
-      this.setActiveChannel(null);
       this.setActiveDmUser(null);
     }
   }
