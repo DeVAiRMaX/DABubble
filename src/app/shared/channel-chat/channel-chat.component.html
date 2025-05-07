@@ -87,11 +87,17 @@
                 *ngFor="let reaction of getDisplayedReactions(message)"
                 (click)="toggleReaction(message, reaction.emoji)"
                 [class.reacted-by-user]="reaction.reactedByUser"
-                matTooltip="{{ reaction.userNames.join(',\\n') }}"
-                matTooltipPosition="above"
               >
                 <span>{{ reaction.emoji }}</span>
                 <p>{{ reaction.count }}</p>
+
+                <div class="reactionOwner">
+                  <div>{{ reaction.emoji }}</div>
+                  <div class="reactionOwnerUser">
+                    {{ reaction.userNames.join(", ") }}
+                  </div>
+                  <span>hat reagiert</span>
+                </div>
               </div>
 
               <button
@@ -248,11 +254,16 @@
                 *ngFor="let reaction of getDisplayedReactions(message)"
                 (click)="toggleReaction(message, reaction.emoji)"
                 [class.reacted-by-user]="reaction.reactedByUser"
-                matTooltip="{{ reaction.userNames.join(',\\n') }}"
-                matTooltipPosition="above"
               >
                 <span>{{ reaction.emoji }}</span>
                 <p>{{ reaction.count }}</p>
+                <div class="reactionOwner">
+                  <div>{{ reaction.emoji }}</div>
+                  <div class="reactionOwnerUser">
+                    {{ reaction.userNames.join(", ") }}
+                  </div>
+                  <span>hat reagiert</span>
+                </div>
               </div>
 
               <button

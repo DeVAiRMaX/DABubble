@@ -12,8 +12,10 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   QueryList,
   ViewChildren,
+  AfterViewInit,
   TrackByFunction,
   HostListener,
+  
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
@@ -93,6 +95,8 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     this.cdRef.markForCheck();
   }
 
+  @ViewChild('messageInput') messageInputRef!: ElementRef;
+
   constructor() {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
       (value) => {
@@ -103,6 +107,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit(): void {
     const input = document.querySelector('.textForMessageInput') as HTMLElement;
+   
     if (input) {
       input.addEventListener('mouseup', () => this.saveCursorPosition());
       input.addEventListener('keyup', () => this.saveCursorPosition());
@@ -131,6 +136,9 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   ngAfterViewInit() {
     this.scrollToBottom();
+    setTimeout(() => {
+      this.messageInputRef?.nativeElement?.focus();
+    }, 0);
   }
 
   scrollToBottom(): void {
