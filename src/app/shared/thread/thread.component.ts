@@ -182,7 +182,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
                 }
               })
             );
-            // --- Ende objectVal ---
           } else {
             console.warn(
               `[ThreadComponent] Thread ${threadKey} fehlen channelKey oder originalMessageKey.`
@@ -215,7 +214,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   sendThreadMessage(): void {
-    const text = this.threadMessageText.trim(); // Hole Text aus Input (z.B. ngModel oder ViewChild)
+    const text = this.threadMessageText.trim();
     if (
       !text ||
       !this.currentThreadKey ||
@@ -323,7 +322,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     return Object.values(grouped);
   }
 
-  // getTotalGroupedReactionsCount - direkt kopiert (Typ Message | ThreadMessage angepasst)
   getTotalGroupedReactionsCount(
     message: Message | ThreadMessage | null
   ): number {
@@ -331,28 +329,25 @@ export class ThreadComponent implements OnInit, OnDestroy {
     return this.groupReactions(message.reactions).length;
   }
 
-  // NEU: getReactionLimit für Thread - gibt *immer* 7 zurück
   getReactionLimit(): number {
-    return 7; // Festes Limit für Threads
+    return 7;
   }
 
-  // getDisplayedReactions - angepasst für Thread (Typ Message | ThreadMessage und festes Limit)
   getDisplayedReactions(
     message: Message | ThreadMessage | null
   ): GroupedReaction[] {
     if (!message) return [];
     const allGrouped = this.groupReactions(message.reactions);
     const totalCount = allGrouped.length;
-    const limit = this.getReactionLimit(); // Nutzt die Thread-spezifische Limit-Funktion
+    const limit = this.getReactionLimit();
 
     if (this.isShowingAll(message)) {
-      return allGrouped; // Zeige alle, wenn erweitert
+      return allGrouped;
     } else {
-      return allGrouped.slice(0, limit); // Zeige initial nur 7
+      return allGrouped.slice(0, limit);
     }
   }
 
-  // isShowingAll - direkt kopiert (Typ Message | ThreadMessage angepasst)
   isShowingAll(message: Message | ThreadMessage | null): boolean {
     if (!message || !message.key) {
       return false;
@@ -360,7 +355,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     return this.isShowingAllReactions.get(message.key) || false;
   }
 
-  // toggleShowAllReactions - direkt kopiert (Typ Message | ThreadMessage angepasst)
   toggleShowAllReactions(message: Message | ThreadMessage | null): void {
     if (!message || !message.key) {
       console.warn(
@@ -374,7 +368,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   toggleReaction(message: Message | ThreadMessage | null, emoji: string): void {
-    // Basis-Prüfungen
     if (!message || !message.key || !this.currentUser) {
       console.warn(
         'toggleReaction: Fehlende Nachrichten- oder Benutzerdaten.',
