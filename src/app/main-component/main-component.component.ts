@@ -72,6 +72,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private readonly GRP_DATA_KEYS = 'dataLoadKeys';
   private readonly GRP_DATA_CHANNELS = 'dataLoadChannels';
   private readonly GRP_USER_DATA = 'mainUserData';
+
   constructor() {}
 
   ngOnInit(): void {
