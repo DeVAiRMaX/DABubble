@@ -157,14 +157,6 @@
                 {{ message.threadLastReplyAt | date : "HH:mm" }}
               </p>
             </div>
-            <!-- <div
-              class="message-footer other-footer"
-              *ngIf="message.senderUid !== 'DABubble' && !message.threadKey"
-            >
-              <a (click)="startOrOpenThread(message)" class="msg-count">
-                <span>Antworten</span>
-              </a>
-            </div> -->
           </div>
 
           <div class="reactionMenu" *ngIf="message.senderUid !== 'DABubble'">

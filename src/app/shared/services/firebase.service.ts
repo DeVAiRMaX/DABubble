@@ -984,7 +984,7 @@ export class FirebaseService {
 
   toggleThreadReaction(
     threadKey: string,
-    messageKey: string, // Key der Thread-Antwort-Nachricht
+    messageKey: string,
     emoji: string,
     user: CustomUser
   ): Observable<void> {
@@ -994,17 +994,13 @@ export class FirebaseService {
       );
     }
 
-    // --- Korrekter Pfad für Reaktionen auf Thread-Antworten ---
     const reactionsRef = ref(
       this.database,
       `Threads/${threadKey}/threadMsg/${messageKey}/reactions`
     );
-    // --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    // Die Logik zum Holen, Ändern und Setzen ist identisch zur toggleReaction
     return from(get(reactionsRef)).pipe(
       switchMap((snapshot) => {
-        // Verwende 'any' oder bessere Typ-Prüfung, falls Firebase Arrays als Objekte speichert
         const currentReactionsVal = snapshot.val();
         let currentReactions: Reaction[] = [];
         if (Array.isArray(currentReactionsVal)) {
@@ -1013,7 +1009,6 @@ export class FirebaseService {
           typeof currentReactionsVal === 'object' &&
           currentReactionsVal !== null
         ) {
-          // Handle Firebase Object-Storage für sparse Arrays
           currentReactions = Object.values(currentReactionsVal);
         }
 
@@ -1023,13 +1018,11 @@ export class FirebaseService {
         );
 
         if (existingReactionIndex > -1) {
-          // Reaktion entfernen
           updatedReactions = [
             ...currentReactions.slice(0, existingReactionIndex),
             ...currentReactions.slice(existingReactionIndex + 1),
           ];
         } else {
-          // Reaktion hinzufügen
           const newReaction: Reaction = {
             emoji: emoji,
             userId: user.uid,
@@ -1037,7 +1030,6 @@ export class FirebaseService {
           };
           updatedReactions = [...currentReactions, newReaction];
         }
-        // Setze null, wenn Array leer ist, um Firebase-Probleme zu vermeiden
         const reactionsToSet =
           updatedReactions.length > 0 ? updatedReactions : null;
         return from(set(reactionsRef, reactionsToSet));
@@ -1088,11 +1080,9 @@ export class FirebaseService {
     );
   }
 
-  // reactions von direct messages:
-
   toggleDirectMessageReaction(
-    conversationId: string, // ID der DM-Konversation
-    messageKey: string, // Key der Nachricht innerhalb der DM
+    conversationId: string,
+    messageKey: string,
     emoji: string,
     user: CustomUser
   ): Observable<void> {
@@ -1102,14 +1092,11 @@ export class FirebaseService {
       );
     }
 
-    // --- Korrekter Pfad für Reaktionen auf Direktnachrichten ---
     const reactionsRef = ref(
       this.database,
       `direct-messages/${conversationId}/messages/${messageKey}/reactions`
     );
-    // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    // Die Logik zum Holen, Ändern und Setzen ist identisch zu den anderen toggle-Methoden
     return from(get(reactionsRef)).pipe(
       switchMap((snapshot) => {
         const currentReactionsVal = snapshot.val();
@@ -1129,13 +1116,11 @@ export class FirebaseService {
         );
 
         if (existingReactionIndex > -1) {
-          // Reaktion entfernen
           updatedReactions = [
             ...currentReactions.slice(0, existingReactionIndex),
             ...currentReactions.slice(existingReactionIndex + 1),
           ];
         } else {
-          // Reaktion hinzufügen
           const newReaction: Reaction = {
             emoji: emoji,
             userId: user.uid,

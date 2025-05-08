@@ -64,18 +64,11 @@
     <div class="channel-information-description">
       <div class="edit-channel-description-headline">
         <h2>Beschreibung</h2>
-        <a
-          (click)="onToggleOrSaveChannelDescription()"
-        >
+        <a (click)="onToggleOrSaveChannelDescription()">
           {{ editChannelDescription ? "Speichern" : "Bearbeiten" }}
         </a>
       </div>
-      <!-- <div class="channel-description-empty-msg" *ngIf="channelDescriptionEmpty">
-        <p>Channel-Beschreibung darf nicht leer sein!</p>
-      </div> -->
     </div>
-
-    
 
     <ng-container *ngIf="!editChannelDescription; else editMode">
       <p>{{ channel.description }}</p>
@@ -96,6 +89,6 @@
   </div>
 
   <div class="btn-container">
-    <button (click)="closeDialog()">Channel verlassen</button>
+    <button (click)="leaveChannel()">Channel verlassen</button>
   </div>
 </div>

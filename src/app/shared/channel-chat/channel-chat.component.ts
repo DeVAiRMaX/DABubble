@@ -15,7 +15,6 @@ import {
   AfterViewInit,
   TrackByFunction,
   HostListener,
-  
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 
@@ -107,7 +106,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit(): void {
     const input = document.querySelector('.textForMessageInput') as HTMLElement;
-   
+
     if (input) {
       input.addEventListener('mouseup', () => this.saveCursorPosition());
       input.addEventListener('keyup', () => this.saveCursorPosition());
@@ -713,8 +712,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getTotalGroupedReactionsCount(message: Message): number {
-    // Cache das Ergebnis von groupReactions, wenn es oft aufgerufen wird
-    // Einfache Variante:
     return this.groupReactions(message.reactions).length;
   }
 

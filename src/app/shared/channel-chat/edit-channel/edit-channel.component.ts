@@ -1,11 +1,17 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, inject, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate,
+} from '@angular/animations';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
 import { Channel } from '../../interfaces/channel';
 import { SharedModule } from '../../../shared';
-import { Observable } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../interfaces/user';
 
@@ -17,27 +23,31 @@ import { User } from '../../interfaces/user';
   styleUrl: './edit-channel.component.scss',
   animations: [
     trigger('editChannelAnimation', [
-      state('open', style({
-        transform: 'scale(1)',
-        opacity: 1,
-      })),
-      state('close', style({
-        transform: 'scale(0)',
-        opacity: 0,
-      })),
+      state(
+        'open',
+        style({
+          transform: 'scale(1)',
+          opacity: 1,
+        })
+      ),
+      state(
+        'close',
+        style({
+          transform: 'scale(0)',
+          opacity: 0,
+        })
+      ),
       transition('close => open', [
         style({ transform: 'scale(0)', opacity: 0 }),
-        animate('0.2s ease-out', style({ transform: 'scale(1)', opacity: 1 }))
+        animate('0.2s ease-out', style({ transform: 'scale(1)', opacity: 1 })),
       ]),
       transition('open => close', [
-        animate('0.2s ease-out', style({ transform: 'scale(0)', opacity: 0 }))
-      ])
-    ])
-  ]
-
+        animate('0.2s ease-out', style({ transform: 'scale(0)', opacity: 0 })),
+      ]),
+    ]),
+  ],
 })
-export class EditChannelComponent {
-
+export class EditChannelComponent implements OnDestroy {
   editChannelAnimation: 'open' | 'close' = 'close';
   editChannelName: boolean = false;
   editChannelDescription: boolean = false;
@@ -51,16 +61,26 @@ export class EditChannelComponent {
 
   channelCreator: string | null = '';
 
-
   channel$: Observable<Channel | null>;
   user$: Observable<User | null>;
+
+  private destroy$ = new Subject<void>();
+  private currentUserUid: string | null = null;
 
   private databaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
 
-  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<EditChannelComponent>, @Inject(MAT_DIALOG_DATA) public data: { channelKey: string }) {
+  constructor(
+    public dialog: MatDialog,
+    public dialogRef: MatDialogRef<EditChannelComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { channelKey: string }
+  ) {
     this.user$ = this.authService.user$;
     this.channel$ = this.databaseService.getChannel(this.data.channelKey);
+
+    this.authService.uid$.pipe(takeUntil(this.destroy$)).subscribe((uid) => {
+      this.currentUserUid = uid;
+    });
   }
 
   ngOnInit() {
@@ -70,13 +90,19 @@ export class EditChannelComponent {
     this.getChannelData();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   startAnimation() {
     this.editChannelAnimation = 'open';
   }
 
   getChannelData() {
-    this.databaseService.getChannel(this.data.channelKey)
-      .subscribe(channel => {
+    this.databaseService
+      .getChannel(this.data.channelKey)
+      .subscribe((channel) => {
         const channelDataJson = channel as Channel;
         this.findUser(channelDataJson.members[0]);
       });
@@ -84,19 +110,25 @@ export class EditChannelComponent {
 
   async findUser(channelCreatorUid: string) {
     try {
-      this.channelCreator = await this.databaseService.findUser(channelCreatorUid);
+      this.channelCreator = await this.databaseService.findUser(
+        channelCreatorUid
+      );
     } catch (error) {
-      console.error("Fehler:", error);
+      console.error('Fehler:', error);
     }
   }
 
   async saveChannelName() {
     if (this.channelName === '') {
       this.channelNameEmpty = true;
-      return
+      return;
     } else if (this.data.channelKey) {
       try {
-        await this.authService.updateChannel(this.data.channelKey, 'channelName', this.channelName);
+        await this.authService.updateChannel(
+          this.data.channelKey,
+          'channelName',
+          this.channelName
+        );
         this.channel$ = this.databaseService.getChannel(this.data.channelKey);
 
         this.editChannelName = false;
@@ -108,7 +140,7 @@ export class EditChannelComponent {
       console.error('Current channel not found.');
     }
   }
-  
+
   onToggleOrSaveChannelDescription(): void {
     if (this.editChannelDescription) {
       this.saveChannelDescription();
@@ -118,13 +150,13 @@ export class EditChannelComponent {
   }
 
   async saveChannelDescription() {
-    // if (this.channelDescription === '') {
-    //   this.channelDescriptionEmpty = true;
-    //   return
-    // }
     if (this.data.channelKey) {
       try {
-        await this.authService.updateChannel(this.data.channelKey, 'description', this.channelDescription);
+        await this.authService.updateChannel(
+          this.data.channelKey,
+          'description',
+          this.channelDescription
+        );
         this.channel$ = this.databaseService.getChannel(this.data.channelKey);
 
         this.editChannelDescription = false;
@@ -134,6 +166,37 @@ export class EditChannelComponent {
       }
     } else {
       console.error('Current channel not found.');
+    }
+  }
+
+  async leaveChannel(): Promise<void> {
+    if (!this.currentUserUid) {
+      console.error(
+        'Benutzer-UID nicht gefunden. Kann Channel nicht verlassen.'
+      );
+      return;
+    }
+    if (!this.data.channelKey) {
+      console.error(
+        'Channel-Key nicht gefunden. Kann Channel nicht verlassen.'
+      );
+      return;
+    }
+
+    try {
+      await this.databaseService.removeUserChannel(
+        this.data.channelKey,
+        this.currentUserUid
+      );
+      console.log(
+        `Benutzer ${this.currentUserUid} hat Channel ${this.data.channelKey} verlassen.`
+      );
+      this.closeDialog();
+    } catch (error) {
+      console.error(
+        `Fehler beim Verlassen des Channels ${this.data.channelKey}:`,
+        error
+      );
     }
   }
 
