@@ -67,6 +67,9 @@ export class VariablesService {
   private channelCreatedSource = new Subject<void>();
   channelCreated$ = this.channelCreatedSource.asObservable();
 
+  private userLeavedChannelSource = new Subject<void>();
+  userLeavedChannel$ = this.userLeavedChannelSource.asObservable();
+
   private threadOpenSubject = new BehaviorSubject<boolean>(false);
   threadIsOpen$ = this.threadOpenSubject.asObservable();
 
@@ -97,6 +100,10 @@ export class VariablesService {
 
   notifyChannelCreated(): void {
     this.channelCreatedSource.next();
+  }
+
+  notifyUserLeavedChannelCreated(): void {
+    this.userLeavedChannelSource.next();
   }
 
   private saveToStorage(key: string, value: boolean) {

@@ -8,7 +8,23 @@
   </div>
 
   <div class="channel-list-container">
-    <div class="channel-list-header"></div>
+    <div class="channel-list-header">
+      <div (click)="toggleChannelList()" class="channel-list-header-title">
+        <span
+          class="material-icons arrow_drop_down"
+          [class.rotated]="!isChannelListExpanded"
+        >
+          arrow_drop_down
+        </span>
+        <span class="material-icons workspaces_outline">
+          workspaces_outline
+        </span>
+        <h3>Channels</h3>
+      </div>
+      <span (click)="openDialog()" class="material-symbols-outlined add_btn"
+        >add</span
+      >
+    </div>
     <div class="channel-list-body" [class.collapsed]="!isChannelListExpanded">
       <a
         *ngFor="let chan of userChannels"

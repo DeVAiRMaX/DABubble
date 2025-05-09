@@ -712,6 +712,8 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getTotalGroupedReactionsCount(message: Message): number {
+    // Cache das Ergebnis von groupReactions, wenn es oft aufgerufen wird
+    // Einfache Variante:
     return this.groupReactions(message.reactions).length;
   }
 

@@ -1,5 +1,9 @@
 import { Component, Inject, inject, OnDestroy } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import {
   trigger,
   state,
@@ -7,7 +11,6 @@ import {
   transition,
   animate,
 } from '@angular/animations';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
 import { Channel } from '../../interfaces/channel';
 import { SharedModule } from '../../../shared';
@@ -187,9 +190,6 @@ export class EditChannelComponent implements OnDestroy {
       await this.databaseService.removeUserChannel(
         this.data.channelKey,
         this.currentUserUid
-      );
-      console.log(
-        `Benutzer ${this.currentUserUid} hat Channel ${this.data.channelKey} verlassen.`
       );
       this.closeDialog();
     } catch (error) {

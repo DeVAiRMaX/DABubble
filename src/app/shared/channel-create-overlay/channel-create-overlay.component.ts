@@ -71,16 +71,14 @@ export class ChannelCreateOverlayComponent {
 
     if (!trimmedChannelName) {
       console.warn('Channel-Name darf nicht leer sein.');
-      // Optional: Nutzerfeedback geben (z.B. Input rot markieren)
       return;
     }
 
     if (currentUserUid) {
       this.firebaseService
-        .createChannel(trimmedChannelName, this.description, currentUserUid) // getrimmten Namen verwenden
+        .createChannel(trimmedChannelName, this.description, currentUserUid)
         .subscribe({
-          next: (channelKey) => {
-            console.log('Channel erstellt mit Key:', channelKey);
+          next: () => {
             this.variableService.notifyChannelCreated();
             this.closeDialog();
           },
@@ -88,12 +86,10 @@ export class ChannelCreateOverlayComponent {
             console.error('Fehler beim Erstellen des Channels:', error);
           },
         });
-      // this.closeDialog(); // <-- NICHT HIER SCHLIESSEN
     } else {
       console.error(
         'Fehler: Benutzer nicht angemeldet, kann keinen Channel erstellen.'
       );
-      // Optional: Fehlermeldung im UI anzeigen
     }
   }
 
