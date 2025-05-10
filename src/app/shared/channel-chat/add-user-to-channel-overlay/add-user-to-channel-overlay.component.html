@@ -13,7 +13,7 @@
       type="text"
       placeholder="Name eingeben"
       [(ngModel)]="userInput"
-      (ngModelChange)="searchForUser()"
+      (ngModelChange)="searchForUser(); checkFormInvalid()"
       (focus)="searchForUser()"
     />
     <div class="result-user-list" *ngIf="searchingForUser && filteredUserData.length > 0" #userListContainer>
@@ -43,5 +43,5 @@
       </div>
     </div>
   </div>
-  <button class="add-user-button btn-active" (click)="addUsersToChannel()">Hinzufügen</button>
+  <button class="add-user-button" (click)="addUsersToChannel()" [disabled]="!formInvalid">Hinzufügen</button>
 </div>

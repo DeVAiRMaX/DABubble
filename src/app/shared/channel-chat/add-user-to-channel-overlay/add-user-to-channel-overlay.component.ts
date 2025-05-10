@@ -17,6 +17,7 @@ export class AddUserToChannelOverlayComponent {
   searchingForUser: boolean = false;
   userSelected: boolean = false;
   userInput: string = '';
+  formInvalid: boolean = false;
 
   channelData: Channel[] = [];
   userData: User[] = [];
@@ -71,8 +72,13 @@ export class AddUserToChannelOverlayComponent {
     }
   }
 
-
-
+  checkFormInvalid() {
+    if (this.userInput === '') {
+      this.formInvalid = false;
+    } else {
+      this.formInvalid = true;
+    }
+  }
 
   selectUser(user: any) {
     this.userSelected = true;

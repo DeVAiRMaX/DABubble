@@ -50,7 +50,7 @@
         <div class="privacypolicy">
           <div class="checkbox-container">
             <input type="checkbox" formControlName="privacyPolicy" />
-            <p>Ich stimme der <a href="#">Datenschutzerklärung</a> zu.</p>
+            <p>Ich stimme der <a [routerLink]="['/datenschutz']">Datenschutzerklärung</a> zu.</p>
           </div>
           <div *ngIf="formControls['privacyPolicy'].invalid && (formControls['privacyPolicy'].dirty || formControls['privacyPolicy'].touched)" class="error-message">
             <span *ngIf="formControls['privacyPolicy'].errors?.['required']">Sie müssen den Datenschutzbestimmungen zustimmen.</span>

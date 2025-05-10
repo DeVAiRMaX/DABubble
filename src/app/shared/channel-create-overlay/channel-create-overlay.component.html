@@ -23,7 +23,9 @@
         [(ngModel)]="channelName"
         type="text"
         placeholder="# z.B. Kooperationsprojekte"
+        (ngModelChange)="checkFormInvalid()"
       />
+      <p>Gib einen Channel-Name ein!</p>
     </div>
 
     <div class="add-channel-description">
@@ -38,7 +40,7 @@
       ></textarea>
     </div>
 
-    <button (click)="createChannel()" class="add-channel-button">
+    <button (click)="createChannel()" class="add-channel-button" [disabled]="!formInvalid">
       Erstellen
     </button>
   </div>
