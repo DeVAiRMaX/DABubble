@@ -70,6 +70,9 @@ export class VariablesService {
   private userLeavedChannelSource = new Subject<void>();
   userLeavedChannel$ = this.userLeavedChannelSource.asObservable();
 
+  private memberRemovedSubject = new Subject<void>();
+  memberRemovedFromChannel$ = this.memberRemovedSubject.asObservable();
+
   private threadOpenSubject = new BehaviorSubject<boolean>(false);
   threadIsOpen$ = this.threadOpenSubject.asObservable();
 
@@ -102,8 +105,14 @@ export class VariablesService {
     this.channelCreatedSource.next();
   }
 
-  notifyUserLeavedChannelCreated(): void {
+  notifyUserLeavedChannel() {
     this.userLeavedChannelSource.next();
+  }
+
+  notifyMemberRemovedFromChannel() {
+    console.log('ENTFEHRNT');
+
+    this.memberRemovedSubject.next();
   }
 
   private saveToStorage(key: string, value: boolean) {

@@ -30,7 +30,7 @@ import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-
 import { SubService } from '../services/sub.service';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { User } from '../interfaces/user';
 import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.component';
 import { FormsModule } from '@angular/forms';
@@ -76,6 +76,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private savedRange: Range | null = null;
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
   private readonly SUB_MESSAGES = 'channelMessages';
+  private memberRemovedSubject: Subscription | undefined;
 
   isShowingAllReactions = new Map<string, boolean>();
   isMobileView: boolean = window.innerWidth < 800;
@@ -96,15 +97,15 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   @ViewChild('messageInput') messageInputRef!: ElementRef;
 
-  constructor() {
+  constructor() {}
+
+  ngOnInit(): void {
     this.variableService.addUserToChannelOverlayIsVisible$.subscribe(
       (value) => {
         this.addUserToChannelOverlayIsVisible = value;
       }
     );
-  }
 
-  ngOnInit(): void {
     const input = document.querySelector('.textForMessageInput') as HTMLElement;
 
     if (input) {
@@ -129,7 +130,14 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
     this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
 
-    this.getChannelMembers();
+    this.memberRemovedSubject =
+      this.variableService.memberRemovedFromChannel$.subscribe(() => {
+        if (this.authService.getCurrentUserUID()) {
+          this.getChannelMembers();
+        }
+      });
+
+    this.subscribeToMemberChanges();
     this.onResize();
   }
 
@@ -138,6 +146,21 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     setTimeout(() => {
       this.messageInputRef?.nativeElement?.focus();
     }, 0);
+  }
+
+  subscribeToMemberChanges(): void {
+    this.memberRemovedSubject?.unsubscribe();
+
+    this.memberRemovedSubject =
+      this.variableService.memberRemovedFromChannel$.subscribe(() => {
+        console.log(
+          '[ChannelChat] Signal: Mitglied entfernt. Lade Mitglieder neu...'
+        );
+        if (this.channel?.key) {
+          this.getChannelMembers();
+        }
+      });
+    this.subService.add(this.memberRemovedSubject, this.SUB_GROUP_NAME);
   }
 
   scrollToBottom(): void {
@@ -169,25 +192,36 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getChannelMembers() {
+    if (!this.channel?.key) {
+      console.warn('getChannelMembers ohne channel key aufgerufen.');
+      this.memberAvatars = [];
+      this.channel.members = [];
+      this.cdRef.markForCheck();
+      return;
+    }
     this.firebaseService
       .getChannel(this.channel.key)
-      .subscribe(async (user) => {
-        if (user?.members && Array.isArray(user.members)) {
+      .subscribe(async (channelDoc) => {
+        if (channelDoc?.members && Array.isArray(channelDoc.members)) {
           try {
             const membersData = await this.authService.getMembersData(
-              user.members
+              channelDoc.members
             );
-
             this.channel.members = membersData;
-
             this.memberAvatars = membersData.map((member) => member.avatar);
           } catch (error) {
-            console.error('Fehler beim Abrufen der Mitglieder:', error);
+            console.error(
+              '[ChannelChat] Fehler beim Abrufen der Mitgliederdetails:',
+              error
+            );
+            this.channel.members = [];
+            this.memberAvatars = [];
           }
         } else {
           this.channel.members = [];
           this.memberAvatars = [];
         }
+        this.cdRef.markForCheck();
       });
   }
 

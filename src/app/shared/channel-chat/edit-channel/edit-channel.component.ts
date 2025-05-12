@@ -17,6 +17,7 @@ import { SharedModule } from '../../../shared';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../interfaces/user';
+import { VariablesService } from '../../../variables.service';
 
 @Component({
   selector: 'app-edit-channel',
@@ -70,8 +71,9 @@ export class EditChannelComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
   private currentUserUid: string | null = null;
 
-  private databaseService: FirebaseService = inject(FirebaseService);
+  private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
+  private variableService: VariablesService = inject(VariablesService);
 
   constructor(
     public dialog: MatDialog,
@@ -79,7 +81,7 @@ export class EditChannelComponent implements OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: { channelKey: string }
   ) {
     this.user$ = this.authService.user$;
-    this.channel$ = this.databaseService.getChannel(this.data.channelKey);
+    this.channel$ = this.firebaseService.getChannel(this.data.channelKey);
 
     this.authService.uid$.pipe(takeUntil(this.destroy$)).subscribe((uid) => {
       this.currentUserUid = uid;
@@ -103,7 +105,7 @@ export class EditChannelComponent implements OnDestroy {
   }
 
   getChannelData() {
-    this.databaseService
+    this.firebaseService
       .getChannel(this.data.channelKey)
       .subscribe((channel) => {
         const channelDataJson = channel as Channel;
@@ -113,7 +115,7 @@ export class EditChannelComponent implements OnDestroy {
 
   async findUser(channelCreatorUid: string) {
     try {
-      this.channelCreator = await this.databaseService.findUser(
+      this.channelCreator = await this.firebaseService.findUser(
         channelCreatorUid
       );
     } catch (error) {
@@ -132,7 +134,7 @@ export class EditChannelComponent implements OnDestroy {
           'channelName',
           this.channelName
         );
-        this.channel$ = this.databaseService.getChannel(this.data.channelKey);
+        this.channel$ = this.firebaseService.getChannel(this.data.channelKey);
 
         this.editChannelName = false;
         this.channelNameEmpty = false;
@@ -160,7 +162,7 @@ export class EditChannelComponent implements OnDestroy {
           'description',
           this.channelDescription
         );
-        this.channel$ = this.databaseService.getChannel(this.data.channelKey);
+        this.channel$ = this.firebaseService.getChannel(this.data.channelKey);
 
         this.editChannelDescription = false;
         this.channelDescriptionEmpty = false;
@@ -187,11 +189,12 @@ export class EditChannelComponent implements OnDestroy {
     }
 
     try {
-      await this.databaseService.removeUserChannel(
+      await this.firebaseService.removeUserChannel(
         this.data.channelKey,
         this.currentUserUid
       );
       this.closeDialog();
+      this.variableService.notifyUserLeavedChannel();
     } catch (error) {
       console.error(
         `Fehler beim Verlassen des Channels ${this.data.channelKey}:`,

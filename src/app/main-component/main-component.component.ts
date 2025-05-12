@@ -18,6 +18,7 @@ import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
 import { ChannelWithKey } from '../shared/interfaces/channel';
 import { userData, User } from '../../app/shared/interfaces/user';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-main-component',
@@ -65,6 +66,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private variableService: VariablesService = inject(VariablesService);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private userLeavedSubscription: Subscription | undefined;
 
   private readonly GRP_UI_STATE = 'uiState';
   private readonly GRP_AUTH = 'auth';
@@ -127,6 +129,13 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       }
     );
     this.subService.add(channelCreatedSub, this.GRP_CHANNEL_CREATED);
+
+    this.userLeavedSubscription =
+      this.variableService.userLeavedChannel$.subscribe(() => {
+        if (this.uid != null) {
+          this.loadChannels(this.uid);
+        }
+      });
   }
 
   loadUserSpecificData(uid: string): void {
@@ -228,5 +237,8 @@ export class MainComponentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subService.unsubscribeAll();
+    if (this.userLeavedSubscription) {
+      this.userLeavedSubscription.unsubscribe();
+    }
   }
 }

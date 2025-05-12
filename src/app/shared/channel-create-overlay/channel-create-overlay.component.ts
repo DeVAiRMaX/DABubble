@@ -58,7 +58,7 @@ export class ChannelCreateOverlayComponent {
 
   channelCreateOverlayAnimation: 'open' | 'close' = 'close';
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit() {
     this.dialogRef.afterOpened().subscribe(() => {
@@ -73,20 +73,7 @@ export class ChannelCreateOverlayComponent {
       this.formInvalid = true;
     }
   }
-  
 
-  /**
-   * Creates a new channel with the given name and description and adds the
-   * current user as the channel creator.
-   *
-   * @remarks
-   * Checks if the channel name is not empty and if the user is logged in.
-   * If the channel name is empty, sets the form invalid to false.
-   * If the user is not logged in, logs an error.
-   * Otherwise, calls the createChannel function from the FirebaseService and
-   * notifies the application that a new channel was created via the
-   * VariablesService. When the channel is created, closes the dialog.
-   */
   createChannel() {
     const currentUserUid = this.authService.getCurrentUserUID();
     const trimmedChannelName = this.channelName.trim();

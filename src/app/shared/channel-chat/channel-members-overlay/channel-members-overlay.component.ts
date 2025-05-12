@@ -1,9 +1,11 @@
-import { Component, Output, EventEmitter, Inject, inject } from '@angular/core';
+import { Component, Output, EventEmitter, inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
 import { AuthService } from '../../services/auth.service';
 import { SharedModule } from '../../../shared';
 import { User } from '../../interfaces/user';
+import { VariablesService } from '../../../variables.service';
+import { ChannelCreateOverlayComponent } from '../../channel-create-overlay/channel-create-overlay.component';
 
 @Component({
   selector: 'app-channel-members-overlay',
@@ -22,12 +24,22 @@ export class ChannelMembersOverlayComponent {
 
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
+  public variableService: VariablesService = inject(VariablesService);
+  private dialogRef = inject(MatDialogRef<ChannelCreateOverlayComponent>);
+  public data: any = inject(MAT_DIALOG_DATA);
 
-  constructor(
-    private dialogRef: MatDialogRef<ChannelMembersOverlayComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    this.getMembersData(this.data.channelMember);
+  constructor() {
+    // this.getMembersData(this.data.channelMember);
+  }
+
+  ngOnInit(): void {
+    if (this.data && this.data.channelMember) {
+      this.getMembersData(this.data.channelMember);
+    } else {
+      console.error(
+        'ChannelMembersOverlayComponent: MAT_DIALOG_DATA or data.channelMember is not available'
+      );
+    }
   }
 
   async getMembersData(channelMembers: any[]) {
@@ -57,6 +69,7 @@ export class ChannelMembersOverlayComponent {
     const index = this.channelMember.findIndex((member) => member.uid === uid);
     if (this.channelMember.length === 1) {
       this.userDontBeEmpty = true;
+      this.variableService.notifyMemberRemovedFromChannel();
       return;
     }
 
