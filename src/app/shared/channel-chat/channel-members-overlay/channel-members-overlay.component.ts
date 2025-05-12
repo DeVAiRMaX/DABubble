@@ -28,9 +28,7 @@ export class ChannelMembersOverlayComponent {
   private dialogRef = inject(MatDialogRef<ChannelCreateOverlayComponent>);
   public data: any = inject(MAT_DIALOG_DATA);
 
-  constructor() {
-    // this.getMembersData(this.data.channelMember);
-  }
+  constructor() {}
 
   ngOnInit(): void {
     if (this.data && this.data.channelMember) {
@@ -69,7 +67,6 @@ export class ChannelMembersOverlayComponent {
     const index = this.channelMember.findIndex((member) => member.uid === uid);
     if (this.channelMember.length === 1) {
       this.userDontBeEmpty = true;
-      this.variableService.notifyMemberRemovedFromChannel();
       return;
     }
 
