@@ -21,6 +21,7 @@
         class="edit-profil-input"
         placeholder="{{ user.displayName }}"
         [(ngModel)]="displayName"
+        (ngModelChange)="checkFormInvalid()"
       />
       <div class="empty-emptyUserName" *ngIf="emptyUserName">
         <p>Name darf nicht leer sein!</p>
@@ -30,6 +31,6 @@
 
   <div class="edit-profil-btn-container">
     <button class="cancel" (click)="closeDialog()">Abbrechen</button>
-    <button class="safe" (click)="saveProfil()">Speichern</button>
+    <button class="safe" (click)="saveProfil()" [disabled]="!formInvalid">Speichern</button>
   </div>
 </div>

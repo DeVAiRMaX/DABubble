@@ -83,7 +83,7 @@ export class ChannelCreateOverlayComponent {
       return;
     }
 
-    if (currentUserUid) {
+    if (currentUserUid) {      
       this.firebaseService
         .createChannel(trimmedChannelName, this.description, currentUserUid)
         .subscribe({

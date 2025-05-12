@@ -448,7 +448,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
   openTaggingPerClick(event: Event) {
     const inputElement = event.target as HTMLElement;
     if (inputElement) {
-      inputElement.innerHTML = '@';
       this.openTagPeopleDialog();
     }
     this.lastInputValue = inputElement.innerHTML;
