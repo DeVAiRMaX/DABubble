@@ -5,7 +5,7 @@
   padding: 32px 30px;
   display: flex;
   gap: 25px;
-  overflow-y: scroll;
+  overflow-y: hidden;
   flex-direction: column;
   animation: slideIn 200ms ease-out-forwards;
 }
@@ -128,12 +128,12 @@
   display: flex;
   flex-direction: column;
   gap: 13px;
-  height: 100%;
+  max-height: calc(100% - 155px);
   opacity: 1;
   visibility: visible;
-  overflow: hidden;
+  overflow-y: auto;
   transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out, visibility 0s;
-
+  
   &.collapsed {
     height: 0;
     opacity: 0;
@@ -151,7 +151,7 @@
   align-items: center;
   gap: 15px;
   border-radius: 20px;
-  padding: 4px 25px;
+  padding: 4px 0 4px 25px;
   cursor: pointer;
   border-radius: 35px;
   transition: all 0.1s ease-in-out;

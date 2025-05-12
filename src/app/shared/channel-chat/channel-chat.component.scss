@@ -593,9 +593,8 @@
     color: #495057;
   }
 
-
-  &:hover .reactionOwner{
-   display: flex !important;
+  &:hover .reactionOwner {
+    display: flex !important;
   }
 }
 
@@ -973,7 +972,7 @@ emoji-picker {
     width: 100%;
     border: 1px solid #797ef3;
     border-radius: 8px;
-    padding: 8px 10px;
+    padding: 20px;
     font-family: inherit;
     font-size: 16px;
     resize: none;
@@ -1077,42 +1076,40 @@ emoji-picker {
   }
 }
 
-.reactionOwner{
+.reactionOwner {
   position: absolute;
   top: -113px;
-  display: none ;
+  display: none;
   min-width: 100px;
   width: max-content;
   z-index: 2;
   height: 112px;
   left: 22px;
- 
-;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   border-radius: 30px 30px 30px 0px;
   padding: 15px 10px;
-  background-color: #444DF2;
+  background-color: #444df2;
 
-  >.reactionOwnerUser{
-    font-family: 'Nunito';
-font-weight: 700;
-font-size: 18px;
-line-height: 100%;
-letter-spacing: 0%;
-color: white;
-margin-top: 5px;
-margin-bottom: 5px;
+  > .reactionOwnerUser {
+    font-family: "Nunito";
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: white;
+    margin-top: 5px;
+    margin-bottom: 5px;
   }
 
-  >span{
-    font-family: 'Nunito';
-font-weight: 400;
-font-size: 16px;
-line-height: 100%;
-letter-spacing: 0%;
-color: white;
-
+  > span {
+    font-family: "Nunito";
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    color: white;
   }
 }

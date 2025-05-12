@@ -18,6 +18,7 @@ export class EditProfilDialogComponent {
   user$: Observable<User | null>;
 
   displayName: string = '';
+  formInvalid: boolean = false;
 
   emptyUserName: boolean = false;
 
@@ -32,7 +33,7 @@ export class EditProfilDialogComponent {
   saveProfil() {
     const currentUser = this.authService.getCurrentUserUID();
 
-    if(this.displayName == ''){
+    if (this.displayName == '') {
       this.emptyUserName = true;
       return
     }
@@ -42,6 +43,14 @@ export class EditProfilDialogComponent {
       console.error('Current user not found.');
     }
     this.closeDialog();
+  }
+
+  checkFormInvalid() {
+    if (this.displayName === '') {
+      this.formInvalid = false;
+    } else {
+      this.formInvalid = true;
+    }
   }
 
 }
