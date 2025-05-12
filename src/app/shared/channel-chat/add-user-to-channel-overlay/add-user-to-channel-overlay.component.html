@@ -16,7 +16,11 @@
       (ngModelChange)="searchForUser(); checkFormInvalid()"
       (focus)="searchForUser()"
     />
-    <div class="result-user-list" *ngIf="searchingForUser && filteredUserData.length > 0" #userListContainer>
+    <div
+      class="result-user-list"
+      *ngIf="searchingForUser && filteredUserData.length > 0"
+      #userListContainer
+    >
       <div>
         <div
           class="result-user"
@@ -37,11 +41,22 @@
       >
         <img [src]="selectedUser.avatar" alt="user-icon" />
         <p>{{ selectedUser.displayName }}</p>
-        <span class="material-symbols-outlined" (click)="removeUser(selectedUser)">
+        <span
+          class="material-symbols-outlined"
+          (click)="removeUser(selectedUser)"
+        >
           close
-          </span>
+        </span>
       </div>
     </div>
   </div>
-  <button class="add-user-button" (click)="addUsersToChannel()" [disabled]="!formInvalid">Hinzufügen</button>
+  <button
+    class="add-user-button"
+    (click)="
+      addUsersToChannel(); this.variableService.notifyMemberAddedToChannel()
+    "
+    [disabled]="!formInvalid"
+  >
+    Hinzufügen
+  </button>
 </div>

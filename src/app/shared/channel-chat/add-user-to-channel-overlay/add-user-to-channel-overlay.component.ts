@@ -1,4 +1,11 @@
-import { Component, inject, ElementRef, HostListener, ViewChild, Inject } from '@angular/core';
+import {
+  Component,
+  inject,
+  ElementRef,
+  HostListener,
+  ViewChild,
+  Inject,
+} from '@angular/core';
 import { VariablesService } from '../../../variables.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
@@ -11,7 +18,7 @@ import { Channel } from '../../interfaces/channel';
   standalone: true,
   imports: [SharedModule],
   templateUrl: './add-user-to-channel-overlay.component.html',
-  styleUrl: './add-user-to-channel-overlay.component.scss'
+  styleUrl: './add-user-to-channel-overlay.component.scss',
 })
 export class AddUserToChannelOverlayComponent {
   searchingForUser: boolean = false;
@@ -29,9 +36,11 @@ export class AddUserToChannelOverlayComponent {
 
   private databaseService: FirebaseService = inject(FirebaseService);
 
-  constructor(private variableService: VariablesService, private dialogRef: MatDialogRef<AddUserToChannelOverlayComponent>, @Inject(MAT_DIALOG_DATA) public data: { channelKey: string }) {
-
-  }
+  constructor(
+    public variableService: VariablesService,
+    private dialogRef: MatDialogRef<AddUserToChannelOverlayComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { channelKey: string }
+  ) {}
 
   async ngOnInit(): Promise<void> {
     const userData = await this.databaseService.getDatabaseData();
@@ -41,15 +50,15 @@ export class AddUserToChannelOverlayComponent {
       this.filteredUserData = this.userData;
     }
 
-    this.databaseService.getChannel(this.data.channelKey).subscribe(channel => {
-      const channelDataJson = channel as Channel;
-      this.channelData.push(channelDataJson);
-    });
+    this.databaseService
+      .getChannel(this.data.channelKey)
+      .subscribe((channel) => {
+        const channelDataJson = channel as Channel;
+        this.channelData.push(channelDataJson);
+      });
 
     console.log(this.channelData);
-
   }
-
 
   searchForUser(): void {
     this.searchingForUser = true;
@@ -59,12 +68,20 @@ export class AddUserToChannelOverlayComponent {
     const currentChannel = this.channelData[0];
     const currentMembers = currentChannel?.members || [];
 
-    this.filteredUserData = this.userData.filter(user => {
+    this.filteredUserData = this.userData.filter((user) => {
       const isNotMember = !currentMembers.includes(user.uid);
-      const isNotSelected = !this.selectedUser.some(selected => selected.uid === user.uid);
-      const matchesSearch = user.displayName?.toLowerCase().includes(searchTerm);
+      const isNotSelected = !this.selectedUser.some(
+        (selected) => selected.uid === user.uid
+      );
+      const matchesSearch = user.displayName
+        ?.toLowerCase()
+        .includes(searchTerm);
 
-      return isNotMember && isNotSelected && (searchTerm.length === 0 || matchesSearch);
+      return (
+        isNotMember &&
+        isNotSelected &&
+        (searchTerm.length === 0 || matchesSearch)
+      );
     });
 
     if (this.filteredUserData.length === 0) {
@@ -89,8 +106,12 @@ export class AddUserToChannelOverlayComponent {
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent): void {
-    const clickedInsideInput = this.userInputRef?.nativeElement.contains(event.target);
-    const clickedInsideList = this.userListRef?.nativeElement.contains(event.target);
+    const clickedInsideInput = this.userInputRef?.nativeElement.contains(
+      event.target
+    );
+    const clickedInsideList = this.userListRef?.nativeElement.contains(
+      event.target
+    );
 
     if (!clickedInsideInput && !clickedInsideList) {
       this.searchingForUser = false;
@@ -104,11 +125,14 @@ export class AddUserToChannelOverlayComponent {
 
   async addUsersToChannel(): Promise<void> {
     for (const user of this.selectedUser) {
-      await this.databaseService.updateChannelMember(this.data.channelKey, user.uid);
+      await this.databaseService
+        .updateChannelMember(this.data.channelKey, user.uid)
+        .then(() => {
+          this.variableService.notifyMemberAddedToChannel();
+        });
     }
     this.closeDialog();
   }
-
 
   closeDialog() {
     this.dialogRef.close(AddUserToChannelOverlayComponent);
@@ -117,5 +141,4 @@ export class AddUserToChannelOverlayComponent {
   hideAddUserToChannelOverlay() {
     this.variableService.toggleAddUserToChannelOverlay();
   }
-
 }

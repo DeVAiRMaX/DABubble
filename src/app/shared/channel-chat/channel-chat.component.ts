@@ -77,6 +77,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private readonly SUB_GROUP_NAME = 'channelChatSubs';
   private readonly SUB_MESSAGES = 'channelMessages';
   private memberRemovedSubject: Subscription | undefined;
+  private memberAddedToChannel: Subscription | undefined;
 
   isShowingAllReactions = new Map<string, boolean>();
   isMobileView: boolean = window.innerWidth < 800;
@@ -130,12 +131,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
     this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
 
-    this.memberRemovedSubject =
-      this.variableService.memberRemovedFromChannel$.subscribe(() => {
-        if (this.authService.getCurrentUserUID()) {
-          this.getChannelMembers();
-        }
-      });
+    // this.memberRemovedSubject =
+    //   this.variableService.memberRemovedFromChannel$.subscribe(() => {
+    //     if (this.authService.getCurrentUserUID()) {
+    //       this.getChannelMembers();
+    //     }
+    //   });
 
     this.subscribeToMemberChanges();
     this.onResize();
@@ -150,17 +151,23 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   subscribeToMemberChanges(): void {
     this.memberRemovedSubject?.unsubscribe();
+    this.memberAddedToChannel?.unsubscribe();
 
     this.memberRemovedSubject =
       this.variableService.memberRemovedFromChannel$.subscribe(() => {
-        console.log(
-          '[ChannelChat] Signal: Mitglied entfernt. Lade Mitglieder neu...'
-        );
         if (this.channel?.key) {
           this.getChannelMembers();
         }
       });
     this.subService.add(this.memberRemovedSubject, this.SUB_GROUP_NAME);
+
+    this.memberAddedToChannel =
+      this.variableService.memberAddedToChannel$.subscribe(() => {
+        if (this.channel?.key) {
+          this.getChannelMembers();
+        }
+      });
+    this.subService.add(this.memberAddedToChannel, this.SUB_GROUP_NAME);
   }
 
   scrollToBottom(): void {
