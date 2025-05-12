@@ -67,7 +67,7 @@ export class ChannelCreateOverlayComponent {
   }
 
   checkFormInvalid() {
-    if (this.channelName === '') {
+    if (this.channelName.trim() === '') {
       this.formInvalid = false;
     } else {
       this.formInvalid = true;

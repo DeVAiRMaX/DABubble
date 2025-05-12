@@ -214,12 +214,12 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   sendThreadMessage(): void {
-    const text = this.threadMessageText.trim();
+    const text = this.threadMessageText.replace(/\s|\u00A0/g, '');
+    console.log(this.threadMessageText);
     if (
       !text ||
       !this.currentThreadKey ||
-      !this.currentUser ||
-      text === '&nbsp;'
+      !this.currentUser
     ) {
       console.warn('Kann Thread-Nachricht nicht senden: Fehlende Daten');
       return;
@@ -588,7 +588,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       range.collapse(true);
 
       this.savedRange = range.cloneRange();
-      this.threadMessageText = input.innerHTML;
+      this.threadMessageText = input.textContent || '';
       input.focus();
     } catch (error) {
       console.error('Error inserting emoji:', error);
@@ -598,7 +598,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   onInput(event: Event): void {
     this.checkForMention(event);
     const target = event.target as HTMLElement;
-    this.threadMessageText = target.innerHTML;
+    this.threadMessageText = target.innerText || '';
   }
 
   onEnter(event: Event): void {
@@ -608,7 +608,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   onContentChanged(event: Event): void {
     const el = this.editableDiv.nativeElement;
-    this.threadMessageText = el.innerHTML || '';
+    this.threadMessageText = el.textContent || '';
     this.checkForMention(event);
     this.editableDiv.nativeElement.focus();
   }
