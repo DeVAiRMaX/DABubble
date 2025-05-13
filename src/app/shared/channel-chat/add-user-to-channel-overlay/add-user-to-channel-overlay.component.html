@@ -25,7 +25,7 @@
         <div
           class="result-user"
           *ngFor="let user of filteredUserData"
-          (click)="selectUser(user)"
+          (click)="selectUser(user); checkFormInvalid()"
         >
           <img [src]="user.avatar" alt="user-icon" />
           <p>{{ user.displayName }}</p>

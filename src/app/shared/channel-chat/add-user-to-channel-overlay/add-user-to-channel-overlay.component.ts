@@ -90,10 +90,11 @@ export class AddUserToChannelOverlayComponent {
   }
 
   checkFormInvalid() {
-    if (this.userInput === '') {
-      this.formInvalid = false;
-    } else {
+    if (this.userInput === '' && this.selectedUser.length > 0) {
+      console.log(this.selectedUser.length);
       this.formInvalid = true;
+    } else {
+      this.formInvalid = false;
     }
   }
 
@@ -121,6 +122,7 @@ export class AddUserToChannelOverlayComponent {
   removeUser(removedUser: any) {
     this.selectedUser.splice(this.selectedUser.indexOf(removedUser), 1);
     this.filteredUserData.push(removedUser);
+    this.checkFormInvalid();
   }
 
   async addUsersToChannel(): Promise<void> {
