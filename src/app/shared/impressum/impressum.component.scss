@@ -162,3 +162,15 @@
       color: white;
     }
   }
+
+  .impressum-text{
+    max-width: 698px;
+    padding: 40px;
+    background-color: white;
+    border-radius: 30px;
+    
+
+    >p>strong{
+      color: #444df2;
+    }
+  }
