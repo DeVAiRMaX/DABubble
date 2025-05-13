@@ -46,7 +46,7 @@ export class EditProfilDialogComponent {
   }
 
   checkFormInvalid() {
-    if (this.displayName === '') {
+    if (this.displayName.trim() === '') {
       this.formInvalid = false;
     } else {
       this.formInvalid = true;
