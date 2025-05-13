@@ -50,6 +50,14 @@
             >
               <span>{{ reaction.emoji }}</span>
               <p>{{ reaction.count }}</p>
+
+              <div class="reactionOwner">
+                <div>{{ reaction.emoji }}</div>
+                <div class="reactionOwnerUser">
+                  {{ reaction.userNames.join(", ") }}
+                </div>
+                <span>hat reagiert</span>
+              </div>
             </div>
 
             <button
@@ -153,6 +161,14 @@
             >
               <span>{{ reaction.emoji }}</span>
               <p>{{ reaction.count }}</p>
+
+              <div class="reactionOwner">
+                <div>{{ reaction.emoji }}</div>
+                <div class="reactionOwnerUser">
+                  {{ reaction.userNames.join(", ") }}
+                </div>
+                <span>hat reagiert</span>
+              </div>
             </div>
 
             <button
@@ -267,10 +283,17 @@
               *ngFor="let reaction of getDisplayedReactions(threadMsg)"
               (click)="toggleReaction(threadMsg, reaction.emoji)"
               [class.reacted-by-user]="reaction.reactedByUser"
-              matTooltipPosition="above"
             >
               <span>{{ reaction.emoji }}</span>
               <p>{{ reaction.count }}</p>
+
+              <div class="reactionOwner">
+                <div>{{ reaction.emoji }}</div>
+                <div class="reactionOwnerUser">
+                  {{ reaction.userNames.join(", ") }}
+                </div>
+                <span>hat reagiert</span>
+              </div>
             </div>
 
             <button
