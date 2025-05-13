@@ -36,15 +36,21 @@
 }
 
 .dialog-edit-profil-container-avatar {
-  width: 100%;
+  width: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
+  position: relative;
   img {
-    width: 200px;
-    height: 200px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
   }
+   &:hover .changeProfilePic{
+      display: flex !important;
+      cursor: pointer;
+    }
 }
 
 .dialog-edit-profil-container-content {
@@ -151,3 +157,27 @@
     color: red;
   }
 }
+
+.changeProfilePic{
+  position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(236, 238, 254,0.4);
+    border-radius: 100px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    
+}
+
+
+.changePictureIcon{
+background: url("/assets/img/icons/editPencil.png");
+width: 100%;
+    height: 100%;
+    border-radius: 100px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 25px;
+}
+

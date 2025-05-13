@@ -8,6 +8,9 @@
 
   <div class="dialog-edit-profil-container-avatar">
     <img src="{{ user.avatar }}" alt="avatar" />
+    <div class="changeProfilePic">
+      <div class="changePictureIcon"></div>
+    </div>
   </div>
 
   <div class="dialog-edit-profil-container-content">
@@ -31,6 +34,8 @@
 
   <div class="edit-profil-btn-container">
     <button class="cancel" (click)="closeDialog()">Abbrechen</button>
-    <button class="safe" (click)="saveProfil()" [disabled]="!formInvalid">Speichern</button>
+    <button class="safe" (click)="saveProfil()" [disabled]="!formInvalid">
+      Speichern
+    </button>
   </div>
 </div>
