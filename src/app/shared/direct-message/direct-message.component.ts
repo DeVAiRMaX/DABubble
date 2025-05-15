@@ -21,12 +21,12 @@ import { Observable, of, from } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
-import { SubService } from '../services/sub.service'; // Stelle sicher, dass der Pfad korrekt ist
-import { VariablesService } from '../../variables.service'; // Stelle sicher, dass der Pfad korrekt ist
+import { SubService } from '../services/sub.service';
+import { VariablesService } from '../../variables.service';
 import { User } from '../interfaces/user';
 import { Message, Reaction, GroupedReaction } from '../interfaces/message';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-keyboard.component'; // Pfad anpassen
+import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-keyboard.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
@@ -72,11 +72,8 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
 
   private savedRange: Range | null = null;
 
-  // Eindeutige Keys für Subscriptions
   private readonly SUB_AUTH_DM = 'directMessageAuthUser';
   private readonly SUB_MESSAGES_DM = 'directMessageMessagesStream';
-  // SUB_GROUP_NAME wird nicht mehr benötigt, wenn add keine Gruppen unterstützt
-  // private readonly SUB_GROUP_NAME = 'directMessageSubs';
 
   isShowingAllReactions = new Map<string, boolean>();
 
@@ -89,8 +86,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         this.initializeConversation();
       }
     });
-    // KORREKTUR: subService.add erwartet 1-2 Argumente.
-    // Wir nehmen an: add(subscription: Subscription, key?: string)
     this.subService.add(authSub, this.SUB_AUTH_DM);
   }
 
@@ -106,13 +101,8 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // KORREKTUR: Alle bekannten Subscriptions einzeln abmelden,
-    // da add keine Gruppen zu unterstützen scheint.
     this.subService.unsubscribeGroup(this.SUB_AUTH_DM);
     this.subService.unsubscribeGroup(this.SUB_MESSAGES_DM);
-    // Falls dein SubService eine Methode hat, um alle Subscriptions auf einmal zu löschen,
-    // die KEINEN Gruppennamen erfordert, könntest du diese hier verwenden.
-    // z.B. this.subService.unsubscribeAll(); (hypothetisch)
   }
 
   ngAfterViewInit() {
@@ -129,9 +119,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         this.dmBody.nativeElement.scrollTop =
           this.dmBody.nativeElement.scrollHeight;
       }
-    } catch (err) {
-      // console.warn('[DirectMessage] Scroll failed', err);
-    }
+    } catch (err) {}
   }
 
   onNewMessageReceived() {
@@ -145,7 +133,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         this.currentUser.uid,
         this.otherUser.uid
       );
-      this.conversationId = newConversationId; // Immer setzen
+      this.conversationId = newConversationId;
       this.loadMessages(this.conversationId);
 
       this.messageText = '';
@@ -162,7 +150,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     this.dmMessages$ = of([]);
     this.isLoading = false;
     this.cancelEdit();
-    // KORREKTUR: Spezifische Subscription abmelden
     this.subService.unsubscribeGroup(this.SUB_MESSAGES_DM);
     this.cdRef.markForCheck();
   }
@@ -172,7 +159,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadMessages(conversationId: string | null): void {
-    // KORREKTUR: Alte Subscription mit ihrem Key abmelden
     this.subService.unsubscribeGroup(this.SUB_MESSAGES_DM);
 
     if (!conversationId) {
@@ -206,7 +192,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     const messagesSub = this.dmMessages$.subscribe(() => {
       this.onNewMessageReceived();
     });
-    // KORREKTUR: subService.add mit maximal 2 Argumenten
     this.subService.add(messagesSub, this.SUB_MESSAGES_DM);
   }
 
@@ -359,11 +344,11 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     message: Message
   ): string => {
     const reactionsKey = message.reactions
-      ?.map((r) => r.userId + r.emoji) // Sicherer Zugriff auf reactions
+      ?.map((r) => r.userId + r.emoji)
       .join('_');
     return `${message.key}-${this.editingMessageKey === message.key}-${
       message.editedAt
-    }-${reactionsKey || ''}`; // Fallback für leere Reactions
+    }-${reactionsKey || ''}`;
   };
 
   startEditing(message: Message): void {
@@ -396,15 +381,14 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   saveEdit(message: Message): void {
     const newText = this.editMessageText.trim();
     if (
-      !this.editingMessageKey || // Ist der Schlüssel der zu bearbeitenden Nachricht vorhanden?
-      !this.conversationId || // Ist die Konversations-ID vorhanden?
-      !newText || // Ist der neue Text nach dem Trimmen leer?
-      newText === message.message // Ist der neue Text identisch mit dem alten Text?
+      !this.editingMessageKey ||
+      !this.conversationId ||
+      !newText ||
+      newText === message.message
     ) {
       console.warn(
         '[DirectMessage] Bedingungen für Update nicht erfüllt oder Text unverändert. Bearbeitung wird abgebrochen.',
         {
-          // DEBUG
           editingMessageKey: this.editingMessageKey,
           conversationId: this.conversationId,
           newText: newText,
@@ -412,30 +396,21 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         }
       );
       this.cancelEdit();
-      return; // WICHTIG: Hier wird die Funktion verlassen
+      return;
     }
 
-    console.log(
-      '[DirectMessage] Versuch, firebaseService.updateDirectMessage aufzurufen mit:',
-      this.conversationId,
-      this.editingMessageKey,
-      newText
-    ); // DEBUG
     this.firebaseService
       .updateDirectMessage(this.conversationId, this.editingMessageKey, newText)
       .subscribe({
         next: () => {
-          console.log(
-            '[DirectMessage] Nachricht erfolgreich in Firebase aktualisiert. Bearbeitung wird abgebrochen.'
-          ); // DEBUG
           this.cancelEdit();
         },
         error: (err) => {
           console.error(
-            '[DirectMessage] Fehler beim Speichern der Bearbeitung (im subscribe error Block):', // DEBUG
+            '[DirectMessage] Fehler beim Speichern der Bearbeitung (im subscribe error Block):',
             err
           );
-          this.cancelEdit(); // UI-Status auch bei Fehler zurücksetzen
+          this.cancelEdit();
         },
       });
   }
@@ -446,8 +421,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     this.cdRef.markForCheck();
   }
 
-  // Methode ist im TS korrekt typisiert. Der Fehler NG4/NG5002 kommt vom Template-Parser.
-  // Die Entfernung der Typ-Assertion im Template sollte dies beheben.
   handleEditEnter(event: KeyboardEvent, message: Message): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -458,8 +431,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   handleKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      // Den aktuellen Text aus dem Input-Feld holen, falls der Nutzer nicht "Enter" im Edit-Modus drückt
-      // this.messageText wird bereits durch onInput() aktualisiert
       this.sendDirectMessage();
     }
   }
