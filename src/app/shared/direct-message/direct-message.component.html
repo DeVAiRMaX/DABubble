@@ -19,7 +19,8 @@
       *ngFor="
         let message of dmMessages$ | async;
         let i = index;
-        let isFirst = first
+        let isFirst = first;
+        trackBy: trackByMessageKey
       "
     >
       <div
@@ -35,7 +36,11 @@
 
       <div
         class="dm-message-container"
-        [ngClass]="{ ownMessage: isOwnMessage(message) }"
+        [attr.data-message-key]="message.key"
+        [ngClass]="{
+          ownMessage: isOwnMessage(message),
+          editing: editingMessageKey === message.key
+        }"
       >
         <div
           class="message-layout othersMessage"
@@ -60,7 +65,6 @@
                 >(bearbeitet)</span
               >
             </div>
-
             <div
               class="message-footer other-footer msg-reaction-container"
               *ngIf="message.reactions && message.reactions.length > 0"
@@ -73,7 +77,6 @@
               >
                 <span>{{ reaction.emoji }}</span>
                 <p>{{ reaction.count }}</p>
-
                 <div class="reactionOwner">
                   <div>{{ reaction.emoji }}</div>
                   <div class="reactionOwnerUser">
@@ -82,7 +85,6 @@
                   <span>hat reagiert</span>
                 </div>
               </div>
-
               <button
                 class="reaction-overflow-btn"
                 *ngIf="
@@ -93,7 +95,6 @@
               >
                 +{{ getTotalGroupedReactionsCount(message) - 7 }} weitere
               </button>
-
               <button
                 class="reaction-show-less-btn"
                 *ngIf="
@@ -104,7 +105,6 @@
               >
                 Weniger anzeigen
               </button>
-
               <span
                 class="material-symbols-outlined add_reaction_btn"
                 (click)="openEmojiPickerForReaction(message)"
@@ -135,6 +135,7 @@
             ></button>
             <button
               class="reactionMenuBtn editMsg"
+              (click)="startEditing(message)"
               matTooltip="Nachricht bearbeiten"
               matTooltipPosition="above"
             ></button>
@@ -144,15 +145,42 @@
               <h3 class="msg-user-name">Du</h3>
               <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
             </div>
-            <div class="msg-bubble msg-right">
+
+            <div
+              class="msg-bubble msg-right"
+              *ngIf="editingMessageKey !== message.key"
+            >
               <p>{{ message.message }}</p>
               <span class="edited-indicator" *ngIf="message.editedAt"
                 >(bearbeitet)</span
               >
             </div>
+
+            <div
+              class="edit-message-input-container"
+              *ngIf="editingMessageKey === message.key"
+            >
+              <textarea
+                class="edit-textbox"
+                #editInput
+                [(ngModel)]="editMessageText"
+                (keydown.escape)="cancelEdit()"
+                (keydown.enter)="handleEditEnter($any($event), message)"
+                rows="3"
+              ></textarea>
+              <div class="edit-actions">
+                <button (click)="cancelEdit()">Abbrechen</button>
+                <button (click)="saveEdit(message)">Speichern</button>
+              </div>
+            </div>
+
             <div
               class="message-footer own-footer msg-reaction-container"
-              *ngIf="message.reactions && message.reactions.length > 0"
+              *ngIf="
+                message.reactions &&
+                message.reactions.length > 0 &&
+                editingMessageKey !== message.key
+              "
             >
               <div
                 class="reaction"
@@ -162,7 +190,6 @@
               >
                 <span>{{ reaction.emoji }}</span>
                 <p>{{ reaction.count }}</p>
-
                 <div class="reactionOwner">
                   <div>{{ reaction.emoji }}</div>
                   <div class="reactionOwnerUser">

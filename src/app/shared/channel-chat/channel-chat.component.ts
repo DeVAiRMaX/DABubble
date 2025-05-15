@@ -131,13 +131,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
     this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
 
-    // this.memberRemovedSubject =
-    //   this.variableService.memberRemovedFromChannel$.subscribe(() => {
-    //     if (this.authService.getCurrentUserUID()) {
-    //       this.getChannelMembers();
-    //     }
-    //   });
-
     this.subscribeToMemberChanges();
     this.onResize();
   }

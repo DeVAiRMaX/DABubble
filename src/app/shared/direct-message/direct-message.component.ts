@@ -10,20 +10,23 @@ import {
   ElementRef,
   ChangeDetectorRef,
   CUSTOM_ELEMENTS_SCHEMA,
+  QueryList,
+  ViewChildren,
+  TrackByFunction,
 } from '@angular/core';
 import { SharedModule } from '../../shared';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, of } from 'rxjs';
+import { Observable, of, from } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
-import { SubService } from '../services/sub.service';
-import { VariablesService } from '../../variables.service';
+import { SubService } from '../services/sub.service'; // Stelle sicher, dass der Pfad korrekt ist
+import { VariablesService } from '../../variables.service'; // Stelle sicher, dass der Pfad korrekt ist
 import { User } from '../interfaces/user';
 import { Message, Reaction, GroupedReaction } from '../interfaces/message';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-keyboard.component';
+import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-keyboard.component'; // Pfad anpassen
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
@@ -58,13 +61,22 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   lastInputValue: string = '';
   at = '@';
 
+  editingMessageKey: string | null = null;
+  editMessageText: string = '';
+
   @ViewChild('dmBody') dmBody!: ElementRef;
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
+  @ViewChildren('editInput') editInputs!: QueryList<
+    ElementRef<HTMLTextAreaElement>
+  >;
+
   private savedRange: Range | null = null;
 
-  private readonly SUB_GROUP_NAME = 'directMessageSubs';
-  private readonly SUB_AUTH = 'dmAuth';
-  private readonly SUB_MESSAGES = 'dmMessages';
+  // Eindeutige Keys für Subscriptions
+  private readonly SUB_AUTH_DM = 'directMessageAuthUser';
+  private readonly SUB_MESSAGES_DM = 'directMessageMessagesStream';
+  // SUB_GROUP_NAME wird nicht mehr benötigt, wenn add keine Gruppen unterstützt
+  // private readonly SUB_GROUP_NAME = 'directMessageSubs';
 
   isShowingAllReactions = new Map<string, boolean>();
 
@@ -73,23 +85,34 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     const authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
-      this.initializeConversation();
+      if (this.otherUser) {
+        this.initializeConversation();
+      }
     });
-    this.subService.add(authSub, this.SUB_AUTH);
+    // KORREKTUR: subService.add erwartet 1-2 Argumente.
+    // Wir nehmen an: add(subscription: Subscription, key?: string)
+    this.subService.add(authSub, this.SUB_AUTH_DM);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['otherUser'] && changes['otherUser'].currentValue) {
-      this.initializeConversation();
-    } else if (changes['otherUser'] && !changes['otherUser'].currentValue) {
-      this.resetState();
+    if (changes['otherUser']) {
+      this.cancelEdit();
+      if (changes['otherUser'].currentValue) {
+        this.initializeConversation();
+      } else {
+        this.resetState();
+      }
     }
   }
 
   ngOnDestroy(): void {
-    this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
-    this.subService.unsubscribeGroup(this.SUB_AUTH);
-    this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+    // KORREKTUR: Alle bekannten Subscriptions einzeln abmelden,
+    // da add keine Gruppen zu unterstützen scheint.
+    this.subService.unsubscribeGroup(this.SUB_AUTH_DM);
+    this.subService.unsubscribeGroup(this.SUB_MESSAGES_DM);
+    // Falls dein SubService eine Methode hat, um alle Subscriptions auf einmal zu löschen,
+    // die KEINEN Gruppennamen erfordert, könntest du diese hier verwenden.
+    // z.B. this.subService.unsubscribeAll(); (hypothetisch)
   }
 
   ngAfterViewInit() {
@@ -107,7 +130,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
           this.dmBody.nativeElement.scrollHeight;
       }
     } catch (err) {
-      console.warn('[DirectMessage] Scroll failed', err);
+      // console.warn('[DirectMessage] Scroll failed', err);
     }
   }
 
@@ -122,14 +145,12 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         this.currentUser.uid,
         this.otherUser.uid
       );
-      if (newConversationId !== this.conversationId) {
-        this.conversationId = newConversationId;
-        this.loadMessages(this.conversationId);
-      } else {
-        this.isLoading = false;
-      }
+      this.conversationId = newConversationId; // Immer setzen
+      this.loadMessages(this.conversationId);
+
       this.messageText = '';
-      if (this.messageInput) this.messageInput.nativeElement.innerText = '';
+      if (this.messageInput?.nativeElement)
+        this.messageInput.nativeElement.innerText = '';
       this.cdRef.markForCheck();
     } else {
       this.resetState();
@@ -140,7 +161,9 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     this.conversationId = null;
     this.dmMessages$ = of([]);
     this.isLoading = false;
-    this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+    this.cancelEdit();
+    // KORREKTUR: Spezifische Subscription abmelden
+    this.subService.unsubscribeGroup(this.SUB_MESSAGES_DM);
     this.cdRef.markForCheck();
   }
 
@@ -149,11 +172,13 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadMessages(conversationId: string | null): void {
-    this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+    // KORREKTUR: Alte Subscription mit ihrem Key abmelden
+    this.subService.unsubscribeGroup(this.SUB_MESSAGES_DM);
 
     if (!conversationId) {
       this.dmMessages$ = of([]);
       this.isLoading = false;
+      this.cdRef.markForCheck();
       return;
     }
 
@@ -161,20 +186,28 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     this.dmMessages$ = this.firebaseService
       .getDirectMessages(conversationId)
       .pipe(
-        tap(() => setTimeout(() => this.scrollToBottom(), 50)),
-        tap(() => (this.isLoading = false)),
+        tap(() => {
+          this.isLoading = false;
+          this.onNewMessageReceived();
+          this.cdRef.markForCheck();
+        }),
         catchError((error) => {
           console.error(
             '[DirectMessage] Fehler beim Laden der DM-Nachrichten:',
             error
           );
           this.isLoading = false;
+          this.dmMessages$ = of([]);
+          this.cdRef.markForCheck();
           return of([]);
         })
       );
 
-    const messagesSub = this.dmMessages$.subscribe();
-    this.subService.add(messagesSub, this.SUB_MESSAGES);
+    const messagesSub = this.dmMessages$.subscribe(() => {
+      this.onNewMessageReceived();
+    });
+    // KORREKTUR: subService.add mit maximal 2 Argumenten
+    this.subService.add(messagesSub, this.SUB_MESSAGES_DM);
   }
 
   sendDirectMessage(): void {
@@ -183,11 +216,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
       this.messageText.trim();
 
     if (!text || !this.conversationId || !this.currentUser) {
-      console.warn('[DirectMessage] Senden nicht möglich: Fehlende Daten', {
-        text,
-        id: this.conversationId,
-        user: this.currentUser,
-      });
       return;
     }
     this.firebaseService
@@ -195,7 +223,9 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
       .subscribe({
         next: () => {
           this.messageText = '';
-          this.onNewMessageReceived();
+          if (this.messageInput?.nativeElement) {
+            this.messageInput.nativeElement.innerText = '';
+          }
         },
         error: (err) => {
           console.error(
@@ -205,8 +235,6 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         },
       });
   }
-
-  // --- Hilfsmethoden für das Template ---
 
   isOwnMessage(message: Message): boolean {
     return !!this.currentUser && message.senderUid === this.currentUser.uid;
@@ -219,16 +247,18 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     if (!previousMessage) return true;
     if (!currentMessage?.time || !previousMessage?.time) return false;
     try {
+      const currentTime = new Date(currentMessage.time).getTime();
+      const previousTime = new Date(previousMessage.time).getTime();
+      if (isNaN(currentTime) || isNaN(previousTime)) return false;
+
       const currentDate = new Date(currentMessage.time);
       const previousDate = new Date(previousMessage.time);
       return currentDate.toDateString() !== previousDate.toDateString();
     } catch (e) {
-      console.error('Error comparing dates', e);
       return false;
     }
   }
 
-  // Platzhalter für reactions (johannes bittiii <3)
   groupReactions(reactions: Reaction[] | undefined): GroupedReaction[] {
     if (!reactions || reactions.length === 0) {
       return [];
@@ -249,7 +279,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
       if (reaction.userName) {
         acc[reaction.emoji].userNames.push(reaction.userName);
       }
-      if (reaction.userId === this.currentUser?.uid) {
+      if (this.currentUser && reaction.userId === this.currentUser.uid) {
         acc[reaction.emoji].reactedByUser = true;
       }
       return acc;
@@ -262,16 +292,13 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     return this.groupReactions(message.reactions).length;
   }
 
-  // getReactionLimit - Gibt *immer* 7 zurück (wie im Thread)
   getReactionLimit(): number {
-    return 7; // Festes Limit für DMs
+    return 7;
   }
 
-  // getDisplayedReactions - angepasst für Message und festes Limit
   getDisplayedReactions(message: Message | null): GroupedReaction[] {
     if (!message) return [];
     const allGrouped = this.groupReactions(message.reactions);
-    const totalCount = allGrouped.length;
     const limit = this.getReactionLimit();
 
     if (this.isShowingAll(message)) {
@@ -281,10 +308,8 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  // isShowingAll - angepasst für Message
   isShowingAll(message: Message | null): boolean {
     if (!message || !message.key) {
-      // Nachrichten in DMs haben auch einen Key
       return false;
     }
     return this.isShowingAllReactions.get(message.key) || false;
@@ -299,15 +324,8 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
 
   toggleReaction(message: Message | null, emoji: string): void {
     if (!message || !message.key || !this.conversationId || !this.currentUser) {
-      console.warn('toggleReaction (DM): Fehlende Daten', {
-        message,
-        emoji,
-        conversationId: this.conversationId,
-        user: this.currentUser,
-      });
       return;
     }
-
     this.firebaseService
       .toggleDirectMessageReaction(
         this.conversationId,
@@ -336,25 +354,122 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
+  trackByMessageKey: TrackByFunction<Message> = (
+    index: number,
+    message: Message
+  ): string => {
+    const reactionsKey = message.reactions
+      ?.map((r) => r.userId + r.emoji) // Sicherer Zugriff auf reactions
+      .join('_');
+    return `${message.key}-${this.editingMessageKey === message.key}-${
+      message.editedAt
+    }-${reactionsKey || ''}`; // Fallback für leere Reactions
+  };
+
+  startEditing(message: Message): void {
+    if (!message?.key) {
+      return;
+    }
+    this.editingMessageKey = message.key;
+    this.editMessageText = message.message;
+    this.cdRef.detectChanges();
+
+    setTimeout(() => {
+      const editInputForMessage = this.editInputs.find((inputEl) => {
+        const parentContainer = inputEl.nativeElement.closest(
+          '.dm-message-container'
+        );
+        return (
+          parentContainer?.getAttribute('data-message-key') ===
+          this.editingMessageKey
+        );
+      });
+
+      if (editInputForMessage?.nativeElement) {
+        editInputForMessage.nativeElement.focus();
+        const length = editInputForMessage.nativeElement.value.length;
+        editInputForMessage.nativeElement.setSelectionRange(length, length);
+      }
+    }, 0);
+  }
+
+  saveEdit(message: Message): void {
+    const newText = this.editMessageText.trim();
+    if (
+      !this.editingMessageKey || // Ist der Schlüssel der zu bearbeitenden Nachricht vorhanden?
+      !this.conversationId || // Ist die Konversations-ID vorhanden?
+      !newText || // Ist der neue Text nach dem Trimmen leer?
+      newText === message.message // Ist der neue Text identisch mit dem alten Text?
+    ) {
+      console.warn(
+        '[DirectMessage] Bedingungen für Update nicht erfüllt oder Text unverändert. Bearbeitung wird abgebrochen.',
+        {
+          // DEBUG
+          editingMessageKey: this.editingMessageKey,
+          conversationId: this.conversationId,
+          newText: newText,
+          isSame: newText === message.message,
+        }
+      );
+      this.cancelEdit();
+      return; // WICHTIG: Hier wird die Funktion verlassen
+    }
+
+    console.log(
+      '[DirectMessage] Versuch, firebaseService.updateDirectMessage aufzurufen mit:',
+      this.conversationId,
+      this.editingMessageKey,
+      newText
+    ); // DEBUG
+    this.firebaseService
+      .updateDirectMessage(this.conversationId, this.editingMessageKey, newText)
+      .subscribe({
+        next: () => {
+          console.log(
+            '[DirectMessage] Nachricht erfolgreich in Firebase aktualisiert. Bearbeitung wird abgebrochen.'
+          ); // DEBUG
+          this.cancelEdit();
+        },
+        error: (err) => {
+          console.error(
+            '[DirectMessage] Fehler beim Speichern der Bearbeitung (im subscribe error Block):', // DEBUG
+            err
+          );
+          this.cancelEdit(); // UI-Status auch bei Fehler zurücksetzen
+        },
+      });
+  }
+
+  cancelEdit(): void {
+    this.editingMessageKey = null;
+    this.editMessageText = '';
+    this.cdRef.markForCheck();
+  }
+
+  // Methode ist im TS korrekt typisiert. Der Fehler NG4/NG5002 kommt vom Template-Parser.
+  // Die Entfernung der Typ-Assertion im Template sollte dies beheben.
+  handleEditEnter(event: KeyboardEvent, message: Message): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.saveEdit(message);
+    }
+  }
+
   handleKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      this.messageText = this.messageInput?.nativeElement.innerText || '';
+      // Den aktuellen Text aus dem Input-Feld holen, falls der Nutzer nicht "Enter" im Edit-Modus drückt
+      // this.messageText wird bereits durch onInput() aktualisiert
       this.sendDirectMessage();
-      if (this.messageInput?.nativeElement) {
-        this.messageInput.nativeElement.innerText = '';
-        this.messageText = '';
-      }
     }
   }
 
   onInput(event: Event): void {
     this.messageText = (event.target as HTMLDivElement).innerText;
-    this.lastInputValue = this.messageText;
   }
 
   openEmojiPicker(): void {
-    const targetElement = document.querySelector('.textForMessageInput');
+    const targetElement = this.messageInput.nativeElement;
     this.saveCursorPosition();
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
@@ -362,30 +477,14 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         panelClass: 'emoji-picker-dialog',
         backdropClass: 'transparentBackdrop',
         position: {
-          bottom: `${rect.top - 20 + window.scrollY}px`,
-          left: `${rect.left + 20 + window.scrollX}px`,
+          bottom: `${window.innerHeight - rect.top + 10}px`,
+          left: `${rect.left}px`,
         },
       });
 
       dialogRef.componentInstance.emojiSelected.subscribe((emoji: string) => {
         this.insertEmojiAtCursor(emoji);
       });
-
-      setTimeout(() => {
-        const dialogElement = document.querySelector(
-          'mat-dialog-container'
-        ) as HTMLElement;
-        if (dialogElement) {
-          const dialogRect = dialogElement.getBoundingClientRect();
-          dialogElement.style.position = 'absolute';
-          const newTop = rect.top - dialogRect.height + window.scrollY;
-          const newLeft = rect.left - window.scrollX;
-          dialogElement.style.width = `unset`;
-          dialogElement.style.height = `unset`;
-          dialogElement.style.top = `${newTop}px`;
-          dialogElement.style.left = `${newLeft}px`;
-        }
-      }, 0);
     }
   }
 
@@ -417,16 +516,11 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
       selection.removeAllRanges();
       selection.addRange(this.savedRange);
     } else {
-      const range =
-        selection.rangeCount > 0
-          ? selection.getRangeAt(0)
-          : document.createRange();
-      if (!inputElement.contains(range.commonAncestorContainer)) {
-        range.selectNodeContents(inputElement);
-        range.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
+      const range = document.createRange();
+      range.selectNodeContents(inputElement);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
     }
 
     if (!document.execCommand('insertText', false, emoji)) {

@@ -1144,4 +1144,47 @@ export class FirebaseService {
       })
     );
   }
+
+  updateDirectMessage(
+    conversationId: string,
+    messageKey: string,
+    newText: string
+  ): Observable<void> {
+    if (!conversationId || !messageKey) {
+      console.error(
+        '[FirebaseService] updateDirectMessage: Conversation ID oder Message Key fehlt.'
+      );
+      return throwError(
+        () => new Error('Conversation ID or Message Key is missing')
+      );
+    }
+
+    const messagePath = `direct-messages/${conversationId}/messages/${messageKey}`;
+    const messageRef = ref(this.database, messagePath);
+
+    const updates = {
+      message: newText,
+      editedAt: serverTimestamp(),
+    };
+    console.log(
+      '[FirebaseService] updateDirectMessage - Updates-Objekt:',
+      updates
+    );
+
+    return from(update(messageRef, updates)).pipe(
+      catchError((error) => {
+        console.error(
+          `[FirebaseService] updateDirectMessage - Fehler beim Aktualisieren in Firebase SDK (Pfad: ${messagePath}):`, // Pfad im Log hinzugefügt
+          error
+        );
+        return throwError(
+          () =>
+            new Error(
+              'Failed to update direct message. Original error: ' +
+                error.message
+            )
+        );
+      })
+    );
+  }
 }
