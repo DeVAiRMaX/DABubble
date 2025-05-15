@@ -9,7 +9,7 @@
   <div class="dialog-edit-profil-container-avatar">
     <img src="{{ user.avatar }}" alt="avatar" />
     <div class="changeProfilePic">
-      <div class="changePictureIcon"></div>
+      <div (click)="changeProfilePic()" class="changePictureIcon"></div>
     </div>
   </div>
 
@@ -22,7 +22,6 @@
       <input
         type="text"
         class="edit-profil-input"
-        placeholder="{{ user.displayName }}"
         [(ngModel)]="displayName"
         (ngModelChange)="checkFormInvalid()"
       />

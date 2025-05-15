@@ -1,0 +1,9 @@
+<div class="wholeOverlay">
+  <h1>Wählen Sie Ihren Avatar aus</h1>
+
+  <div class="avatarMenu">
+    <div class="singlePicDiv" *ngFor="let avatar of avatars">
+      <img (click)="printAvatar(avatar)" src="{{ avatar }}" />
+    </div>
+  </div>
+</div>
