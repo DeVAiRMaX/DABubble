@@ -4,6 +4,9 @@ import { SharedModule } from '../../../../shared';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { Observable } from 'rxjs';
 import { User } from '../../../../shared/interfaces/user';
+import { ProfilePicsComponent } from './profile-pics/profile-pics.component';
+import { FirebaseService } from '../../../../shared/services/firebase.service';
+
 
 @Component({
   selector: 'app-edit-profil-dialog',
@@ -15,15 +18,29 @@ import { User } from '../../../../shared/interfaces/user';
 export class EditProfilDialogComponent {
 
   private authService: AuthService = inject(AuthService);
+  private firebaseService: FirebaseService = inject(FirebaseService);
   user$: Observable<User | null>;
 
   displayName: string = '';
   formInvalid: boolean = false;
+  oldUserPic: string = '';
+  newUserPic: string = '';
+  changedProfilePic: boolean = false;
 
   emptyUserName: boolean = false;
 
-  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<EditProfilDialogComponent>) {
+  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<EditProfilDialogComponent>, public pictureDialog: MatDialogRef<ProfilePicsComponent>) {
     this.user$ = this.authService.user$;
+  }
+
+  ngOnInit(): void {
+  
+  const user = this.authService.getCurrentUser();
+  this.oldUserPic = user?.avatar || '';
+  console.log(this.oldUserPic);
+  this.displayName = user?.displayName || '';
+  this.checkFormInvalid();
+    
   }
 
   closeDialog() {
@@ -45,12 +62,32 @@ export class EditProfilDialogComponent {
     this.closeDialog();
   }
 
-  checkFormInvalid() {
-    if (this.displayName.trim() === '') {
-      this.formInvalid = false;
-    } else {
-      this.formInvalid = true;
-    }
+ checkFormInvalid() {
+  if (this.displayName.trim() !== '' || this.changedProfilePic) {
+    this.formInvalid = true;
+  } else {
+    this.formInvalid = false;
+  }
+}
+
+  changeProfilePic(){
+
+    const profileDialogRef = this.dialog.open(ProfilePicsComponent, {
+});
+
+profileDialogRef.afterClosed().subscribe((result) => {
+  if(result){
+    console.log(result);
+    this.firebaseService.updateAvatar(result, this.authService.getCurrentUserUID()!);
+    
+  }
+});
+
+ 
   }
 
+ 
+
 }
+
+
