@@ -11,6 +11,8 @@ export class VariablesService {
     this.loadState();
   }
 
+  googleLogin: boolean = false;
+
   private activeDmUserSubject = new BehaviorSubject<User | null>(null);
   activeDmUser$ = this.activeDmUserSubject.asObservable();
 
@@ -102,6 +104,10 @@ export class VariablesService {
     const newValue = !this.isClosedSubject.value;
     this.isClosedSubject.next(newValue);
     this.saveToStorage('isClosed', newValue);
+  }
+
+  toggleLoginStatus() {
+    this.googleLogin = !this.googleLogin;
   }
 
   notifyChannelCreated(): void {

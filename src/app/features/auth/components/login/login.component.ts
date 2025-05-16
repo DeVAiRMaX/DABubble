@@ -151,26 +151,24 @@ export class LoginComponent implements OnInit {
     }, 3500);
   }
 
-  async login(userEmail: string, userPassword: string) { // Methode als async markieren
-    this.loginError = null; // Fehler zurücksetzen vor neuem Versuch
+  async login(userEmail: string, userPassword: string) {
+    this.loginError = null;
     try {
       await this.authService.loginWithEmailPassword(userEmail, userPassword);
-      // Navigation erfolgt im AuthService bei Erfolg
     } catch (error: any) {
       console.error('Login fehlgeschlagen:', error);
-      // Hier den Fehler behandeln und eine benutzerfreundliche Nachricht setzen
       this.handleLoginError(error);
-      
     }
   }
 
-
-  private handleLoginError(error: any) : void {
-    if (error.code === 'auth/user-not-found' ||
+  private handleLoginError(error: any): void {
+    if (
+      error.code === 'auth/user-not-found' ||
       error.code === 'auth/wrong-password' ||
-      error.code === 'auth/invalid-credential') {
-    this.loginError = 'E-Mail-Adresse oder Passwort ist ungültig.';
-    console.log(this.loginError);
+      error.code === 'auth/invalid-credential'
+    ) {
+      this.loginError = 'E-Mail-Adresse oder Passwort ist ungültig.';
+      console.log(this.loginError);
+    }
   }
-}
 }

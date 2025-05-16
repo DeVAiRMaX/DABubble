@@ -14,6 +14,7 @@ import {
 import { User } from '../../../../../shared/interfaces/user';
 import { AuthService } from '../../../../../shared/services/auth.service';
 import { Observable } from 'rxjs';
+import { VariablesService } from '../../../../../variables.service';
 
 @Component({
   selector: 'app-select-avatar',
@@ -49,6 +50,7 @@ export class SelectAvatarComponent {
   private router = inject(Router);
   private firebaseService = inject(FirebaseService);
   private authService = inject(AuthService);
+  private variablesService = inject(VariablesService);
   user$: Observable<User | null>;
 
   constructor() {
@@ -73,7 +75,12 @@ export class SelectAvatarComponent {
         .then(() => {
           this.successMsgAnimation = true;
           setTimeout(() => {
-            this.router.navigate([`/login`]);
+            if (this.variablesService.googleLogin) {
+              this.router.navigate([`/dashboard`]);
+              this.variablesService.toggleLoginStatus();
+            } else {
+              this.router.navigate([`/login`]);
+            }
             this.successMsgAnimation = false;
           }, 2000);
         })

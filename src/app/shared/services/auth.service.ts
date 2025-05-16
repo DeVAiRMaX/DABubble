@@ -20,6 +20,7 @@ import { FirebaseService } from './firebase.service';
 import { Database, ref, objectVal, update } from '@angular/fire/database';
 import { User } from '../interfaces/user';
 import { get, set } from 'firebase/database';
+import { VariablesService } from '../../variables.service';
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +30,7 @@ export class AuthService {
   private router: Router = inject(Router);
   private firebaseService: FirebaseService = inject(FirebaseService);
   public database: Database = inject(Database);
+  private variablesService = inject(VariablesService);
 
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
@@ -86,7 +88,8 @@ export class AuthService {
       if (result.user) {
         this.firebaseService.saveUserData(result.user).subscribe({
           next: () => {
-            this.router.navigate(['/dashboard']);
+            this.variablesService.toggleLoginStatus();
+            this.router.navigate(['/avatar']);
           },
           error: (error) => {
             console.error('Fehler beim Speichern der Benutzerdaten:', error);
