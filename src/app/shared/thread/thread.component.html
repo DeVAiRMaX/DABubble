@@ -16,117 +16,16 @@
   </div>
 
   <div class="thread-body">
-    <ng-container *ngIf="originalMessage$ | async as originalMsg">
-      <div class="msg-left-container original-message-container othersMessage">
-        <div class="msg-container-user-img">
-          <img
-            [src]="
-              originalMsg.senderAvatar || '/assets/img/character/bsp-avatar.png'
-            "
-            [alt]="originalMsg.senderDisplayName"
-          />
-        </div>
-        <div class="msg-information">
-          <div class="msg-user-time">
-            <h3>{{ originalMsg.senderDisplayName }}</h3>
-            <p>{{ originalMsg.time | date : "HH:mm" }} Uhr</p>
-          </div>
-          <div class="msg-content-left">
-            <p>{{ originalMsg.message }}</p>
-            <span class="edited-indicator" *ngIf="originalMsg.editedAt"
-              >(bearbeitet)</span
-            >
-          </div>
-          <div
-            class="reaction-container original-reactions"
-            *ngIf="originalMsg.reactions && originalMsg.reactions.length > 0"
-          >
-            <div
-              class="reaction"
-              *ngFor="let reaction of getDisplayedReactions(originalMsg)"
-              (click)="toggleReaction(originalMsg, reaction.emoji)"
-              [class.reacted-by-user]="reaction.reactedByUser"
-              matTooltipPosition="above"
-            >
-              <span>{{ reaction.emoji }}</span>
-              <p>{{ reaction.count }}</p>
-
-              <div class="reactionOwner">
-                <div>{{ reaction.emoji }}</div>
-                <div class="reactionOwnerUser">
-                  {{ reaction.userNames.join(", ") }}
-                </div>
-                <span>hat reagiert</span>
-              </div>
-            </div>
-
-            <button
-              class="reaction-overflow-btn"
-              *ngIf="
-                !isShowingAll(originalMsg) &&
-                getTotalGroupedReactionsCount(originalMsg) > 7
-              "
-              (click)="toggleShowAllReactions(originalMsg)"
-            >
-              +{{ getTotalGroupedReactionsCount(originalMsg) - 7 }} weitere
-            </button>
-
-            <button
-              class="reaction-show-less-btn"
-              *ngIf="
-                isShowingAll(originalMsg) &&
-                getTotalGroupedReactionsCount(originalMsg) > 7
-              "
-              (click)="toggleShowAllReactions(originalMsg)"
-            >
-              Weniger anzeigen
-            </button>
-
-            <span
-              class="material-symbols-outlined add_reaction_btn"
-              (click)="openEmojiPickerForReaction(originalMsg)"
-              matTooltip="Reaktion hinzufügen"
-              matTooltipPosition="above"
-            >
-              add_reaction
-            </span>
-          </div>
-        </div>
-        <div class="reactionMenu">
-          <button
-            (click)="toggleReaction(originalMsg, '✅')"
-            class="reactionMenuBtn check"
-            matTooltip="Erledigt"
-            matTooltipPosition="above"
-          ></button>
-          <button
-            (click)="toggleReaction(originalMsg, '👍')"
-            class="reactionMenuBtn thumb"
-            matTooltip="Daumen hoch"
-            matTooltipPosition="above"
-          ></button>
-          <button
-            (click)="openEmojiPickerForReaction(originalMsg)"
-            class="reactionMenuBtn reactionSmile"
-            matTooltip="Reagieren"
-            matTooltipPosition="above"
-          ></button>
-        </div>
-      </div>
-    </ng-container>
-
-    <div
-      class="count-answers"
-      *ngIf="(threadMessages$ | async)?.length as count"
+    <ng-container
+      *ngFor="
+        let threadMsg of threadMessages$ | async;
+        trackBy: trackByThreadMessageKey
+      "
     >
-      <p>{{ count }} {{ count === 1 ? "Antwort" : "Antworten" }}</p>
-      <div></div>
-    </div>
-
-    <ng-container *ngFor="let threadMsg of threadMessages$ | async">
       <div
         class="msg-left-container othersMessage"
         *ngIf="!isOwnThreadMessage(threadMsg)"
+        [attr.data-message-key]="threadMsg.key"
       >
         <div class="msg-container-user-img">
           <img
@@ -161,7 +60,6 @@
             >
               <span>{{ reaction.emoji }}</span>
               <p>{{ reaction.count }}</p>
-
               <div class="reactionOwner">
                 <div>{{ reaction.emoji }}</div>
                 <div class="reactionOwnerUser">
@@ -170,7 +68,6 @@
                 <span>hat reagiert</span>
               </div>
             </div>
-
             <button
               class="reaction-overflow-btn"
               *ngIf="
@@ -181,7 +78,6 @@
             >
               +{{ getTotalGroupedReactionsCount(threadMsg) - 7 }} weitere
             </button>
-
             <button
               class="reaction-show-less-btn"
               *ngIf="
@@ -192,7 +88,6 @@
             >
               Weniger anzeigen
             </button>
-
             <span
               class="material-symbols-outlined add_reaction_btn"
               (click)="openEmojiPickerForReaction(threadMsg)"
@@ -228,6 +123,8 @@
       <div
         class="msg-right-container ownMessage"
         *ngIf="isOwnThreadMessage(threadMsg)"
+        [class.editing]="editingThreadMessageKey === threadMsg.key"
+        [attr.data-message-key]="threadMsg.key"
       >
         <div class="reactionMenu">
           <button
@@ -250,6 +147,7 @@
           ></button>
           <button
             class="reactionMenuBtn editMsg"
+            (click)="startEditingThreadMessage(threadMsg)"
             matTooltip="Nachricht bearbeiten"
             matTooltipPosition="above"
           ></button>
@@ -267,25 +165,51 @@
             <p>{{ threadMsg.time | date : "HH:mm" }} Uhr</p>
             <h3>Du</h3>
           </div>
-          <div class="msg-content-right">
+          <div
+            class="msg-content-right"
+            *ngIf="editingThreadMessageKey !== threadMsg.key"
+          >
             <p>{{ threadMsg.message }}</p>
             <span class="edited-indicator" *ngIf="threadMsg.editedAt"
               >(bearbeitet)</span
             >
           </div>
           <div
+            class="edit-thread-message-input-container"
+            *ngIf="editingThreadMessageKey === threadMsg.key"
+          >
+            <textarea
+              class="edit-textbox"
+              #editThreadInput
+              [(ngModel)]="editThreadMessageText"
+              (keydown.escape)="cancelEditThreadMessage()"
+              (keydown.enter)="handleEditThreadEnter($any($event), threadMsg)"
+              rows="3"
+            ></textarea>
+            <div class="edit-actions">
+              <button (click)="cancelEditThreadMessage()">Abbrechen</button>
+              <button (click)="saveEditThreadMessage(threadMsg)">
+                Speichern
+              </button>
+            </div>
+          </div>
+          <div
             class="reaction-container own-thread-reactions"
-            *ngIf="threadMsg.reactions && threadMsg.reactions.length > 0"
+            *ngIf="
+              threadMsg.reactions &&
+              threadMsg.reactions.length > 0 &&
+              editingThreadMessageKey !== threadMsg.key
+            "
           >
             <div
               class="reaction"
               *ngFor="let reaction of getDisplayedReactions(threadMsg)"
               (click)="toggleReaction(threadMsg, reaction.emoji)"
               [class.reacted-by-user]="reaction.reactedByUser"
+              matTooltipPosition="above"
             >
               <span>{{ reaction.emoji }}</span>
               <p>{{ reaction.count }}</p>
-
               <div class="reactionOwner">
                 <div>{{ reaction.emoji }}</div>
                 <div class="reactionOwnerUser">
@@ -294,7 +218,6 @@
                 <span>hat reagiert</span>
               </div>
             </div>
-
             <button
               class="reaction-overflow-btn"
               *ngIf="
@@ -305,7 +228,6 @@
             >
               +{{ getTotalGroupedReactionsCount(threadMsg) - 7 }} weitere
             </button>
-
             <button
               class="reaction-show-less-btn"
               *ngIf="
@@ -316,7 +238,6 @@
             >
               Weniger anzeigen
             </button>
-
             <span
               class="material-symbols-outlined add_reaction_btn"
               (click)="openEmojiPickerForReaction(threadMsg)"
@@ -329,6 +250,14 @@
         </div>
       </div>
     </ng-container>
+
+    <div
+      class="count-answers"
+      *ngIf="(threadMessages$ | async)?.length as count"
+    >
+      <p>{{ count }} {{ count === 1 ? "Antwort" : "Antworten" }}</p>
+      <div></div>
+    </div>
 
     <div
       *ngIf="(threadMessages$ | async)?.length === 0"
