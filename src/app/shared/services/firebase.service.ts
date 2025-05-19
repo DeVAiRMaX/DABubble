@@ -1186,4 +1186,46 @@ export class FirebaseService {
       })
     );
   }
+
+  updateThreadMessage(
+    threadKey: string,
+    messageKey: string,
+    newText: string
+  ): Observable<void> {
+    if (!threadKey || !messageKey || typeof newText !== 'string') {
+      const errorMsg =
+        '[FirebaseService] updateThreadMessage: Ungültige Parameter.';
+      console.error(errorMsg, { threadKey, messageKey, newText });
+      return throwError(() => new Error(errorMsg));
+    }
+
+    // KORRIGIERTER PFAD: 'messages' wurde zu 'threadMsg' geändert, um konsistent zu sein
+    const messagePath = `Threads/${threadKey}/threadMsg/${messageKey}`;
+    const messageRef = ref(this.database, messagePath);
+
+    const updates = {
+      message: newText,
+      editedAt: serverTimestamp(), // serverTimestamp() für Firebase Realtime DB Zeitstempel
+    };
+
+    return from(update(messageRef, updates)).pipe(
+      tap(() =>
+        console.log(
+          `[FirebaseService] Nachricht ${messageKey} in Thread ${threadKey} unter Pfad ${messagePath} erfolgreich aktualisiert.`
+        )
+      ),
+      catchError((error) => {
+        console.error(
+          `[FirebaseService] Fehler beim Aktualisieren der Nachricht ${messageKey} in Thread ${threadKey} unter Pfad ${messagePath}:`,
+          error
+        );
+        return throwError(
+          () =>
+            new Error(
+              'Fehler beim Aktualisieren der Thread-Nachricht: ' + error.message
+            )
+        );
+      })
+    );
+  }
 }

@@ -8,6 +8,9 @@ import {
   ViewChild,
   ElementRef,
   ChangeDetectorRef,
+  QueryList,
+  ViewChildren,
+  TrackByFunction,
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -66,6 +69,9 @@ import { objectVal, DatabaseReference } from '@angular/fire/database';
 export class ThreadComponent implements OnInit, OnDestroy {
   @Input() channel!: ChannelWithKey;
   @ViewChild('editableDiv') editableDiv!: ElementRef<HTMLDivElement>;
+  @ViewChildren('editThreadInput') editThreadInputs!: QueryList<
+    ElementRef<HTMLTextAreaElement>
+  >;
 
   private variableService: VariablesService = inject(VariablesService);
   private firebaseService: FirebaseService = inject(FirebaseService);
@@ -75,6 +81,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
 
+  editingThreadMessageKey: string | null = null;
+  editThreadMessageText: string = '';
   isOpen: boolean = false;
   currentThreadKey: string | null = null;
   threadMessages$: Observable<ThreadMessage[]> = of([]);
@@ -608,4 +616,96 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.checkForMention(event);
     this.editableDiv.nativeElement.focus();
   }
+
+  startEditingThreadMessage(message: ThreadMessage): void {
+    console.log('msg edit');
+
+    if (!message?.key) {
+      console.warn(
+        '[ThreadComponent] Bearbeitung kann nicht gestartet werden: Nachrichten-Key fehlt.'
+      );
+      return;
+    }
+    this.editingThreadMessageKey = message.key;
+    this.editThreadMessageText = message.message;
+    this.cdRef.detectChanges();
+
+    setTimeout(() => {
+      const editInputElem = this.editThreadInputs.first?.nativeElement;
+      if (editInputElem) {
+        editInputElem.focus();
+        const length = editInputElem.value.length;
+        editInputElem.setSelectionRange(length, length);
+      }
+    }, 0);
+  }
+
+  saveEditThreadMessage(message: ThreadMessage): void {
+    const newText = this.editThreadMessageText.trim();
+
+    if (
+      !this.editingThreadMessageKey ||
+      !this.currentThreadKey ||
+      !newText ||
+      newText === message.message
+    ) {
+      console.warn(
+        '[ThreadComponent] Bedingungen für Update der Thread-Nachricht nicht erfüllt oder Text unverändert.',
+        {
+          editingKey: this.editingThreadMessageKey,
+          currentThreadKey: this.currentThreadKey,
+          newText: newText,
+          originalText: message.message,
+          isSame: newText === message.message,
+        }
+      );
+      this.cancelEditThreadMessage();
+      return;
+    }
+
+    this.firebaseService
+      .updateThreadMessage(
+        this.currentThreadKey,
+        this.editingThreadMessageKey,
+        newText
+      )
+      .subscribe({
+        next: () => {
+          console.log(
+            '[ThreadComponent] Thread-Nachricht erfolgreich aktualisiert.'
+          );
+          this.cancelEditThreadMessage();
+        },
+        error: (err: any) => {
+          console.error(
+            '[ThreadComponent] Fehler beim Speichern der Bearbeitung der Thread-Nachricht:',
+            err
+          );
+          this.cancelEditThreadMessage();
+        },
+      });
+  }
+
+  cancelEditThreadMessage(): void {
+    this.editingThreadMessageKey = null;
+    this.editThreadMessageText = '';
+    this.cdRef.markForCheck();
+  }
+
+  handleEditThreadEnter(event: KeyboardEvent, message: ThreadMessage): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.saveEditThreadMessage(message);
+    }
+  }
+
+  trackByThreadMessageKey: TrackByFunction<ThreadMessage> = (
+    index: number,
+    message: ThreadMessage
+  ): string => {
+    const reactionsKey = message.reactions
+      ?.map((r) => r.userId + r.emoji)
+      .join('_');
+    return `<span class="math-inline">\{message\.key\}\-</span>{this.editingThreadMessageKey === message.key}-<span class="math-inline">\{message\.editedAt\}\-</span>{reactionsKey || ''}`;
+  };
 }
