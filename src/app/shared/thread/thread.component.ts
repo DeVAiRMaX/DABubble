@@ -216,11 +216,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   sendThreadMessage(): void {
     const text = this.threadMessageText.replace(/\s|\u00A0/g, '');
     console.log(this.threadMessageText);
-    if (
-      !text ||
-      !this.currentThreadKey ||
-      !this.currentUser
-    ) {
+    if (!text || !this.currentThreadKey || !this.currentUser) {
       console.warn('Kann Thread-Nachricht nicht senden: Fehlende Daten');
       return;
     }

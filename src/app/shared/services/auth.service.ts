@@ -50,8 +50,7 @@ export class AuthService {
                   uid: authUser.uid,
                   email: authUser.email,
                   displayName: dbUser?.displayName ?? authUser.displayName,
-                  avatar:
-                    dbUser?.avatar || 'assets/img/character/bsp-avatar.png',
+                  avatar: dbUser?.avatar,
                   channelKeys: dbUser?.channelKeys ?? [],
                 } as User;
               }),
@@ -88,8 +87,12 @@ export class AuthService {
       if (result.user) {
         this.firebaseService.saveUserData(result.user).subscribe({
           next: () => {
+            if (this.userSubject.value?.avatar) {
+              this.router.navigate(['/dashboard']);
+            } else {
+              this.router.navigate(['/avatar']);
+            }
             this.variablesService.toggleLoginStatus();
-            this.router.navigate(['/avatar']);
           },
           error: (error) => {
             console.error('Fehler beim Speichern der Benutzerdaten:', error);

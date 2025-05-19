@@ -19,7 +19,6 @@ import { Channel, ChannelWithKey } from '../interfaces/channel';
 import { Message, Reaction } from '../interfaces/message';
 import { Thread, ThreadMessage } from '../interfaces/thread';
 import { Router } from '@angular/router';
-import { remove } from 'firebase/database';
 
 @Injectable({
   providedIn: 'root',
@@ -438,7 +437,7 @@ export class FirebaseService {
       message: messageText,
       senderUid: senderUid,
       senderDisplayName: senderDisplayName,
-      senderAvatar: senderAvatar || 'assets/img/character/4.png',
+      senderAvatar: senderAvatar,
       time: Date.now(),
       reactions: [],
     };
@@ -599,7 +598,7 @@ export class FirebaseService {
       message: messageText,
       senderUid: sender.uid,
       senderDisplayName: sender.displayName,
-      senderAvatar: sender.avatar || 'assets/img/character/bsp-avatar.png',
+      senderAvatar: sender.avatar,
       time: timestamp,
       reactions: [],
       threadKey: threadKey,
@@ -788,7 +787,7 @@ export class FirebaseService {
       message: messageText,
       senderUid: sender.uid,
       senderDisplayName: sender.displayName || '',
-      senderAvatar: sender.avatar || 'assets/img/character/bsp-avatar.png',
+      senderAvatar: sender.avatar,
       time: timestamp,
       reactions: [],
     };
