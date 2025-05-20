@@ -15,7 +15,11 @@ import {
 import { User as CustomUser, userData } from '../interfaces/user';
 import { Observable, combineLatest, from, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
-import { Channel, ChannelWithKey } from '../interfaces/channel';
+import {
+  Channel,
+  ChannelWithKey,
+  ChannelNameAndKey,
+} from '../interfaces/channel';
 import { Message, Reaction } from '../interfaces/message';
 import { Thread, ThreadMessage } from '../interfaces/thread';
 import { Router } from '@angular/router';
@@ -1199,13 +1203,12 @@ export class FirebaseService {
       return throwError(() => new Error(errorMsg));
     }
 
-    // KORRIGIERTER PFAD: 'messages' wurde zu 'threadMsg' geändert, um konsistent zu sein
     const messagePath = `Threads/${threadKey}/threadMsg/${messageKey}`;
     const messageRef = ref(this.database, messagePath);
 
     const updates = {
       message: newText,
-      editedAt: serverTimestamp(), // serverTimestamp() für Firebase Realtime DB Zeitstempel
+      editedAt: serverTimestamp(),
     };
 
     return from(update(messageRef, updates)).pipe(
@@ -1225,6 +1228,29 @@ export class FirebaseService {
               'Fehler beim Aktualisieren der Thread-Nachricht: ' + error.message
             )
         );
+      })
+    );
+  }
+
+  getAllChannelsWithNameAndKey(): Observable<ChannelNameAndKey[]> {
+    const channelsRef = ref(this.database, 'channels');
+    // Annahme: Channel-Interface hat channelName und listVal fügt 'key' hinzu
+    return listVal<Channel & { key: string }>(channelsRef, {
+      keyField: 'key',
+    }).pipe(
+      map((channels) => {
+        if (!channels) return [];
+        return channels.map((channel) => ({
+          key: channel.key,
+          channelName: channel.channelName,
+        }));
+      }),
+      catchError((error) => {
+        console.error(
+          '[getAllChannelsWithNameAndKey] Fehler beim Abrufen aller Channels:',
+          error
+        );
+        return of([]);
       })
     );
   }

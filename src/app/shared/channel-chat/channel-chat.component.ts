@@ -17,12 +17,15 @@ import {
   HostListener,
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
-
 import { SharedModule } from '../../shared';
 import { EditChannelComponent } from './edit-channel/edit-channel.component';
 import { AddUserToChannelOverlayComponent } from './add-user-to-channel-overlay/add-user-to-channel-overlay.component';
 import { CommonModule } from '@angular/common';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { ChannelMembersOverlayComponent } from './channel-members-overlay/channel-members-overlay.component';
 import { ChannelWithKey } from '../interfaces/channel';
 import { Message, Reaction, GroupedReaction } from '../interfaces/message';
@@ -30,11 +33,13 @@ import { TaggingPersonsDialogComponent } from './tagging-persons-dialog/tagging-
 import { SubService } from '../services/sub.service';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
-import { Observable, of, Subscription } from 'rxjs';
+import { fromEvent, Observable, of, Subscription } from 'rxjs';
 import { User } from '../interfaces/user';
 import { SmileyKeyboardComponent } from './smiley-keyboard/smiley-keyboard.component';
 import { FormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Router } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-channel-chat',
@@ -43,7 +48,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CommonModule,
     MatDialogModule,
     SharedModule,
-    SharedModule,
     FormsModule,
     MatTooltipModule,
   ],
@@ -51,7 +55,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrl: './channel-chat.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
+export class ChannelChatComponent
+  implements OnInit, OnChanges, OnDestroy, AfterViewInit
+{
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
   activeThreadKey: string | null = null;
@@ -78,6 +84,9 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   private readonly SUB_MESSAGES = 'channelMessages';
   private memberRemovedSubject: Subscription | undefined;
   private memberAddedToChannel: Subscription | undefined;
+  private router: Router = inject(Router);
+  private sanitizer: DomSanitizer = inject(DomSanitizer);
+  private readonly INPUT_EVENTS_GROUP = this.SUB_GROUP_NAME + '_InputEvents';
 
   isShowingAllReactions = new Map<string, boolean>();
   isMobileView: boolean = window.innerWidth < 800;
@@ -96,8 +105,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     this.cdRef.markForCheck();
   }
 
-  @ViewChild('messageInput') messageInputRef!: ElementRef;
-
   constructor() {}
 
   ngOnInit(): void {
@@ -107,12 +114,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       }
     );
 
-    const input = document.querySelector('.textForMessageInput') as HTMLElement;
-
-    if (input) {
-      input.addEventListener('mouseup', () => this.saveCursorPosition());
-      input.addEventListener('keyup', () => this.saveCursorPosition());
-    }
     const authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
       this.cdRef.markForCheck();
@@ -128,7 +129,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
           this.addUserToChannelOverlayIsVisible = value;
         }
       );
-
     this.subService.add(overlayVisibilitySub, this.SUB_GROUP_NAME);
 
     this.subscribeToMemberChanges();
@@ -138,8 +138,45 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   ngAfterViewInit() {
     this.scrollToBottom();
     setTimeout(() => {
-      this.messageInputRef?.nativeElement?.focus();
+      this.messageInput?.nativeElement?.focus();
     }, 0);
+
+    if (this.channelChatBody && this.channelChatBody.nativeElement) {
+      this.subService.add(
+        fromEvent<Event>(this.channelChatBody.nativeElement, 'click').subscribe(
+          (event: Event) => {
+            this.handleMessageTagClick(event);
+          }
+        ),
+        this.SUB_GROUP_NAME
+      );
+    }
+
+    if (this.messageInput && this.messageInput.nativeElement) {
+      const inputEl = this.messageInput.nativeElement;
+
+      this.subService.add(
+        fromEvent(inputEl, 'mouseup').subscribe(() => {
+          this.saveCursorPositionInternal();
+        }),
+        this.INPUT_EVENTS_GROUP
+      );
+
+      this.subService.add(
+        fromEvent<KeyboardEvent>(inputEl, 'keyup').subscribe(
+          (event: KeyboardEvent) => {
+            if (
+              event.key.startsWith('Arrow') ||
+              event.key === 'Home' ||
+              event.key === 'End'
+            ) {
+              this.saveCursorPositionInternal();
+            }
+          }
+        ),
+        this.INPUT_EVENTS_GROUP
+      );
+    }
   }
 
   subscribeToMemberChanges(): void {
@@ -165,10 +202,12 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   scrollToBottom(): void {
     try {
-      this.channelChatBody.nativeElement.scrollTop =
-        this.channelChatBody.nativeElement.scrollHeight;
+      if (this.channelChatBody?.nativeElement) {
+        this.channelChatBody.nativeElement.scrollTop =
+          this.channelChatBody.nativeElement.scrollHeight;
+      }
     } catch (err) {
-      console.warn('Scroll failed', err);
+      // console.warn('Es konnte nicht gescrollt werden', err);
     }
   }
 
@@ -182,9 +221,9 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     index: number,
     message: Message
   ): string => {
-    return `<span class="math-inline">\{message\.key\}\-</span>{this.editingMessageKey === message.key}-${
+    return `${message.key}-${this.editingMessageKey === message.key}-${
       message.reactions?.length || 0
-    }`;
+    }-${message.editedAt || ''}`;
   };
 
   onNewMessageReceived() {
@@ -193,9 +232,8 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   getChannelMembers() {
     if (!this.channel?.key) {
-      console.warn('getChannelMembers ohne channel key aufgerufen.');
       this.memberAvatars = [];
-      this.channel.members = [];
+      if (this.channel) this.channel.members = [];
       this.cdRef.markForCheck();
       return;
     }
@@ -207,18 +245,14 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
             const membersData = await this.authService.getMembersData(
               channelDoc.members
             );
-            this.channel.members = membersData;
+            if (this.channel) this.channel.members = membersData;
             this.memberAvatars = membersData.map((member) => member.avatar);
           } catch (error) {
-            console.error(
-              '[ChannelChat] Fehler beim Abrufen der Mitgliederdetails:',
-              error
-            );
-            this.channel.members = [];
+            if (this.channel) this.channel.members = [];
             this.memberAvatars = [];
           }
         } else {
-          this.channel.members = [];
+          if (this.channel) this.channel.members = [];
           this.memberAvatars = [];
         }
         this.cdRef.markForCheck();
@@ -242,9 +276,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       if (currentChannel.key) {
         this.loadMessages(currentChannel.key);
       } else {
-        console.warn(
-          '[ChannelChat] Channel hat keinen Key, Nachrichten können nicht geladen werden.'
-        );
         this.messages$ = of([]);
       }
     } else if (
@@ -252,10 +283,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       !changes['channel'].currentValue &&
       !changes['channel'].firstChange
     ) {
-      console.warn(
-        'ChannelChatComponent ngOnChanges - Channel wurde entfernt oder ist undefined.'
-      );
-
       this.subService.unsubscribeGroup(this.SUB_MESSAGES);
       this.messages$ = of([]);
       this.cdRef.markForCheck();
@@ -264,77 +291,126 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   loadMessages(channelKey: string): void {
     this.subService.unsubscribeGroup(this.SUB_MESSAGES);
-
     this.messages$ = this.firebaseService.getMessagesForChannel(channelKey);
   }
 
   ngOnDestroy(): void {
     this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
     this.subService.unsubscribeGroup(this.SUB_MESSAGES);
+    this.subService.unsubscribeGroup('taggingDialogSub');
+    this.subService.unsubscribeGroup(this.INPUT_EVENTS_GROUP);
   }
 
   sendMessage(): void {
-    const messageText = this.messageInput.nativeElement.innerText.trim();
-
+    const messageHtml = this.messageInput.nativeElement.innerHTML.trim();
     if (
-      !messageText ||
+      !messageHtml ||
       !this.channel?.key ||
       !this.currentUser?.uid ||
       !this.currentUser?.displayName
     ) {
-      console.warn('[sendMessage] Senden nicht möglich. Fehlende Daten:', {
-        messageText,
-        channelKey: this.channel?.key,
-        currentUserUid: this.currentUser?.uid,
-        currentUserDisplayName: this.currentUser?.displayName,
-      });
       return;
     }
-
     this.firebaseService
       .sendMessage(
         this.channel.key,
-        messageText,
+        messageHtml,
         this.currentUser.uid,
         this.currentUser.displayName,
         this.currentUser.avatar
       )
       .subscribe({
         next: () => {
-          this.messageInput.nativeElement.innerText = '';
+          this.messageInput.nativeElement.innerHTML = '';
           this.lastInputValue = '';
+          this.variableService.setTaggedContactsFromChat([]);
           this.onNewMessageReceived();
         },
-        error: (err) => {
-          console.error('[sendMessage] Fehler beim Senden:', err);
-        },
+        error: (err) => {},
       });
+  }
+
+  sanitizeHtml(html: string | undefined): SafeHtml {
+    if (!html) return this.sanitizer.bypassSecurityTrustHtml('');
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  handleMessageTagClick(event: Event): void {
+    const targetElement = event.target as HTMLElement;
+    if (
+      targetElement.classList.contains('user-tag') &&
+      targetElement.closest('.channel-chat-message-container')
+    ) {
+      event.preventDefault();
+      const userId = targetElement.getAttribute('data-user-id');
+      if (userId && this.currentUser?.uid) {
+        if (userId === this.currentUser.uid) {
+          this.firebaseService
+            .ensureDirectMessageConversation(
+              this.currentUser.uid,
+              this.currentUser.uid
+            )
+            .subscribe((conversationId) => {
+              this.variableService.setActiveChannel(null);
+              this.variableService.setActiveDmUser(this.currentUser!);
+              this.variableService.closeThread();
+            });
+          return;
+        }
+        this.firebaseService
+          .ensureDirectMessageConversation(this.currentUser.uid, userId)
+          .subscribe((conversationId) => {
+            this.firebaseService.getUserData(userId).subscribe((dmUserData) => {
+              if (dmUserData) {
+                const targetUser: User = {
+                  uid: dmUserData.uid,
+                  displayName: dmUserData.displayName,
+                  email: dmUserData.email,
+                  avatar: (dmUserData as any).avatar,
+                  channelKeys: dmUserData.channelKeys || [],
+                };
+                this.variableService.setActiveChannel(null);
+                this.variableService.setActiveDmUser(targetUser);
+                this.variableService.closeThread();
+              }
+            });
+          });
+      }
+    } else if (
+      targetElement.classList.contains('channel-tag') &&
+      targetElement.closest('.channel-chat-message-container')
+    ) {
+      event.preventDefault();
+      const channelId = targetElement.getAttribute('data-channel-id');
+      if (channelId) {
+        this.firebaseService.getChannel(channelId).subscribe((channelData) => {
+          if (channelData) {
+            const channelWithKey: ChannelWithKey = {
+              ...channelData,
+              key: channelId,
+            };
+            this.variableService.setActiveDmUser(null);
+            this.variableService.setActiveChannel(channelWithKey);
+            this.variableService.closeThread();
+          }
+        });
+      }
+    }
   }
 
   shouldShowDateDivider(
     currentMessage: Message,
     previousMessage: Message | null | undefined
   ): boolean {
-    if (!previousMessage) {
-      return true;
-    }
-    if (!currentMessage?.time || !previousMessage?.time) {
-      console.warn('Fehlender Zeitstempel für Datums-Divider-Prüfung.');
-      return false;
-    }
-
+    if (!previousMessage) return true;
+    if (!currentMessage?.time || !previousMessage?.time) return false;
     try {
       const currentDate = new Date(currentMessage.time);
       const previousDate = new Date(previousMessage.time);
-
-      if (isNaN(currentDate.getTime()) || isNaN(previousDate.getTime())) {
-        console.warn('Ungültiges Datum bei Datums-Divider-Prüfung.');
+      if (isNaN(currentDate.getTime()) || isNaN(previousDate.getTime()))
         return false;
-      }
-
       return currentDate.toDateString() !== previousDate.toDateString();
     } catch (error) {
-      console.error('Fehler beim Vergleichen der Daten für Divider:', error);
       return false;
     }
   }
@@ -345,7 +421,6 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   toggleThread() {
     const value = this.variableService['isClosedSubject']?.value;
-
     if (value !== undefined && value !== null) {
       this.variableService.toggleThread();
     }
@@ -364,7 +439,7 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
 
   openEditChannelDialog() {
     if (!this.channel?.key) return;
-    const dialogRef = this.dialog.open(EditChannelComponent, {
+    this.dialog.open(EditChannelComponent, {
       maxWidth: 'none',
       panelClass: 'custom-dialog-container',
       data: { channelKey: this.channel.key },
@@ -375,33 +450,18 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     const targetElement = document.querySelector('.add_btn_user');
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
-      const dialogRef = this.dialog.open(AddUserToChannelOverlayComponent, {
+      this.dialog.open(AddUserToChannelOverlayComponent, {
         position: { top: `${rect.bottom + 20 + window.scrollY}px` },
         panelClass: 'custom-dialog',
         data: { channelKey: this.channel?.key },
       });
-
-      setTimeout(() => {
-        const dialogElement = document.querySelector(
-          'mat-dialog-container'
-        ) as HTMLElement;
-        if (dialogElement) {
-          const dialogRect = dialogElement.getBoundingClientRect();
-          const newLeft = rect.right - dialogRect.width + window.scrollX;
-          dialogElement.style.left = `${newLeft}px`;
-          dialogElement.style.position = 'absolute';
-          dialogElement.style.maxWidth = '515px';
-        }
-      }, 0);
     }
   }
 
   async openChannelMembersDialog() {
-    const channelData = await this.firebaseService
-      .getChannel(this.channel?.key)
-      .subscribe((user) => {
-        this.channelUsers = user?.members;
-      });
+    this.firebaseService.getChannel(this.channel?.key).subscribe((user) => {
+      if (this.channel) this.channel.members = user?.members || [];
+    });
 
     const targetElement = document.querySelector(
       '.channel-chat-header-right-user-container'
@@ -421,35 +481,14 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
           this.openAddUserToChannelDialog();
         }
       );
-
       this.subService.add(childEventSub, this.SUB_GROUP_NAME);
-
-      setTimeout(() => {
-        const dialogElement = document.querySelector(
-          'mat-dialog-container'
-        ) as HTMLElement;
-        if (dialogElement) {
-          const dialogRect = dialogElement.getBoundingClientRect();
-          const newLeft = rect.right - dialogRect.width + window.scrollX;
-          dialogElement.style.left = `${newLeft}px`;
-          dialogElement.style.position = 'absolute';
-          dialogElement.style.maxWidth = '415px';
-          dialogElement.style.height = '700px';
-        }
-      }, 20);
     }
   }
 
   startOrOpenThread(message: Message): void {
     if (!message || !message.key || !this.channel?.key || !this.currentUser) {
-      console.error('Kann Thread nicht starten/öffnen: Fehlende Daten', {
-        message,
-        channel: this.channel,
-        currentUser: this.currentUser,
-      });
       return;
     }
-
     if (message.threadKey) {
       this.activeThreadKey = message.threadKey;
       this.openThreadView(message.threadKey);
@@ -463,15 +502,9 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
             message.threadReplyCount = 0;
             message.threadLastReplyAt = Date.now();
             this.cdRef.markForCheck();
-
             this.openThreadView(newThreadKey);
           },
-          error: (err) => {
-            console.error(
-              '[ChannelChat] Fehler beim Erstellen des Threads:',
-              err
-            );
-          },
+          error: (err) => {},
         });
     }
   }
@@ -481,232 +514,431 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
     this.variableService.openThread(threadKey);
   }
 
-  openTagPeopleDialog() {
-    const targetElement = document.querySelector('.input-container-wrapper');
-    const inputfield = document.querySelector(
-      '.textForMessageInput'
-    ) as HTMLElement;
-    const inputValue = inputfield?.innerText.trim() || '';
-
-    if (targetElement) {
-      const rect = targetElement.getBoundingClientRect();
-      const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
-        position: {
-          bottom: `${rect.top - 20 + window.scrollY}px`,
-          left: `${rect.left + 20 + window.scrollX}px`,
-        },
-        panelClass: ['tagging-dialog'],
-        backdropClass: 'transparentBackdrop',
-        autoFocus: false,
-        data: {
-          mode: 'chat',
-        },
-      });
-
-      setTimeout(() => {
-        const dialogElement = document.querySelector(
-          'mat-dialog-container'
-        ) as HTMLElement;
-        if (dialogElement) {
-          const dialogRect = dialogElement.getBoundingClientRect();
-
-          dialogElement.style.position = 'absolute';
-          dialogElement.style.width = '350px';
-          dialogElement.style.borderBottomLeftRadius = '0px';
-        }
-      }, 10);
-      setTimeout(() => {
-        const inputField = document.querySelector(
-          '.textForMessageInput'
-        ) as HTMLElement;
-        if (inputField) {
-          inputField.focus();
-        }
-      }, 400);
+  saveCursorPositionInternal() {
+    const inputEl = this.messageInput?.nativeElement;
+    if (!inputEl) return;
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const currentRange = selection.getRangeAt(0);
+      if (
+        inputEl.contains(currentRange.commonAncestorContainer) ||
+        document.activeElement === inputEl
+      ) {
+        this.savedRange = currentRange.cloneRange();
+      }
+    } else if (document.activeElement === inputEl) {
+      const range = document.createRange();
+      range.selectNodeContents(inputEl);
+      range.collapse(true);
+      this.savedRange = range;
     }
+  }
+
+  onInputForTagging(event: Event) {
+    this.saveCursorPositionInternal();
+    this.checkForMention(event);
+  }
+
+  openTaggingPerClick(char: '@' | '#', event: Event) {
+    event.preventDefault();
+    const inputEl = this.messageInput.nativeElement;
+    inputEl.focus();
+
+    const selection = window.getSelection();
+    if (!selection) return;
+
+    let range: Range;
+    if (
+      this.savedRange &&
+      inputEl.contains(this.savedRange.commonAncestorContainer)
+    ) {
+      range = this.savedRange.cloneRange();
+    } else {
+      range = document.createRange();
+      range.selectNodeContents(inputEl);
+      range.collapse(false);
+    }
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    if (!range.collapsed) {
+      range.deleteContents();
+    }
+
+    const triggerNode = document.createTextNode(char);
+    range.insertNode(triggerNode);
+
+    range.setStartAfter(triggerNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    this.savedRange = range.cloneRange();
+
+    this.openTagPeopleOrChannelDialog(char, char);
+    this.lastInputValue = inputEl.innerText;
+  }
+
+  openTagPeopleOrChannelDialog(char: '@' | '#', filterPrefix: string) {
+    const targetElement = this.messageInput.nativeElement;
+    const rect = targetElement.getBoundingClientRect();
+    this.variableService.setNameToFilter(filterPrefix);
+
+    const existingDialog = this.dialog.openDialogs.find(
+      (d: MatDialogRef<any>) =>
+        d.componentInstance instanceof TaggingPersonsDialogComponent &&
+        d.componentInstance.triggerChar === char
+    );
+
+    if (existingDialog) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
+      position: {
+        bottom: `${window.innerHeight - rect.top + 5}px`,
+        left: `${rect.left}px`,
+      },
+      panelClass: ['tagging-dialog'],
+      backdropClass: 'transparentBackdrop',
+      hasBackdrop: true,
+      disableClose: false,
+      autoFocus: false,
+      restoreFocus: false,
+      data: {
+        mode: char === '@' ? 'user' : 'channel',
+        char: char,
+        initialFilter: filterPrefix,
+      },
+    });
+
+    const contactSelectedSub =
+      dialogRef.componentInstance.contactSelected.subscribe(
+        (selectedItem: {
+          id: string;
+          name: string;
+          type: 'user' | 'channel';
+        }) => {
+          this.insertTagIntoInput(
+            selectedItem.name,
+            selectedItem.id,
+            selectedItem.type
+          );
+          this.messageInput.nativeElement.focus();
+        }
+      );
+    this.subService.add(contactSelectedSub, 'taggingDialogSub');
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.subService.unsubscribeGroup('taggingDialogSub');
+      this.messageInput.nativeElement.focus();
+      if (
+        this.savedRange &&
+        this.messageInput.nativeElement.contains(
+          this.savedRange.commonAncestorContainer
+        )
+      ) {
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(this.savedRange);
+        }
+      }
+      const currentTextInInput = this.messageInput.nativeElement.innerText;
+      const lastCharInInput = currentTextInInput.slice(-1);
+      if (lastCharInInput !== '@' && lastCharInInput !== '#') {
+        this.variableService.setNameToFilter('');
+      } else {
+        this.variableService.setNameToFilter(lastCharInInput);
+      }
+    });
+  }
+
+  isInsideTagSpan(node: Node | null): boolean {
+    let currentNode = node;
+    while (currentNode && currentNode !== this.messageInput.nativeElement) {
+      if (currentNode.nodeType === Node.ELEMENT_NODE) {
+        const element = currentNode as HTMLElement;
+        if (
+          element.classList.contains('user-tag') ||
+          element.classList.contains('channel-tag') ||
+          (element.hasAttribute('contenteditable') &&
+            element.getAttribute('contenteditable') === 'false')
+        ) {
+          return true;
+        }
+      }
+      currentNode = currentNode.parentNode;
+    }
+    return false;
   }
 
   checkForMention(event: Event) {
-    const inputElement = event.target as HTMLElement;
-    const inputText = inputElement.innerText;
-    if (
-      inputText.includes('@') &&
-      !this.lastInputValue.includes('@') &&
-      inputText !== ''
-    ) {
-      this.openTagPeopleDialog();
+    const inputElement = event.target as HTMLDivElement;
+    if (!this.savedRange) {
+      this.saveCursorPositionInternal();
+      if (!this.savedRange) return;
     }
-    this.lastInputValue = inputText;
-    this.variableService.setNameToFilter(this.lastInputValue);
+
+    const range = this.savedRange;
+    let charBeforeCursor = '';
+    let currentWordBeforeCursor = '';
+
+    if (
+      range.startContainer.nodeType === Node.TEXT_NODE &&
+      range.startOffset > 0
+    ) {
+      const textContent = range.startContainer.textContent!;
+      const textBefore = textContent.substring(0, range.startOffset);
+      const wordMatch = textBefore.match(/([@#])([\w\-äöüÄÖÜß]*)$/u);
+      if (wordMatch) {
+        currentWordBeforeCursor = wordMatch[0];
+        charBeforeCursor = wordMatch[1];
+      }
+    }
+
+    const fullInputText = inputElement.innerText;
+
+    if (charBeforeCursor === '@') {
+      if (this.isInsideTagSpan(range.startContainer)) {
+        this.lastInputValue = fullInputText;
+        return;
+      }
+      this.openTagPeopleOrChannelDialog('@', currentWordBeforeCursor || '@');
+    } else if (charBeforeCursor === '#') {
+      if (this.isInsideTagSpan(range.startContainer)) {
+        this.lastInputValue = fullInputText;
+        return;
+      }
+      this.openTagPeopleOrChannelDialog('#', currentWordBeforeCursor || '#');
+    } else {
+      const openTagDialog = this.dialog.openDialogs.find(
+        (d: MatDialogRef<any>) =>
+          d.componentInstance instanceof TaggingPersonsDialogComponent
+      );
+      if (openTagDialog) {
+        const dialogInstance =
+          openTagDialog.componentInstance as TaggingPersonsDialogComponent;
+        let relevantPartOfInput = '';
+        const lastTriggerIndex = fullInputText.lastIndexOf(
+          dialogInstance.triggerChar
+        );
+        if (lastTriggerIndex !== -1) {
+          relevantPartOfInput = fullInputText.substring(lastTriggerIndex);
+        }
+        if (relevantPartOfInput.startsWith(dialogInstance.triggerChar)) {
+          this.variableService.setNameToFilter(relevantPartOfInput);
+        } else {
+          openTagDialog.close();
+        }
+      }
+    }
+    this.lastInputValue = fullInputText;
   }
 
-  openTaggingPerClick(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    if (inputElement) {
-      inputElement.value = '@';
-      this.openTagPeopleDialog();
+  insertTagIntoInput(name: string, id: string, type: 'user' | 'channel'): void {
+    const inputEl = this.messageInput.nativeElement;
+    inputEl.focus();
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return;
     }
-    this.lastInputValue = inputElement.value;
-    this.variableService.setNameToFilter(this.lastInputValue);
+
+    let range: Range;
+    if (
+      this.savedRange &&
+      inputEl.contains(this.savedRange.commonAncestorContainer)
+    ) {
+      range = this.savedRange.cloneRange();
+    } else {
+      range = selection.getRangeAt(0).cloneRange();
+      if (range.collapsed && !inputEl.contains(range.commonAncestorContainer)) {
+        range.selectNodeContents(inputEl);
+        range.collapse(false);
+      }
+    }
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const container = range.startContainer;
+    let offset = range.startOffset;
+    const activeFilterPrefix = this.variableService.getNameToFilter();
+    let successfullyDeletedPrefix = false;
+
+    if (
+      activeFilterPrefix &&
+      (activeFilterPrefix.startsWith('@') || activeFilterPrefix.startsWith('#'))
+    ) {
+      if (
+        container.nodeType === Node.TEXT_NODE &&
+        offset >= activeFilterPrefix.length
+      ) {
+        const textNode = container as Text;
+        const textContent = textNode.textContent || '';
+        const textBeforeCursor = textContent.substring(0, offset);
+
+        if (textBeforeCursor.endsWith(activeFilterPrefix)) {
+          range.setStart(textNode, offset - activeFilterPrefix.length);
+          try {
+            range.deleteContents();
+            successfullyDeletedPrefix = true;
+          } catch (e) {}
+          offset = range.startOffset;
+        }
+      }
+    }
+
+    if (!successfullyDeletedPrefix) {
+      if (!range.collapsed) {
+        try {
+          range.deleteContents();
+          successfullyDeletedPrefix = true;
+        } catch (e) {}
+        offset = range.startOffset;
+      } else if (container.nodeType === Node.TEXT_NODE && offset > 0) {
+        const textNode = container as Text;
+        const charBefore = (textNode.textContent || '')[offset - 1];
+        const expectedTrigger = type === 'user' ? '@' : '#';
+        if (charBefore === expectedTrigger) {
+          try {
+            range.setStart(textNode, offset - 1);
+            range.deleteContents();
+            successfullyDeletedPrefix = true;
+            offset = range.startOffset;
+          } catch (e) {}
+        }
+      }
+    }
+
+    const tagSpan = document.createElement('span');
+    tagSpan.classList.add(type === 'user' ? 'user-tag' : 'channel-tag');
+    tagSpan.setAttribute(`data-${type}-id`, id);
+    tagSpan.setAttribute('contenteditable', 'false');
+    tagSpan.innerText = (type === 'user' ? '@' : '#') + name;
+
+    const spaceChar = '\u00A0';
+    const actualSpaceNode = document.createTextNode(spaceChar);
+
+    try {
+      range.insertNode(tagSpan);
+      range.setStartAfter(tagSpan);
+      range.collapse(true);
+      range.insertNode(actualSpaceNode);
+      range.setStartAfter(actualSpaceNode);
+      range.collapse(true);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+      this.savedRange = range.cloneRange();
+    } catch (e) {
+      const fallbackText = tagSpan.innerText + spaceChar;
+      document.execCommand('insertText', false, fallbackText);
+      this.saveCursorPositionInternal();
+    }
+
+    this.lastInputValue = inputEl.innerText;
+    this.variableService.setNameToFilter('');
   }
 
   preventEdit(event: MouseEvent) {
     event.preventDefault();
-
-    const textInput = document.querySelector(
-      '.textForMessageInput'
-    ) as HTMLElement;
-    if (!textInput) return;
-
+    const textInput = this.messageInput.nativeElement;
     textInput.focus();
-
-    const range = document.createRange();
     const selection = window.getSelection();
-
-    if (textInput.lastChild) {
-      range.setStartAfter(textInput.lastChild);
-    } else {
-      range.setStart(textInput, textInput.childNodes.length);
+    if (selection) {
+      const range = document.createRange();
+      range.selectNodeContents(textInput);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
     }
-
-    range.collapse(true);
-    selection?.removeAllRanges();
-    selection?.addRange(range);
   }
 
   removePersonFromTagged(name: string) {
     const index = this.taggedPersonsInChat.findIndex((e) => e.name === name);
-
     if (index !== -1) {
       this.taggedPersonsInChat.splice(index, 1);
-    } else {
-      // nicht gefunden
     }
   }
 
   openAddSmileyToChannelDialog() {
-    const targetElement = document.querySelector('.input-container-wrapper');
+    const targetElement = this.messageInput.nativeElement.closest(
+      '.input-container-wrapper'
+    );
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
         panelClass: '',
         backdropClass: 'transparentBackdrop',
         position: {
-          bottom: `${rect.top - 20 + window.scrollY}px`,
-          left: `${rect.left + 20 + window.scrollX}px`,
+          bottom: `${window.innerHeight - rect.top + 10}px`,
+          left: `${rect.left}px`,
         },
         data: { channelKey: this.channel?.key },
       });
-
-      const componentInstance =
-        dialogRef.componentInstance as SmileyKeyboardComponent;
-      componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
-        this.insertEmojiAtCursor(selectedEmoji);
-      });
-
-      setTimeout(() => {
-        const dialogElement = document.querySelector(
-          'mat-dialog-container'
-        ) as HTMLElement;
-        if (dialogElement) {
-          const dialogRect = dialogElement.getBoundingClientRect();
-
-          const newTop = rect.top - dialogRect.height + window.scrollY;
-          const newLeft = rect.right - dialogRect.width + window.scrollX;
-
-          dialogElement.style.position = 'absolute';
-
-          dialogElement.style.height = 'fit-content';
-          dialogElement.style.width = 'fit-content';
+      dialogRef.componentInstance.emojiSelected.subscribe(
+        (selectedEmoji: string) => {
+          this.insertEmojiAtCursor(selectedEmoji);
         }
-      }, 0);
+      );
     }
   }
 
-  insertEmojiAtCursor(emoji: string) {
-    const input = document.querySelector('.textForMessageInput') as HTMLElement;
-
-    if (!input) {
-      console.error('Input field not found!');
-      return;
-    }
-
-    if (!this.savedRange) {
-      console.error('No saved cursor position available.');
-      input.focus();
-      return;
-    }
-
+  insertEmojiAtCursor(emoji: string): void {
+    const inputEl = this.messageInput.nativeElement;
+    inputEl.focus();
     const selection = window.getSelection();
     if (!selection) return;
 
-    try {
-      selection.removeAllRanges();
-      selection.addRange(this.savedRange);
-
-      const range = selection.getRangeAt(0);
-      range.deleteContents();
-
-      const emojiNode = document.createTextNode(emoji);
-      range.insertNode(emojiNode);
-
-      range.setStartAfter(emojiNode);
-      range.collapse(true);
-
-      this.savedRange = range.cloneRange();
-
-      input.focus();
-    } catch (error) {
-      console.error('Error inserting emoji:', error);
+    let range: Range;
+    if (
+      this.savedRange &&
+      inputEl.contains(this.savedRange.commonAncestorContainer)
+    ) {
+      range = this.savedRange.cloneRange();
+    } else {
+      range = selection.getRangeAt(0).cloneRange();
+      if (range.collapsed && !inputEl.contains(range.commonAncestorContainer)) {
+        range.selectNodeContents(inputEl);
+        range.collapse(false);
+      }
     }
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    if (!document.execCommand('insertText', false, emoji)) {
+      range.deleteContents();
+      const textNode = document.createTextNode(emoji);
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    this.savedRange = selection.getRangeAt(0).cloneRange();
+    this.lastInputValue = inputEl.innerText;
   }
 
   saveCursorPosition() {
-    const input = document.querySelector('.textForMessageInput') as HTMLElement;
-
-    if (!input) {
-      console.error('Input field not found!');
-      return;
-    }
-
-    input.focus();
-
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0).cloneRange();
-
-      this.savedRange = range;
-
-      const lastChild = input.lastChild;
-      if (lastChild) {
-        this.savedRange.setStart(lastChild, (lastChild as Text).length);
-        this.savedRange.setEnd(lastChild, (lastChild as Text).length);
-      }
-    } else {
-      console.warn('No selection range available to save.');
-    }
-
+    this.saveCursorPositionInternal();
     this.openAddSmileyToChannelDialog();
   }
 
   toggleReaction(message: Message, emoji: string): void {
     if (!this.currentUser || !message.key || !this.channel?.key) return;
-
     this.firebaseService
       .toggleReaction(this.channel.key, message.key, emoji, this.currentUser)
       .subscribe({
-        error: (err) => console.error('Fehler beim togglen der Reaktion:', err),
+        error: (err) => {},
       });
   }
 
   openEmojiPickerForReaction(message: Message): void {
     if (!this.currentUser || !message.key || !this.channel?.key) return;
-
     const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
       panelClass: 'emoji-picker-dialog-reaction',
       backdropClass: 'transparentBackdrop',
     });
-
     dialogRef.componentInstance.emojiSelected.subscribe(
       (selectedEmoji: string) => {
         this.toggleReaction(message, selectedEmoji);
@@ -715,12 +947,8 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   groupReactions(reactions: Reaction[] | undefined): GroupedReaction[] {
-    if (!reactions || reactions.length === 0) {
-      return [];
-    }
-
+    if (!reactions || reactions.length === 0) return [];
     const initialAcc: Record<string, GroupedReaction> = {};
-
     const grouped = reactions.reduce((acc, reaction) => {
       if (!acc[reaction.emoji]) {
         acc[reaction.emoji] = {
@@ -736,61 +964,40 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       if (reaction.userName) {
         acc[reaction.emoji].userNames.push(reaction.userName);
       }
-      if (reaction.userId === this.currentUser?.uid) {
+      if (this.currentUser && reaction.userId === this.currentUser.uid) {
         acc[reaction.emoji].reactedByUser = true;
       }
       return acc;
     }, initialAcc);
-
     return Object.values(grouped);
   }
 
   getTotalGroupedReactionsCount(message: Message): number {
-    // Cache das Ergebnis von groupReactions, wenn es oft aufgerufen wird
-    // Einfache Variante:
     return this.groupReactions(message.reactions).length;
   }
 
   getDisplayedReactions(message: Message): GroupedReaction[] {
     const allGrouped = this.groupReactions(message.reactions);
-    const totalCount = allGrouped.length;
     const limit = this.getReactionLimit();
-
-    if (this.isShowingAll(message)) {
-      return allGrouped;
-    } else {
-      return allGrouped.slice(0, limit);
-    }
+    return this.isShowingAll(message) ? allGrouped : allGrouped.slice(0, limit);
   }
 
   isShowingAll(message: Message): boolean {
-    if (!message || !message.key) {
-      return false;
-    }
+    if (!message || !message.key) return false;
     return this.isShowingAllReactions.get(message.key) || false;
   }
 
   toggleShowAllReactions(message: Message): void {
-    if (!message || !message.key) {
-      console.warn(
-        'Versuch, den Reaktionsstatus für eine Nachricht ohne Key umzuschalten.'
-      );
-      return;
-    }
-
+    if (!message || !message.key) return;
     const currentState = this.isShowingAll(message);
     this.isShowingAllReactions.set(message.key, !currentState);
     this.cdRef.markForCheck();
   }
 
   startEditing(message: Message): void {
-    if (!message?.key) {
-      return;
-    }
-
+    if (!message?.key) return;
     this.editingMessageKey = message.key;
     this.editMessageText = message.message;
-
     this.cdRef.markForCheck();
     setTimeout(() => {
       const inputEl = this.editInputs.find(
@@ -799,15 +1006,10 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
             .closest('.channel-chat-message-container')
             ?.classList.contains('editing')
       );
-
       if (inputEl?.nativeElement) {
         inputEl.nativeElement.focus();
         const length = inputEl.nativeElement.value.length;
         inputEl.nativeElement.setSelectionRange(length, length);
-      } else {
-        console.warn(
-          'Konnte das zu fokussierende Edit-Input-Element nicht finden.'
-        );
       }
     }, 0);
   }
@@ -823,16 +1025,11 @@ export class ChannelChatComponent implements OnInit, OnChanges, OnDestroy {
       this.cancelEdit();
       return;
     }
-
     this.firebaseService
       .updateMessage(this.channel.key, this.editingMessageKey, newText)
       .subscribe({
-        next: () => {
-          this.cancelEdit();
-        },
-        error: (err) => {
-          console.error('Fehler beim Speichern der Bearbeitung:', err);
-        },
+        next: () => this.cancelEdit(),
+        error: (err) => {},
       });
   }
 

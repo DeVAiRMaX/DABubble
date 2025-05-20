@@ -64,7 +64,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private subService: SubService = inject(SubService);
   private authService: AuthService = inject(AuthService);
   private firebaseService: FirebaseService = inject(FirebaseService);
-  private variableService: VariablesService = inject(VariablesService);
+  public variableService: VariablesService = inject(VariablesService);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
   private userLeavedSubscription: Subscription | undefined;
 
@@ -74,6 +74,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private readonly GRP_DATA_KEYS = 'dataLoadKeys';
   private readonly GRP_DATA_CHANNELS = 'dataLoadChannels';
   private readonly GRP_USER_DATA = 'mainUserData';
+  private readonly GRP_ACTIVE_VIEW = 'activeViewListeners';
 
   constructor() {}
 
@@ -114,7 +115,9 @@ export class MainComponentComponent implements OnInit, OnDestroy {
         this.userChannels = [];
         this.selectedChannel = null;
         this.selectedOtherUser = null;
+        this.variableService.setActiveChannel(null);
         this.variableService.setActiveDmUser(null);
+        this.variableService.closeThread();
         this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
       }
       this.cdRef.markForCheck();
@@ -136,6 +139,37 @@ export class MainComponentComponent implements OnInit, OnDestroy {
           this.loadChannels(this.uid);
         }
       });
+    if (this.userLeavedSubscription) {
+      this.subService.add(this.userLeavedSubscription, 'userLeavedSub');
+    }
+
+    const activeChannelSub = this.variableService.activeChannel$.subscribe(
+      (activeChannel) => {
+        if (this.selectedChannel?.key !== activeChannel?.key) {
+          this.selectedChannel = activeChannel;
+          if (activeChannel) {
+            this.selectedOtherUser = null;
+            this.threadIsVisible = false;
+          }
+          this.cdRef.markForCheck();
+        }
+      }
+    );
+    this.subService.add(activeChannelSub, this.GRP_ACTIVE_VIEW);
+
+    const activeDmUserSub = this.variableService.activeDmUser$.subscribe(
+      (activeDM) => {
+        if (this.selectedOtherUser?.uid !== activeDM?.uid) {
+          this.selectedOtherUser = activeDM;
+          if (activeDM) {
+            this.selectedChannel = null;
+            this.threadIsVisible = false;
+          }
+          this.cdRef.markForCheck();
+        }
+      }
+    );
+    this.subService.add(activeDmUserSub, this.GRP_ACTIVE_VIEW);
   }
 
   loadUserSpecificData(uid: string): void {
@@ -144,55 +178,42 @@ export class MainComponentComponent implements OnInit, OnDestroy {
 
   loadChannels(uid: string): void {
     this.subService.unsubscribeGroup(this.GRP_DATA_CHANNELS);
-
     const channelSub = this.firebaseService.getChannelsForUser(uid).subscribe({
       next: (channels) => {
-        const oldSelectedKey = this.selectedChannel?.key;
+        const oldSelectedChannelKey = this.selectedChannel?.key;
         this.userChannels = [...channels];
 
-        let channelToSelect: ChannelWithKey | null = null;
-        if (oldSelectedKey) {
-          channelToSelect =
-            this.userChannels.find((c) => c.key === oldSelectedKey) || null;
-        }
+        let channelToSetAsActive: ChannelWithKey | null = null;
         if (
-          !channelToSelect &&
-          this.userChannels.length > 0 &&
-          !this.threadIsVisible &&
-          !this.selectedOtherUser
+          this.selectedChannel &&
+          this.userChannels.some((c) => c.key === this.selectedChannel!.key)
         ) {
-          channelToSelect = this.userChannels[0];
+          channelToSetAsActive = this.selectedChannel;
+        } else if (this.selectedOtherUser) {
+        } else if (this.userChannels.length > 0) {
+          channelToSetAsActive = this.userChannels[0];
         }
-        if (channelToSelect && !this.selectedOtherUser) {
-          if (
-            this.threadIsVisible &&
-            oldSelectedKey &&
-            this.selectedChannel?.key === oldSelectedKey
-          ) {
-          } else if (!this.threadIsVisible) {
-            this.onChannelSelected(channelToSelect);
-          } else if (
-            this.threadIsVisible &&
-            !this.selectedChannel &&
-            oldSelectedKey
-          ) {
-            this.onChannelSelected(channelToSelect);
-          }
-        } else if (
-          !channelToSelect &&
+
+        if (
+          channelToSetAsActive &&
           !this.selectedOtherUser &&
           !this.threadIsVisible
         ) {
-          this.selectedChannel = null;
-          this.variableService.setActiveChannel(null);
+          this.onChannelSelected(channelToSetAsActive);
+        } else if (
+          !channelToSetAsActive &&
+          !this.selectedOtherUser &&
+          !this.threadIsVisible
+        ) {
+          this.onChannelSelected(null);
         }
-
         this.cdRef.markForCheck();
       },
       error: (err) => {
         console.error('[MainComponent] Fehler beim Laden der Kanäle:', err);
         this.userChannels = [];
         this.selectedChannel = null;
+        this.variableService.setActiveChannel(null);
         this.cdRef.markForCheck();
       },
     });

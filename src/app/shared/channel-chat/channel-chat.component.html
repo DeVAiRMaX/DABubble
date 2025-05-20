@@ -72,7 +72,7 @@
               <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
             </div>
             <div class="msg-bubble msg-left">
-              <p>{{ message.message }}</p>
+              <p [innerHTML]="sanitizeHtml(message.message)"></p>
               <span class="edited-indicator" *ngIf="message.editedAt"
                 >(bearbeitet)</span
               >
@@ -214,7 +214,7 @@
               class="msg-bubble msg-right"
               *ngIf="editingMessageKey !== message.key"
             >
-              <p>{{ message.message }}</p>
+              <p [innerHTML]="sanitizeHtml(message.message)"></p>
               <span class="edited-indicator" *ngIf="message.editedAt"
                 >(bearbeitet)</span
               >
@@ -363,23 +363,30 @@
         class="textForMessageInput"
         type="text"
         [attr.placeholder]="'Nachricht an #' + (channel.channelName || '')"
-        (input)="checkForMention($event)"
+        (input)="onInputForTagging($event)"
         (keydown)="handleKeydown($event)"
         contenteditable="true"
       ></div>
       <div class="icons">
         <div>
           <span
-            (click)="openTaggingPerClick($event)"
+            (click)="openTaggingPerClick('@', $event)"
             class="material-symbols-outlined"
-            matTooltip="Person markierren"
+            matTooltip="Person markieren"
           >
             alternate_email
           </span>
           <span
+            (click)="openTaggingPerClick('#', $event)"
+            class="material-symbols-outlined"
+            matTooltip="Channel markieren"
+            style="cursor: pointer"
+          >
+            tag
+          </span>
+          <span
             (click)="saveCursorPosition()"
             class="material-symbols-outlined add-smiley-button"
-            add-smiley-button
             matTooltip="Emoji hinzufügen"
           >
             sentiment_satisfied

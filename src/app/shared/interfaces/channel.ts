@@ -15,3 +15,8 @@ export interface Channel {
 }
 
 export type ChannelWithKey = Channel & { key: string };
+
+export interface ChannelNameAndKey {
+  key: string;
+  channelName: string;
+}
