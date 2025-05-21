@@ -133,6 +133,7 @@ export class ChannelChatComponent
 
     this.subscribeToMemberChanges();
     this.onResize();
+   
   }
 
   ngAfterViewInit() {
@@ -287,6 +288,7 @@ export class ChannelChatComponent
       this.messages$ = of([]);
       this.cdRef.markForCheck();
     }
+     this.messageInput.nativeElement.focus();
   }
 
   loadMessages(channelKey: string): void {
@@ -303,10 +305,12 @@ export class ChannelChatComponent
 
   sendMessage(): void {
     const messageHtml = this.messageInput.nativeElement.innerHTML.trim();
+    const messageText = this.messageInput.nativeElement.innerText.trim();
     if (
       !messageHtml ||
       !this.channel?.key ||
       !this.currentUser?.uid ||
+      messageText === '' ||
       !this.currentUser?.displayName
     ) {
       return;
