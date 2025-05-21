@@ -25,7 +25,13 @@
         placeholder="# z.B. Kooperationsprojekte"
         (ngModelChange)="checkFormInvalid()"
       />
-      <p>Gib einen Channel-Name ein!</p>
+      <p [ngClass]="{ 'error-txt': channelNameExists }">
+        {{
+          channelNameExists
+            ? "Es existiert bereits ein Channel mit diesem Namen!"
+            : "Gib einen Channel-Name ein!"
+        }}
+      </p>
     </div>
 
     <div class="add-channel-description">
@@ -40,7 +46,11 @@
       ></textarea>
     </div>
 
-    <button (click)="createChannel()" class="add-channel-button" [disabled]="!formInvalid">
+    <button
+      (click)="createChannel()"
+      class="add-channel-button"
+      [disabled]="!formInvalid"
+    >
       Erstellen
     </button>
   </div>

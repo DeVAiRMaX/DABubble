@@ -50,6 +50,8 @@ export class ChannelCreateOverlayComponent {
   channelName: string = '';
   description: string = '';
   formInvalid: boolean = false;
+  channelList: string[] = [];
+  channelNameExists: boolean = false;
 
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
@@ -74,11 +76,21 @@ export class ChannelCreateOverlayComponent {
     }
   }
 
-  createChannel() {
+  async getChannelNames() {
+   await this.firebaseService.getChannelNames();
+    this.channelList = this.firebaseService.channelListDatabase;
+    console.log(this.channelList);
+    
+
+  }
+
+  async createChannel() {
+    this.channelNameExists = false;
     const currentUserUid = this.authService.getCurrentUserUID();
     const trimmedChannelName = this.channelName.trim();
-
-    if (!trimmedChannelName) {
+    await this.getChannelNames();
+    await this.checkIfChannelDoubles(trimmedChannelName);
+    if (!trimmedChannelName || this.channelNameExists) {
       console.warn('Channel-Name darf nicht leer sein.');
       return;
     }
@@ -118,4 +130,19 @@ export class ChannelCreateOverlayComponent {
       }
     }, 100);
   }
+
+
+  checkIfChannelDoubles(name: string){
+
+    const lowerCaseName = name.toLowerCase();
+    const duplicateExists = this.channelList.some(
+      channel => channel.toLowerCase() === lowerCaseName
+    );
+
+    if(duplicateExists){
+      console.log('channel name already exists');
+      this.channelNameExists = true;
+    }
+  
+}
 }
