@@ -1,33 +1,36 @@
-<ng-container *ngIf="modeForTagging === 'chat'">
+<ng-container *ngIf="modeForTagging === 'user'">
   <div class="wholeDialog">
     <div
       *ngFor="let contact of filteredContacts"
       class="singleContact"
-      (click)="checkWhichMode(contact)"
+      (mousedown)="selectItem(contact)"
     >
-      <img [src]="contact.img" />
-      <span>{{ contact.name }}</span>
+      <img [src]="contact.img" alt="{{ contact.name }}" />
+      <span>&#64;{{ contact.name }}</span>
     </div>
-
-    <div *ngIf="filteredContacts.length === 0" class="no-results">
-      <p>Kein Kontakt gefunden</p>
+    <div
+      *ngIf="filteredContacts.length === 0 && nametoFilter.length > 1"
+      class="no-results"
+    >
+      <p>Kein Benutzer gefunden</p>
     </div>
   </div>
 </ng-container>
 
-<ng-container *ngIf="modeForTagging === 'thread'">
+<ng-container *ngIf="modeForTagging === 'channel'">
   <div class="wholeDialog">
     <div
-      *ngFor="let contact of filteredContactsThread"
+      *ngFor="let channel of filteredChannels"
       class="singleContact"
-      (click)="checkWhichMode(contact)"
+      (mousedown)="selectItem(channel)"
     >
-      <img [src]="contact.img" />
-      <span>{{ contact.name }}</span>
+      <span class="channel-icon">#</span> <span>{{ channel.channelName }}</span>
     </div>
-
-    <div *ngIf="filteredContactsThread.length === 0" class="no-results">
-      <p>Kein Kontakt gefunden</p>
+    <div
+      *ngIf="filteredChannels.length === 0 && nametoFilter.length > 1"
+      class="no-results"
+    >
+      <p>Kein Channel gefunden</p>
     </div>
   </div>
 </ng-container>

@@ -1,159 +1,172 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  Output,
+  EventEmitter,
+  inject,
+} from '@angular/core';
 import { VariablesService } from '../../../variables.service';
-import { MatDialogRef } from '@angular/material/dialog';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogState,
+} from '@angular/material/dialog';
 import { FirebaseService } from '../../services/firebase.service';
-import { firstValueFrom } from 'rxjs';
+import { ChannelNameAndKey } from '../../interfaces/channel';
+import { User, userData } from '../../interfaces/user';
 
 @Component({
   selector: 'app-tagging-persons-dialog',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './tagging-persons-dialog.component.html',
-  styleUrl: './tagging-persons-dialog.component.scss',
+  styleUrls: ['./tagging-persons-dialog.component.scss'],
 })
 export class TaggingPersonsDialogComponent implements OnInit {
+  @Output() contactSelected = new EventEmitter<{
+    id: string;
+    name: string;
+    type: 'user' | 'channel';
+  }>();
+
   nametoFilter: string = '';
-  modeForTagging: string = '';
+  modeForTagging: 'user' | 'channel' = 'user';
+  triggerChar: '@' | '#' = '@';
 
-  constructor(
-    private variableService: VariablesService,
-    private dialogRef: MatDialogRef<TaggingPersonsDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { mode: string }
-  ) {}
+  allContactsForDialog: { name: string; img: string; uid: string }[] = [];
+  allChannelsForDialog: ChannelNameAndKey[] = [];
 
-  // allContacts = [
-  //   { name: 'Frederik Beck (Du)', img: '/assets/img/character/3.png' },
-  //   { name: 'Sofia Müller', img: '/assets/img/character/2.png' },
-  //   { name: 'Noah Braun', img: '/assets/img/character/1.png' },
-  //   { name: 'Elise Roth', img: '/assets/img/character/4.png' },
-  //   { name: 'Elias Neumann', img: '/assets/img/character/5.png' },
-  //   { name: 'Steffen Hoffmann', img: '/assets/img/character/6.png' }
-  // ];
-
-  allContacts: any[] = [];
-
-  taggedContacts: { name: string; img: string }[] = [];
-  taggedContactsThread: { name: string; img: string }[] = [];
-  filteredContacts: { name: string; img: string }[] = [];
-  filteredContactsThread: { name: string; img: string }[] = [];
+  filteredContacts: { name: string; img: string; uid: string }[] = [];
+  filteredChannels: ChannelNameAndKey[] = [];
 
   private firebaseService: FirebaseService = inject(FirebaseService);
 
+  constructor(
+    public variableService: VariablesService,
+    private dialogRef: MatDialogRef<TaggingPersonsDialogComponent>,
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      mode: 'user' | 'channel';
+      char: '@' | '#';
+      initialFilter: string;
+    }
+  ) {
+    this.modeForTagging = data.mode;
+    this.triggerChar = data.char;
+    this.nametoFilter = data.initialFilter;
+  }
+
   ngOnInit() {
-    this.loadContacts();
+    if (this.modeForTagging === 'user') {
+      this.loadUsersForDialog();
+    } else {
+      this.loadChannelsForDialog();
+    }
 
-    this.modeForTagging = this.data.mode;
+    const initialFilterTextForList = this.nametoFilter.startsWith(
+      this.triggerChar
+    )
+      ? this.nametoFilter.substring(1)
+      : this.nametoFilter === this.triggerChar
+      ? ''
+      : this.nametoFilter;
 
-    this.taggedContacts = this.variableService.getTaggedContactsFromChat();
-    this.taggedContactsThread =
-      this.variableService.getTaggedcontactsFromThreads();
+    this.variableService.nameToFilter$.subscribe((value: string) => {
+      if (this.dialogRef.getState() !== MatDialogState.OPEN) {
+        return;
+      }
 
-    this.updateFilteredContacts();
-    this.updateFilteredThreadContacts();
-    // console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
-    // console.log('gewählter Modus ist' + this.data.mode);
-    // console.log(this.taggedContacts, this.taggedContactsThread, this.filteredContactsThread, this.filteredContacts);
-    // console.log('gewählter Modus ist' + this.data.mode);
+      if (value === '') {
+        this.nametoFilter = this.triggerChar;
+        if (this.modeForTagging === 'user') {
+          this.updateFilteredContactsList('');
+        } else {
+          this.updateFilteredChannelsList('');
+        }
+        return;
+      }
 
-    this.variableService.nameToFilter$.subscribe((value) => {
-      this.nametoFilter = value;
-
-      if (this.nametoFilter === '') {
+      if (!value.startsWith(this.triggerChar)) {
         this.closeDiaglog();
         return;
       }
 
-      if (this.nametoFilter === '@') {
-        this.updateFilteredContacts();
-        this.updateFilteredThreadContacts();
-        return;
+      this.nametoFilter = value;
+      const filterText = value.substring(1);
+      if (this.modeForTagging === 'user') {
+        this.updateFilteredContactsList(filterText);
+      } else {
+        this.updateFilteredChannelsList(filterText);
       }
-
-      const filterText = this.nametoFilter.includes('@')
-        ? this.nametoFilter.split('@').pop()?.trim() || ''
-        : this.nametoFilter.trim();
-
-      this.filteredContacts = this.filteredContacts.filter((contact) =>
-        contact.name.toLowerCase().includes(filterText.toLowerCase())
-      );
-      this.filteredContactsThread = this.filteredContactsThread.filter(
-        (contact) =>
-          contact.name.toLowerCase().includes(filterText.toLowerCase())
-      );
     });
+  }
+
+  loadUsersForDialog() {
+    this.firebaseService.getAllUsers().subscribe((users: userData[]) => {
+      this.allContactsForDialog = users.map((user) => ({
+        name:
+          user.displayName || user.email?.split('@')[0] || 'Unbekannter User',
+        img: user.avatar || '/assets/img/character/bsp-avatar.png',
+        uid: user.uid,
+      }));
+      const initialText = this.nametoFilter.startsWith(this.triggerChar)
+        ? this.nametoFilter.substring(1)
+        : this.nametoFilter;
+      this.updateFilteredContactsList(initialText);
+    });
+  }
+
+  loadChannelsForDialog() {
+    this.firebaseService
+      .getAllChannelsWithNameAndKey()
+      .subscribe((channels: ChannelNameAndKey[]) => {
+        this.allChannelsForDialog = channels;
+        const initialText = this.nametoFilter.startsWith(this.triggerChar)
+          ? this.nametoFilter.substring(1)
+          : this.nametoFilter;
+        this.updateFilteredChannelsList(initialText);
+      });
+  }
+
+  updateFilteredContactsList(filterText: string) {
+    const lowerFilterText = filterText.toLowerCase();
+    this.filteredContacts = this.allContactsForDialog.filter((contact) =>
+      contact.name.toLowerCase().includes(lowerFilterText)
+    );
+  }
+
+  updateFilteredChannelsList(filterText: string) {
+    const lowerFilterText = filterText.toLowerCase();
+    this.filteredChannels = this.allChannelsForDialog.filter((channel) =>
+      channel.channelName.toLowerCase().includes(lowerFilterText)
+    );
+  }
+
+  selectItem(item: any) {
+    if (this.modeForTagging === 'user') {
+      this.contactSelected.emit({
+        id: item.uid,
+        name: item.name,
+        type: 'user',
+      });
+    } else {
+      this.contactSelected.emit({
+        id: item.key,
+        name: item.channelName,
+        type: 'channel',
+      });
+    }
+    this.nametoFilter = this.triggerChar;
+    if (this.modeForTagging === 'user') {
+      this.updateFilteredContactsList('');
+    } else {
+      this.updateFilteredChannelsList('');
+    }
   }
 
   closeDiaglog() {
     this.dialogRef.close();
-  }
-
-  loadContacts() {
-    this.firebaseService.getAllUsers().subscribe((users) => {
-      this.allContacts.push(...users);
-    });
-    console.log(this.allContacts);
-  }
-
-  addContactToChat(contact: any) {
-    const nameToRemove = this.filteredContacts.findIndex(
-      (c) => c.name === contact.name
-    );
-
-    if (nameToRemove !== -1) {
-      const removedContact = this.filteredContacts.splice(nameToRemove, 1)[0];
-      this.taggedContacts.push(removedContact);
-      this.variableService.setTaggedContactsFromChat(this.taggedContacts);
-      this.updateFilteredContacts();
-    }
-  }
-
-  addContactToThread(contact: any) {
-    const nameToRemove = this.filteredContactsThread.findIndex(
-      (c) => c.name === contact.name
-    );
-
-    if (nameToRemove !== -1) {
-      const removedContact = this.filteredContactsThread.splice(
-        nameToRemove,
-        1
-      )[0];
-      this.taggedContactsThread.push(removedContact);
-      // console.log(this.taggedContactsThread);
-      // console.log(this.taggedContactsThread);
-      this.variableService.setTaggedContactsFromThread(
-        this.taggedContactsThread
-      );
-      this.updateFilteredThreadContacts();
-    }
-  }
-
-  updateFilteredThreadContacts() {
-    this.filteredContactsThread = this.allContacts.filter(
-      (contact) =>
-        !this.taggedContactsThread.some(
-          (tagged) => tagged.name === contact.name
-        )
-    );
-    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
-    // console.log('filtered Contacts sind:' + this.filteredContactsThread);
-  }
-
-  updateFilteredContacts() {
-    this.filteredContacts = this.allContacts.filter(
-      (contact) =>
-        !this.taggedContacts.some((tagged) => tagged.name === contact.name)
-    );
-  }
-
-  checkWhichMode(contact: any) {
-    if (this.modeForTagging == 'thread') {
-      this.addContactToThread(contact);
-    } else if (this.modeForTagging == 'chat') {
-      this.addContactToChat(contact);
-    } else {
-      console.error('No Conact Found');
-    }
   }
 }

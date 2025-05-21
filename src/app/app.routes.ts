@@ -8,6 +8,7 @@ import { ImpressumComponent } from './shared/impressum/impressum.component';
 import { DataProtectionComponent } from './shared/data-protection/data-protection.component';
 import { DirectMessageComponent } from './shared/direct-message/direct-message.component';
 import { NewPasswordComponent } from './features/auth/components/register/reset-password/new-password/new-password.component';
+import { ChannelChatComponent } from './shared/channel-chat/channel-chat.component';
 
 export const routes: Routes = [
   {
@@ -51,8 +52,12 @@ export const routes: Routes = [
     component: DataProtectionComponent,
   },
   {
-    path: 'direct-messsage',
-    component: DirectMessageComponent,
+    path: 'dashboard',
+    component: MainComponentComponent,
+    children: [
+      { path: 'channel/:channelId', component: ChannelChatComponent },
+      { path: 'dm/:conversationId', component: DirectMessageComponent },
+    ],
   },
   { path: '**', redirectTo: '' },
   { path: 'confirm-reset-password', component: NewPasswordComponent },
