@@ -3,7 +3,7 @@
     <div class="thread-header-left">
       <h3>Thread</h3>
       <span class="material-symbols-outlined thread-hashtag"> tag </span>
-      <p>Entwicklerteam</p>
+      <p>{{ (currentThreadChannelName$ | async) || "Channel" }}</p>
     </div>
     <div class="thread-header-right">
       <span
@@ -41,8 +41,7 @@
             <h3>{{ threadMsg.senderDisplayName }}</h3>
             <p>{{ threadMsg.time | date : "HH:mm" }} Uhr</p>
           </div>
-          <div class="msg-content-left">
-            <p>{{ threadMsg.message }}</p>
+          <div class="msg-content-left" [innerHTML]="threadMsg.message">
             <span class="edited-indicator" *ngIf="threadMsg.editedAt"
               >(bearbeitet)</span
             >
@@ -72,17 +71,20 @@
               class="reaction-overflow-btn"
               *ngIf="
                 !isShowingAll(threadMsg) &&
-                getTotalGroupedReactionsCount(threadMsg) > 7
+                getTotalGroupedReactionsCount(threadMsg) > getReactionLimit()
               "
               (click)="toggleShowAllReactions(threadMsg)"
             >
-              +{{ getTotalGroupedReactionsCount(threadMsg) - 7 }} weitere
+              +{{
+                getTotalGroupedReactionsCount(threadMsg) - getReactionLimit()
+              }}
+              weitere
             </button>
             <button
               class="reaction-show-less-btn"
               *ngIf="
                 isShowingAll(threadMsg) &&
-                getTotalGroupedReactionsCount(threadMsg) > 7
+                getTotalGroupedReactionsCount(threadMsg) > getReactionLimit()
               "
               (click)="toggleShowAllReactions(threadMsg)"
             >
@@ -168,8 +170,8 @@
           <div
             class="msg-content-right"
             *ngIf="editingThreadMessageKey !== threadMsg.key"
+            [innerHTML]="threadMsg.message"
           >
-            <p>{{ threadMsg.message }}</p>
             <span class="edited-indicator" *ngIf="threadMsg.editedAt"
               >(bearbeitet)</span
             >
@@ -222,17 +224,20 @@
               class="reaction-overflow-btn"
               *ngIf="
                 !isShowingAll(threadMsg) &&
-                getTotalGroupedReactionsCount(threadMsg) > 7
+                getTotalGroupedReactionsCount(threadMsg) > getReactionLimit()
               "
               (click)="toggleShowAllReactions(threadMsg)"
             >
-              +{{ getTotalGroupedReactionsCount(threadMsg) - 7 }} weitere
+              +{{
+                getTotalGroupedReactionsCount(threadMsg) - getReactionLimit()
+              }}
+              weitere
             </button>
             <button
               class="reaction-show-less-btn"
               *ngIf="
                 isShowingAll(threadMsg) &&
-                getTotalGroupedReactionsCount(threadMsg) > 7
+                getTotalGroupedReactionsCount(threadMsg) > getReactionLimit()
               "
               (click)="toggleShowAllReactions(threadMsg)"
             >
@@ -273,8 +278,9 @@
         #editableDiv
         contenteditable="true"
         (input)="onContentChanged($event)"
-        (keydown.enter)="onEnter($event)"
+        (keydown)="onEnter($event)"
         class="textForThreadInput"
+        [attr.data-placeholder]="'Antworten...'"
       ></div>
 
       <div class="icons">
@@ -305,6 +311,10 @@
           matTooltipPosition="above"
         />
 
+        <!-- This taggedPersonsDiv seems like it might be for displaying a list of tagged users,
+             which is not directly part of the input field itself.
+             If it's meant to be part of the input, it would need different handling.
+             Keeping it as is based on original structure. -->
         <div class="taggedPersonsDiv">
           <div
             contenteditable="false"

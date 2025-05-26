@@ -30,16 +30,17 @@ import {
   of,
   switchMap,
   tap,
+  distinctUntilChanged,
+  shareReplay,
 } from 'rxjs';
 import { Message, Reaction, GroupedReaction } from '../interfaces/message';
-import { get, ref } from '@angular/fire/database';
+import { get, ref, objectVal } from '@angular/fire/database';
 import { FormsModule } from '@angular/forms';
 import { SmileyKeyboardComponent } from '../channel-chat/smiley-keyboard/smiley-keyboard.component';
 import { ChannelWithKey } from '../interfaces/channel';
 import { fromEvent } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { objectVal, DatabaseReference } from '@angular/fire/database';
 
 @Component({
   selector: 'app-thread',
@@ -91,6 +92,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   originalMessageDetails: Message | null = null;
   originalMessageChannelKey: string | null = null;
 
+  currentThreadChannelName$: Observable<string | null> = of(null);
+
   private subscriptions = new Subscription();
 
   threadMessageText: string = '';
@@ -104,6 +107,45 @@ export class ThreadComponent implements OnInit, OnDestroy {
     const openSub = this.variableService.threadIsOpen$.subscribe(
       (open) => (this.isOpen = open)
     );
+
+    this.currentThreadChannelName$ = this.variableService.activeThreadKey$.pipe(
+      distinctUntilChanged(),
+      switchMap((threadKey) => {
+        if (!threadKey) {
+          return of(null);
+        }
+        const threadDataRef = ref(
+          this.firebaseService['database'],
+          `Threads/${threadKey}`
+        );
+        return from(get(threadDataRef)).pipe(
+          switchMap((threadSnapshot) => {
+            if (threadSnapshot.exists()) {
+              const threadData = threadSnapshot.val() as Thread;
+              if (threadData.channelKey) {
+                return this.firebaseService
+                  .getChannel(threadData.channelKey)
+                  .pipe(
+                    map((channel) =>
+                      channel ? channel.channelName : 'Channel'
+                    )
+                  );
+              }
+            }
+            return of('Channel');
+          }),
+          catchError((error) => {
+            console.error(
+              '[ThreadComponent] Error loading channel name for thread header:',
+              error
+            );
+            return of('Channel');
+          })
+        );
+      }),
+      shareReplay(1)
+    );
+
     const keySub = this.variableService.activeThreadKey$
       .pipe(
         tap((key) => (this.currentThreadKey = key)),
@@ -131,14 +173,15 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    const el = this.editableDiv.nativeElement;
-
-    fromEvent(el, 'keyup')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.cacheCurrentRange());
-    fromEvent(el, 'mouseup')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.cacheCurrentRange());
+    if (this.editableDiv && this.editableDiv.nativeElement) {
+      const el = this.editableDiv.nativeElement;
+      fromEvent(el, 'keyup')
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.cacheCurrentRange());
+      fromEvent(el, 'mouseup')
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => this.cacheCurrentRange());
+    }
   }
 
   private cacheCurrentRange() {
@@ -223,7 +266,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   sendThreadMessage(): void {
     const text = this.threadMessageText.replace(/\s|\u00A0/g, '');
-    console.log(this.threadMessageText);
     if (!text || !this.currentThreadKey || !this.currentUser) {
       console.warn('Kann Thread-Nachricht nicht senden: Fehlende Daten');
       return;
@@ -234,7 +276,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.threadMessageText = '';
-          // nach unten scrollen
         },
         error: (err) => {
           console.error('Fehler beim Senden der Thread-Nachricht:', err);
@@ -368,7 +409,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
     const currentState = this.isShowingAll(message);
     this.isShowingAllReactions.set(message.key, !currentState);
-    this.cdRef.markForCheck(); // Wichtig!
+    this.cdRef.markForCheck();
   }
 
   toggleReaction(message: Message | ThreadMessage | null, emoji: string): void {
@@ -618,8 +659,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   startEditingThreadMessage(message: ThreadMessage): void {
-    console.log('msg edit');
-
     if (!message?.key) {
       console.warn(
         '[ThreadComponent] Bearbeitung kann nicht gestartet werden: Nachrichten-Key fehlt.'
@@ -671,9 +710,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          console.log(
-            '[ThreadComponent] Thread-Nachricht erfolgreich aktualisiert.'
-          );
           this.cancelEditThreadMessage();
         },
         error: (err: any) => {
