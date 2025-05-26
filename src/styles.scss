@@ -5,52 +5,73 @@
 }
 
 body {
-  background-color: #ECEEFE;
-  font-family: 'Nunito', sans-serif;
+  background-color: #eceefe;
+  font-family: "Nunito", sans-serif;
 }
 
-
 * {
-    scrollbar-width: thin;
-    scrollbar-color: #797ef3 transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #797ef3 transparent;
 }
 
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 10px;
+  background: transparent;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #797ef3;
-    border-radius: 10px;
+  background: #797ef3;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #6065d9;
+  background: #6065d9;
 }
 
-.hide{
-    display: none !important;
+.hide {
+  display: none !important;
 }
 
-
-.custom-dialog .mat-mdc-dialog-surface{
-    border-radius: 30px !important;
-    border-top-right-radius: 0px !important;
+.custom-dialog .mat-mdc-dialog-surface {
+  border-radius: 30px !important;
+  border-top-right-radius: 0px !important;
 }
 
-.mat-mdc-dialog-inner-container{
-    height: unset !important;
+.mat-mdc-dialog-inner-container {
+  height: unset !important;
+}
+
+.user-tag {
+  display: inline-block;
+  color: rgb(147, 200, 58);
+  padding: 1px 6px;
+  border-radius: 8px 0 8px 8px;
+  font-size: 0.95em;
+  line-height: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0 1px;
+  vertical-align: baseline;
+  transition: all 0.1s ease-in-out;
+  margin-left: 3px;
+
+  &:hover {
+    color: white;
+    background-color: rgb(147, 200, 58);
   }
+}
 
-  ::ng-deep .cdk-overlay-backdrop.transparentBackdrop{
-    background: transparent !important;
-  }
-
-
-  
+span.user-tag,
+span.channel-tag {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
