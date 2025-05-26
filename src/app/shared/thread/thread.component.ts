@@ -14,7 +14,11 @@ import {
 } from '@angular/core';
 import { VariablesService } from '../../variables.service';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog'; // Added MatDialogRef
 import { TaggingPersonsDialogComponent } from '../channel-chat/tagging-persons-dialog/tagging-persons-dialog.component';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
@@ -186,7 +190,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   private cacheCurrentRange() {
     const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
+    if (
+      sel &&
+      sel.rangeCount > 0 &&
+      this.editableDiv.nativeElement.contains(sel.anchorNode) // Check if selection is within the editable div
+    ) {
       this.savedRange = sel.getRangeAt(0).cloneRange();
     }
   }
@@ -265,24 +273,42 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   sendThreadMessage(): void {
-    const text = this.threadMessageText.replace(/\s|\u00A0/g, '');
-    if (!text || !this.currentThreadKey || !this.currentUser) {
-      console.warn('Kann Thread-Nachricht nicht senden: Fehlende Daten');
+    const messageHtml = this.editableDiv.nativeElement.innerHTML.trim();
+    const messageText = this.editableDiv.nativeElement.innerText.trim();
+
+    if (
+      !messageText ||
+      !this.currentThreadKey ||
+      !this.currentUser ||
+      !this.currentUser.displayName
+    ) {
+      console.warn(
+        'Kann Thread-Nachricht nicht senden: Fehlende Daten oder leerer Text',
+        {
+          messageText,
+          currentThreadKey: this.currentThreadKey,
+          currentUser: this.currentUser,
+        }
+      );
+      if (messageText === '' && messageHtml !== '') {
+        this.editableDiv.nativeElement.innerHTML = '';
+        this.threadMessageText = '';
+      }
       return;
     }
 
     this.firebaseService
-      .sendThreadMessage(this.currentThreadKey, text, this.currentUser)
+      .sendThreadMessage(this.currentThreadKey, messageHtml, this.currentUser)
       .subscribe({
         next: () => {
+          this.editableDiv.nativeElement.innerHTML = '';
           this.threadMessageText = '';
+          this.variableService.setTaggedContactsFromThread([]);
         },
         error: (err) => {
           console.error('Fehler beim Senden der Thread-Nachricht:', err);
         },
       });
-
-    this.editableDiv.nativeElement.innerHTML = '';
   }
 
   closeThread(): void {
@@ -293,50 +319,82 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.variableService.toggleThread();
   }
 
-  openTagPeopleDialog() {
-    const targetElement = document.querySelector('.threadwrapper');
-    const inputfield = document.querySelector(
-      '.textForThreadInput'
-    ) as HTMLInputElement;
-    const inputValue = inputfield?.value || '';
+  openTagPeopleDialog(char: '@' | '#', filterPrefix: string) {
+    const targetElement = this.editableDiv.nativeElement;
+    const rect = targetElement.getBoundingClientRect();
+    this.variableService.setNameToFilter(filterPrefix);
 
-    if (targetElement) {
-      const rect = targetElement.getBoundingClientRect();
-      const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
-        position: {
-          bottom: `${rect.top - 20 + window.scrollY}px`,
-          left: `${rect.left + 20 + window.scrollX}px`,
-        },
-        panelClass: ['tagging-dialog'],
-        backdropClass: 'transparentBackdrop',
-        autoFocus: false,
-        data: {
-          mode: 'thread',
-        },
-      });
+    const existingDialog = this.dialog.openDialogs.find(
+      (
+        d: MatDialogRef<any> // MatDialogRef is now imported
+      ) =>
+        d.componentInstance instanceof TaggingPersonsDialogComponent &&
+        d.componentInstance.triggerChar === char // Assuming triggerChar exists on TaggingPersonsDialogComponent
+    );
 
-      setTimeout(() => {
-        const dialogElement = document.querySelector(
-          'mat-dialog-container'
-        ) as HTMLElement;
-        if (dialogElement) {
-          const dialogRect = dialogElement.getBoundingClientRect();
-
-          dialogElement.style.position = 'absolute';
-          dialogElement.style.width = '350px';
-
-          dialogElement.style.borderBottomLeftRadius = '0px';
-        }
-      }, 10);
-      setTimeout(() => {
-        const inputField = document.querySelector(
-          '.textForThreadInput'
-        ) as HTMLElement;
-        if (inputField) {
-          inputField.focus();
-        }
-      }, 400);
+    if (existingDialog) {
+      return;
     }
+
+    const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
+      position: {
+        bottom: `${window.innerHeight - rect.top + 5}px`,
+        left: `${rect.left}px`,
+      },
+      panelClass: ['tagging-dialog', 'thread-tagging-dialog'],
+      backdropClass: 'transparentBackdrop',
+      hasBackdrop: true,
+      disableClose: false,
+      autoFocus: false,
+      restoreFocus: false,
+      data: {
+        mode: char === '@' ? 'user' : 'channel',
+        char: char,
+        initialFilter: filterPrefix,
+        context: 'thread',
+      },
+    });
+
+    const contactSelectedSub =
+      dialogRef.componentInstance.contactSelected.subscribe(
+        (selectedItem: {
+          id: string;
+          name: string;
+          type: 'user' | 'channel';
+        }) => {
+          this.insertTagIntoThreadInput(
+            selectedItem.name,
+            selectedItem.id,
+            selectedItem.type
+          );
+          this.editableDiv.nativeElement.focus();
+        }
+      );
+    this.subscriptions.add(contactSelectedSub);
+
+    dialogRef.afterClosed().subscribe(() => {
+      contactSelectedSub.unsubscribe();
+      this.editableDiv.nativeElement.focus();
+      if (
+        this.savedRange &&
+        this.editableDiv.nativeElement.contains(
+          this.savedRange.commonAncestorContainer
+        )
+      ) {
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(this.savedRange);
+        }
+      }
+      const currentTextInInput = this.editableDiv.nativeElement.innerText;
+      const lastCharInInput = currentTextInInput.slice(-1);
+      if (lastCharInInput !== '@' && lastCharInInput !== '#') {
+        this.variableService.setNameToFilter('');
+      } else {
+        this.variableService.setNameToFilter(lastCharInInput);
+      }
+    });
   }
 
   groupReactions(reactions: Reaction[] | undefined): GroupedReaction[] {
@@ -359,7 +417,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       if (reaction.userName) {
         acc[reaction.emoji].userNames.push(reaction.userName);
       }
-      if (reaction.userId === this.currentUser?.uid) {
+      if (this.currentUser && reaction.userId === this.currentUser.uid) {
         acc[reaction.emoji].reactedByUser = true;
       }
       return acc;
@@ -383,7 +441,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
   ): GroupedReaction[] {
     if (!message) return [];
     const allGrouped = this.groupReactions(message.reactions);
-    const totalCount = allGrouped.length;
     const limit = this.getReactionLimit();
 
     if (this.isShowingAll(message)) {
@@ -423,15 +480,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
     if (
       this.originalMessageDetails &&
-      message.key === this.originalMessageDetails.key
+      message.key === this.originalMessageDetails.key &&
+      this.originalMessageChannelKey
     ) {
-      if (!this.originalMessageChannelKey) {
-        console.error(
-          'toggleReaction: Channel Key für Originalnachricht nicht gefunden!',
-          this.originalMessageDetails
-        );
-        return;
-      }
       this.firebaseService
         .toggleReaction(
           this.originalMessageChannelKey,
@@ -441,7 +492,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           error: (err) =>
-            console.error('Fehler bei Originalnachricht-Reaktion:', err),
+            console.error(
+              'Fehler bei Originalnachricht-Reaktion im Thread:',
+              err
+            ),
         });
     } else if (this.currentThreadKey) {
       this.firebaseService
@@ -452,19 +506,19 @@ export class ThreadComponent implements OnInit, OnDestroy {
           this.currentUser
         )
         .subscribe({
-          error: (err) => console.error('Fehler bei Thread-Reaktion:', err),
+          error: (err) =>
+            console.error('Fehler bei Thread-Antwort-Reaktion:', err),
         });
     } else {
       console.error(
-        'toggleReaction: Weder Originalnachricht noch gültiger Thread-Kontext gefunden.',
+        'toggleReaction: Weder Originalnachricht noch gültiger Thread-Kontext für Reaktion gefunden.',
         { message, currentThreadKey: this.currentThreadKey }
       );
     }
   }
 
   openEmojiPickerForReaction(message: Message | ThreadMessage | null): void {
-    if (!message || !message.key || !this.currentThreadKey || !this.currentUser)
-      return;
+    if (!message || !message.key || !this.currentUser) return;
 
     const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
       panelClass: 'emoji-picker-dialog-reaction',
@@ -478,184 +532,321 @@ export class ThreadComponent implements OnInit, OnDestroy {
     );
   }
 
-  checkForMention(event: Event) {
-    const inputElement = event.target as HTMLElement;
-    if (
-      inputElement.innerHTML.includes('@') &&
-      !this.lastInputValue.includes('@')
-    ) {
-      this.openTagPeopleDialog();
+  isInsideTagSpan(node: Node | null): boolean {
+    let currentNode = node;
+    while (currentNode && currentNode !== this.editableDiv.nativeElement) {
+      if (currentNode.nodeType === Node.ELEMENT_NODE) {
+        const element = currentNode as HTMLElement;
+        if (
+          element.classList.contains('user-tag') ||
+          (element.hasAttribute('contenteditable') &&
+            element.getAttribute('contenteditable') === 'false')
+        ) {
+          return true;
+        }
+      }
+      currentNode = currentNode.parentNode;
     }
-    this.lastInputValue = inputElement.innerHTML;
-    this.variableService.setNameToFilter(this.lastInputValue);
+    return false;
+  }
+
+  checkForMention(event: Event) {
+    const inputElement = event.target as HTMLDivElement;
+    this.threadMessageText = inputElement.innerHTML;
+    this.cacheCurrentRange();
+
+    if (!this.savedRange) return;
+
+    const range = this.savedRange;
+    let charBeforeCursor = '';
+    let currentWordBeforeCursor = '';
+
+    if (
+      range.startContainer.nodeType === Node.TEXT_NODE &&
+      range.startOffset > 0
+    ) {
+      const textContent = range.startContainer.textContent!;
+      const textBefore = textContent.substring(0, range.startOffset);
+      const wordMatch = textBefore.match(/(@)([\w\-äöüÄÖÜß]*)$/u);
+      if (wordMatch) {
+        currentWordBeforeCursor = wordMatch[0];
+        charBeforeCursor = wordMatch[1];
+      }
+    }
+
+    const fullInputText = inputElement.innerText;
+
+    if (charBeforeCursor === '@') {
+      if (this.isInsideTagSpan(range.startContainer)) {
+        this.lastInputValue = fullInputText;
+        return;
+      }
+      this.openTagPeopleDialog('@', currentWordBeforeCursor || '@');
+    } else {
+      const openTagDialog = this.dialog.openDialogs.find(
+        (
+          d: MatDialogRef<any> // MatDialogRef is now imported
+        ) =>
+          d.componentInstance instanceof TaggingPersonsDialogComponent &&
+          // Assuming TaggingPersonsDialogComponent has 'triggerChar' and 'context' properties
+          // If 'context' is not directly on instance, this check needs to be removed or adapted
+          (d.componentInstance as any).triggerChar && // Check if triggerChar exists
+          (d.componentInstance as any).context === 'thread' // Check if context is 'thread'
+      );
+      if (openTagDialog) {
+        const dialogInstance =
+          openTagDialog.componentInstance as TaggingPersonsDialogComponent & {
+            triggerChar: string;
+            context?: string;
+          }; // Add type assertion
+        let relevantPartOfInput = '';
+        const lastTriggerIndex = fullInputText.lastIndexOf(
+          dialogInstance.triggerChar
+        );
+        if (lastTriggerIndex !== -1) {
+          relevantPartOfInput = fullInputText.substring(lastTriggerIndex);
+        }
+
+        if (relevantPartOfInput.startsWith(dialogInstance.triggerChar)) {
+          this.variableService.setNameToFilter(relevantPartOfInput);
+        } else {
+          openTagDialog.close();
+        }
+      }
+    }
+    this.lastInputValue = fullInputText;
   }
 
   openTaggingPerClick(event: Event) {
-    const inputElement = event.target as HTMLElement;
-    if (inputElement) {
-      this.openTagPeopleDialog();
-    }
-    this.lastInputValue = inputElement.innerHTML;
-    this.variableService.setNameToFilter(this.lastInputValue);
-  }
-
-  preventEdit(event: MouseEvent) {
     event.preventDefault();
-
-    const textInput = document.querySelector(
-      '.textForThreadInput'
-    ) as HTMLElement;
-    if (!textInput) return;
-
-    textInput.focus();
-
-    const range = document.createRange();
-    const selection = window.getSelection();
-
-    if (textInput.lastChild) {
-      range.setStartAfter(textInput.lastChild);
-    } else {
-      range.setStart(textInput, textInput.childNodes.length);
-    }
-
-    range.collapse(true);
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-  }
-
-  removePersonFromTagged(name: string) {
-    const index = this.taggedPersonsInThreads.findIndex((e) => e.name === name);
-
-    if (index !== -1) {
-      this.taggedPersonsInThreads.splice(index, 1);
-    }
-  }
-
-  saveCursorPosition() {
-    const input = document.querySelector('.textForThreadInput') as HTMLElement;
-
-    if (!input) {
-      console.error('Input field not found!');
-      return;
-    }
-
-    input.focus();
-
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0).cloneRange();
-
-      this.savedRange = range;
-
-      const lastChild = input.lastChild;
-      if (lastChild) {
-        this.savedRange.setStart(lastChild, (lastChild as Text).length);
-        this.savedRange.setEnd(lastChild, (lastChild as Text).length);
-      }
-    } else {
-      console.warn('No selection range available to save.');
-    }
-    this.openAddSmileyToChannelDialog();
-  }
-
-  openAddSmileyToChannelDialog() {
-    const targetElement = document.querySelector('.threadwrapper');
-    if (targetElement) {
-      const rect = targetElement.getBoundingClientRect();
-      const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
-        panelClass: '',
-        backdropClass: 'transparentBackdrop',
-        position: {
-          bottom: `${rect.top - 20 + window.scrollY}px`,
-          left: `${rect.left + 20 + window.scrollX}px`,
-        },
-        data: { channelKey: this.channel?.key },
-      });
-
-      const componentInstance =
-        dialogRef.componentInstance as SmileyKeyboardComponent;
-      componentInstance.emojiSelected.subscribe((selectedEmoji: string) => {
-        this.insertEmojiAtCursor(selectedEmoji);
-      });
-
-      setTimeout(() => {
-        const dialogElement = document.querySelector(
-          'mat-dialog-container'
-        ) as HTMLElement;
-        if (dialogElement) {
-          const dialogRect = dialogElement.getBoundingClientRect();
-
-          const newTop = rect.top - dialogRect.height + window.scrollY;
-          const newLeft = rect.right - dialogRect.width + window.scrollX;
-
-          dialogElement.style.position = 'absolute';
-
-          dialogElement.style.height = 'fit-content';
-          dialogElement.style.width = 'fit-content';
-        }
-      }, 0);
-    }
-  }
-
-  insertEmojiAtCursor(emoji: string) {
-    const input = this.editableDiv.nativeElement;
-    input.focus();
-
-    if (!input) {
-      console.error('Input field not found!');
-      return;
-    }
-
-    if (!this.savedRange) {
-      const range = document.createRange();
-      range.selectNodeContents(input);
-      range.collapse(false);
-      this.savedRange = range;
-      console.error('No saved cursor position available.');
-      input.focus();
-      return;
-    }
+    const inputEl = this.editableDiv.nativeElement;
+    inputEl.focus();
 
     const selection = window.getSelection();
     if (!selection) return;
 
-    try {
-      selection.removeAllRanges();
-      selection.addRange(this.savedRange);
-
-      const range = selection.getRangeAt(0);
-      range.deleteContents();
-
-      const emojiNode = document.createTextNode(emoji);
-      range.insertNode(emojiNode);
-
-      range.setStartAfter(emojiNode);
-      range.collapse(true);
-
-      this.savedRange = range.cloneRange();
-      this.threadMessageText = input.textContent || '';
-      input.focus();
-    } catch (error) {
-      console.error('Error inserting emoji:', error);
+    let range: Range;
+    if (
+      this.savedRange &&
+      inputEl.contains(this.savedRange.commonAncestorContainer)
+    ) {
+      range = this.savedRange.cloneRange();
+    } else {
+      range = document.createRange();
+      range.selectNodeContents(inputEl);
+      range.collapse(false);
     }
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    if (!range.collapsed) {
+      range.deleteContents();
+    }
+
+    const triggerNode = document.createTextNode('@');
+    range.insertNode(triggerNode);
+
+    range.setStartAfter(triggerNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    this.savedRange = range.cloneRange();
+
+    this.openTagPeopleDialog('@', '@');
+    this.lastInputValue = inputEl.innerText;
+  }
+
+  insertTagIntoThreadInput(
+    name: string,
+    id: string,
+    type: 'user' | 'channel'
+  ): void {
+    if (type === 'channel') return;
+
+    const inputEl = this.editableDiv.nativeElement;
+    inputEl.focus();
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    let range: Range;
+    if (
+      this.savedRange &&
+      inputEl.contains(this.savedRange.commonAncestorContainer)
+    ) {
+      range = this.savedRange.cloneRange();
+    } else {
+      range = selection.getRangeAt(0).cloneRange();
+      if (range.collapsed && !inputEl.contains(range.commonAncestorContainer)) {
+        range.selectNodeContents(inputEl);
+        range.collapse(false);
+      }
+    }
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const activeFilterPrefix = this.variableService.getNameToFilter();
+    if (activeFilterPrefix && activeFilterPrefix.startsWith('@')) {
+      if (
+        range.startContainer.nodeType === Node.TEXT_NODE &&
+        range.startOffset >= activeFilterPrefix.length
+      ) {
+        const textNode = range.startContainer as Text;
+        const textContent = textNode.textContent || '';
+        if (
+          textContent.substring(
+            range.startOffset - activeFilterPrefix.length,
+            range.startOffset
+          ) === activeFilterPrefix
+        ) {
+          range.setStart(
+            textNode,
+            range.startOffset - activeFilterPrefix.length
+          );
+          range.deleteContents();
+        }
+      }
+    } else if (!range.collapsed) {
+      range.deleteContents();
+    }
+
+    const tagSpan = document.createElement('span');
+    tagSpan.classList.add('user-tag');
+    tagSpan.setAttribute(`data-user-id`, id);
+    tagSpan.setAttribute('contenteditable', 'false');
+    tagSpan.innerText = `@${name}`;
+
+    const spaceChar = '\u00A0';
+    const actualSpaceNode = document.createTextNode(spaceChar);
+
+    range.insertNode(tagSpan);
+    range.setStartAfter(tagSpan);
+    range.collapse(true);
+    range.insertNode(actualSpaceNode);
+    range.setStartAfter(actualSpaceNode);
+    range.collapse(true);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    this.savedRange = range.cloneRange();
+
+    this.threadMessageText = inputEl.innerHTML;
+    this.lastInputValue = inputEl.innerText;
+    this.variableService.setNameToFilter('');
+  }
+
+  preventEdit(event: MouseEvent) {
+    event.preventDefault();
+    const textInput = this.editableDiv.nativeElement;
+    if (!textInput) return;
+    textInput.focus();
+    const selection = window.getSelection();
+    if (selection) {
+      const range = document.createRange();
+      range.selectNodeContents(textInput);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      this.savedRange = range.cloneRange();
+    }
+  }
+
+  removePersonFromTagged(name: string) {
+    const index = this.taggedPersonsInThreads.findIndex((e) => e.name === name);
+    if (index !== -1) {
+      this.taggedPersonsInThreads.splice(index, 1);
+      this.variableService.setTaggedContactsFromThread([
+        ...this.taggedPersonsInThreads,
+      ]);
+    }
+  }
+
+  saveCursorPosition() {
+    this.cacheCurrentRange();
+    this.openAddSmileyToThreadDialog();
+  }
+
+  openAddSmileyToThreadDialog() {
+    const targetElement = this.editableDiv.nativeElement.closest(
+      '.input-container-wrapper'
+    );
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+        panelClass: ['emoji-picker-dialog', 'thread-emoji-picker'],
+        backdropClass: 'transparentBackdrop',
+        position: {
+          bottom: `${window.innerHeight - rect.top + 10}px`,
+          left: `${rect.left}px`,
+        },
+      });
+
+      dialogRef.componentInstance.emojiSelected.subscribe(
+        (selectedEmoji: string) => {
+          this.insertEmojiAtCursor(selectedEmoji);
+        }
+      );
+    } else {
+      console.warn(
+        "Could not find '.input-container-wrapper' for emoji picker positioning in thread."
+      );
+    }
+  }
+
+  insertEmojiAtCursor(emoji: string) {
+    const inputEl = this.editableDiv.nativeElement;
+    inputEl.focus();
+    const selection = window.getSelection();
+    if (!selection) return;
+
+    let range: Range;
+    if (
+      this.savedRange &&
+      inputEl.contains(this.savedRange.commonAncestorContainer)
+    ) {
+      range = this.savedRange.cloneRange();
+    } else {
+      range = selection.getRangeAt(0).cloneRange();
+      if (range.collapsed && !inputEl.contains(range.commonAncestorContainer)) {
+        range.selectNodeContents(inputEl);
+        range.collapse(false);
+      }
+    }
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    if (!range.collapsed) {
+      range.deleteContents();
+    }
+
+    const emojiNode = document.createTextNode(emoji);
+    range.insertNode(emojiNode);
+
+    range.setStartAfter(emojiNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    this.savedRange = range.cloneRange();
+    this.threadMessageText = inputEl.innerHTML;
+    this.lastInputValue = inputEl.innerText;
   }
 
   onInput(event: Event): void {
     this.checkForMention(event);
-    const target = event.target as HTMLElement;
-    this.threadMessageText = target.innerText || '';
   }
 
-  onEnter(event: Event): void {
-    event.preventDefault();
-    this.sendThreadMessage();
+  onEnter(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendThreadMessage();
+    }
   }
 
   onContentChanged(event: Event): void {
     const el = this.editableDiv.nativeElement;
-    this.threadMessageText = el.textContent || '';
+    this.threadMessageText = el.innerHTML;
     this.checkForMention(event);
-    this.editableDiv.nativeElement.focus();
   }
 
   startEditingThreadMessage(message: ThreadMessage): void {
@@ -670,7 +861,18 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.cdRef.detectChanges();
 
     setTimeout(() => {
-      const editInputElem = this.editThreadInputs.first?.nativeElement;
+      const editInputElem = this.editThreadInputs.find((input) => {
+        const container = input.nativeElement.closest(
+          '.msg-right-container.ownMessage.editing'
+        );
+        // Ensure container is not null before trying to get an attribute
+        return !!(
+          container &&
+          container.getAttribute('data-message-key') ===
+            this.editingThreadMessageKey
+        );
+      })?.nativeElement;
+
       if (editInputElem) {
         editInputElem.focus();
         const length = editInputElem.value.length;
@@ -688,16 +890,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
       !newText ||
       newText === message.message
     ) {
-      console.warn(
-        '[ThreadComponent] Bedingungen für Update der Thread-Nachricht nicht erfüllt oder Text unverändert.',
-        {
-          editingKey: this.editingThreadMessageKey,
-          currentThreadKey: this.currentThreadKey,
-          newText: newText,
-          originalText: message.message,
-          isSame: newText === message.message,
-        }
-      );
       this.cancelEditThreadMessage();
       return;
     }
@@ -739,9 +931,14 @@ export class ThreadComponent implements OnInit, OnDestroy {
     index: number,
     message: ThreadMessage
   ): string => {
-    const reactionsKey = message.reactions
-      ?.map((r) => r.userId + r.emoji)
+    const reactionsArray = Array.isArray(message.reactions)
+      ? message.reactions
+      : [];
+    const reactionsKey = reactionsArray
+      .map((r) => r.userId + r.emoji)
       .join('_');
-    return `<span class="math-inline">\{message\.key\}\-</span>{this.editingThreadMessageKey === message.key}-<span class="math-inline">\{message\.editedAt\}\-</span>{reactionsKey || ''}`;
+    return `${message.key}-${this.editingThreadMessageKey === message.key}-${
+      message.editedAt || ''
+    }-${reactionsKey}`;
   };
 }

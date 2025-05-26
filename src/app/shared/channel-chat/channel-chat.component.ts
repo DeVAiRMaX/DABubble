@@ -133,14 +133,18 @@ export class ChannelChatComponent
 
     this.subscribeToMemberChanges();
     this.onResize();
-   
   }
 
   ngAfterViewInit() {
     this.scrollToBottom();
-    setTimeout(() => {
-      this.messageInput?.nativeElement?.focus();
-    }, 0);
+    // It's generally safer to focus elements in ngAfterViewInit
+    // when you are sure the view and its children are initialized.
+    if (this.messageInput && this.messageInput.nativeElement) {
+      setTimeout(() => {
+        // Use setTimeout to ensure focus happens after any potential digest cycle
+        this.messageInput.nativeElement.focus();
+      }, 0);
+    }
 
     if (this.channelChatBody && this.channelChatBody.nativeElement) {
       this.subService.add(
@@ -288,7 +292,13 @@ export class ChannelChatComponent
       this.messages$ = of([]);
       this.cdRef.markForCheck();
     }
-     this.messageInput.nativeElement.focus();
+    if (this.channel && this.messageInput && this.messageInput.nativeElement) {
+      setTimeout(() => {
+        if (this.messageInput && this.messageInput.nativeElement) {
+          this.messageInput.nativeElement.focus();
+        }
+      }, 0);
+    }
   }
 
   loadMessages(channelKey: string): void {
