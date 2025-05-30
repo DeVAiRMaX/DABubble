@@ -41,7 +41,10 @@
             <h3>{{ threadMsg.senderDisplayName }}</h3>
             <p>{{ threadMsg.time | date : "HH:mm" }} Uhr</p>
           </div>
-          <div class="msg-content-left" [innerHTML]="threadMsg.message">
+          <div
+            class="msg-content-left"
+            [innerHTML]="getSafeHtml(threadMsg.message)"
+          >
             <span class="edited-indicator" *ngIf="threadMsg.editedAt"
               >(bearbeitet)</span
             >
@@ -170,7 +173,7 @@
           <div
             class="msg-content-right"
             *ngIf="editingThreadMessageKey !== threadMsg.key"
-            [innerHTML]="threadMsg.message"
+            [innerHTML]="getSafeHtml(threadMsg.message)"
           >
             <span class="edited-indicator" *ngIf="threadMsg.editedAt"
               >(bearbeitet)</span

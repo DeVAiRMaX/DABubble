@@ -45,6 +45,7 @@ import { ChannelWithKey } from '../interfaces/channel';
 import { fromEvent } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-thread',
@@ -78,6 +79,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     ElementRef<HTMLTextAreaElement>
   >;
 
+  private sanitizer: DomSanitizer = inject(DomSanitizer);
   private variableService: VariablesService = inject(VariablesService);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
@@ -959,4 +961,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
       message.editedAt || ''
     }-${reactionsKey}`;
   };
+
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 }
