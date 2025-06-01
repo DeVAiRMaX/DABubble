@@ -205,3 +205,88 @@
     font-size: 20px;
   }
 }
+
+@media screen and (max-width: 673px) {
+  .select-avatar-preview {
+    gap: 8px !important;
+    img {
+      width: 100px;
+      height: 100px;
+    }
+  }
+  .select-avatar-box-content{
+    gap: 8px !important;
+    margin: 8px 0 !important;
+  }
+  .select-avatar-box-content-item-list {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .avatar-container-header {
+    padding: 1rem 0 !important;
+  }
+  .avatar-container-header-logo {
+    margin-left: 8px;
+    h1 {
+      display: none;
+    }
+  }
+  .avatar-container-header-text {
+    margin-right: 8px !important;
+  }
+  .avatar-box-container {
+    padding: 0 8px !important;
+  }
+  .avatar-box {
+    min-width: 100% !important;
+    padding: clamp(0.5rem, 5vw, 2rem) 1rem !important;
+    h2 {
+      font-size: 32px !important;
+    }
+  }
+  .avatar-hint {
+    font-size: clamp(0.9rem, 4vw, 1rem);
+    margin-bottom: 8px !important;
+    margin-top: 8px !important;
+  }
+  .avatar-actions {
+    gap: 8px !important;
+  }
+  .divider::before,
+  .divider::after {
+    width: 40% !important;
+  }
+  .divider {
+    margin: 8px 0 !important;
+    span {
+      padding: 0 8px !important;
+    }
+  }
+  .input-group {
+    margin-bottom: 0 !important;
+    gap: 22px !important;
+  }
+  .google-avatar {
+    margin-bottom: 8px !important;
+  }
+  .avatar-actions .guest-avatar {
+    background-color: transparent;
+    border: 1px solid #797ef3;
+    color: #797ef3;
+    transition: all 0.1s ease-in-out;
+  }
+  .avatar-actions button {
+    height: auto !important;
+    padding: 0.9rem !important;
+    font-size: clamp(0.8rem, 5vw, 1rem) !important;
+  }
+  .privacypolicy {
+    .error-message {
+      position: unset !important;
+    }
+  }
+  .footer {
+    margin-top: 8px !important;
+    gap: 8px !important;
+  }
+}
