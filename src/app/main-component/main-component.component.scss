@@ -67,12 +67,14 @@
     position: absolute;
     z-index: 101;
     width: 96%;
+    // height: 100%;
     justify-content: center;
     min-width: unset !important;
+    // overflow: hidden;
   }
-  .channel-chat-container {
-    // z-index: 102;
-  }
+  // .channel-chat-container {
+  // z-index: 102;
+  // }
 }
 
 @media screen and (max-width: 1440px) {

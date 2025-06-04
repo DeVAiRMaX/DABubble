@@ -52,7 +52,10 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     MatTooltipModule,
   ],
   templateUrl: './channel-chat.component.html',
-  styleUrl: './channel-chat.component.scss',
+  styleUrls: [
+    './channel-chat.component.scss',
+    './channel-chat-mobile.component.scss',
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChannelChatComponent

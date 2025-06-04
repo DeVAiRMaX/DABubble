@@ -1,0 +1,30 @@
+@media screen and (max-width: 940px) {
+  .header-logo {
+    img {
+      width: 45px;
+      height: 45px;
+    }
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .header-search {
+    display: none;
+  }
+
+  .header-user-avatar {
+    img {
+      width: 45px;
+      height: 45px;
+    }
+  }
+
+  .header-user-name {
+    display: none;
+  }
+
+  mat-icon {
+    display: none;
+  }
+}
