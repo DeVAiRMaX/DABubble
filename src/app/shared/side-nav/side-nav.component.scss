@@ -20,6 +20,15 @@
   }
 }
 
+@media screen and (max-width: 940px) {
+  .side-nav-header {
+    display: none;
+  }
+  .side-nav-container{
+    padding: 109px 30px 32px 30px;
+  }
+}
+
 .rotated {
   transform: rotate(-90deg);
   transition: transform 0.3s ease-in-out;

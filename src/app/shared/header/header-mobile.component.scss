@@ -10,7 +10,14 @@
   }
 
   .header-search {
-    display: none;
+    position: fixed;
+    top: 98px;
+    z-index: 999;
+    left: 46px;
+    width: 86vw;
+    input {
+      border: 1px solid #ADB0D9;
+    }
   }
 
   .header-user-avatar {
