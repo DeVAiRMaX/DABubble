@@ -20,6 +20,7 @@ import { User } from '../interfaces/user';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
 import { SubService } from '../services/sub.service';
+
 @Component({
   selector: 'app-side-nav',
   standalone: true,
@@ -50,12 +51,14 @@ export class SideNavComponent implements OnInit, OnDestroy {
   isChannelListExpanded: boolean = true;
   isMsgListExpanded: boolean = true;
   sideNavIsVisible: boolean = true;
+  isMobile: boolean = false;
 
   public variableService: VariablesService = inject(VariablesService);
   private dialog: MatDialog = inject(MatDialog);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private subService: SubService = inject(SubService);
+  private mobileSubscription: Subscription | undefined;
 
   @Input() userChannels: ChannelWithKey[] = [];
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
@@ -91,10 +94,20 @@ export class SideNavComponent implements OnInit, OnDestroy {
       }
     });
     this.subService.add(userSub, this.SUB_GROUP_NAME);
+
+    this.mobileSubscription = this.variableService.isMobile$.subscribe(
+      (isMobile) => {
+        this.isMobile = isMobile;
+        console.log('Is mobile view:', this.isMobile);
+      }
+    );
   }
 
   ngOnDestroy(): void {
     this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
+    if (this.mobileSubscription) {
+      this.mobileSubscription.unsubscribe();
+    }
   }
 
   loadUsers(): void {
