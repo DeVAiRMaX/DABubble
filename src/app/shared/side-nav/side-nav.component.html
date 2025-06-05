@@ -25,10 +25,32 @@
         >add</span
       >
     </div>
-    <div class="channel-list-body" [class.collapsed]="!isChannelListExpanded">
+    <div
+      *ngIf="!isMobile"
+      class="channel-list-body"
+      [class.collapsed]="!isChannelListExpanded"
+    >
       <a
         *ngFor="let chan of userChannels"
         (click)="selectChannel(chan)"
+        [class.selected]="variableService.getActiveChannel()?.key === chan.key"
+      >
+        <span class="material-icons"> tag </span> {{ chan.channelName }}
+      </a>
+      <a (click)="openDialog()">
+        <span class="material-icons"> add_circle_outline </span>Channel
+        hinzufügen
+      </a>
+    </div>
+
+    <div
+      *ngIf="isMobile"
+      class="channel-list-body"
+      [class.collapsed]="!isChannelListExpanded"
+    >
+      <a
+        *ngFor="let chan of userChannels"
+        (click)="selectChannel(chan); toggleChannelNav()"
         [class.selected]="variableService.getActiveChannel()?.key === chan.key"
       >
         <span class="material-icons"> tag </span> {{ chan.channelName }}
