@@ -33,3 +33,11 @@
     }
   }
 }
+
+@media screen and (max-width: 940px) {
+  .dialog-container {
+    position: fixed;
+    top: 77px;
+    right: 0;
+  }
+}
