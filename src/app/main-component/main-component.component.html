@@ -14,9 +14,7 @@
   <div class="main-content">
     <app-channel-chat
       class="channel-chat-container"
-      [class.z-index999]="
-        this.variableService.channelChatView() && this.variableService.isMobile$
-      "
+      [class.z-index999]="this.variableService.channelChatView()"
       *ngIf="selectedChannel && !selectedOtherUser"
       [channel]="selectedChannel"
     >
@@ -26,9 +24,7 @@
       *ngIf="selectedOtherUser && !selectedChannel"
       [otherUser]="selectedOtherUser"
       class="direct-message-container"
-      [class.z-index999]="
-        this.variableService.showDmChatView() && this.variableService.isMobile$
-      "
+      [class.z-index999]="this.variableService.showDmChatView()"
     >
     </app-direct-message>
 

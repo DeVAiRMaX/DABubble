@@ -2,9 +2,10 @@
   <div class="header-container">
     <div
       *ngIf="
-        !this.variableService.isMobile$ ||
-        (!this.variableService.channelChatView() &&
-          !this.variableService.showDmChatView())
+        !this.isMobile ||
+        (this.isMobile &&
+          !this.variableService.channelChatView() &&
+            !this.variableService.showDmChatView())
       "
       class="header-logo"
     >
@@ -13,7 +14,7 @@
     </div>
     <div
       *ngIf="
-        this.variableService.isMobile$ &&
+        this.isMobile &&
         (this.variableService.channelChatView() ||
           this.variableService.showDmChatView())
       "

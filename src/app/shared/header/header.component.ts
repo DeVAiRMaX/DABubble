@@ -4,6 +4,8 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
+  OnInit,
   Output,
   ViewChild,
   inject,
@@ -13,7 +15,7 @@ import { DialogComponent } from '../header-dialog-profil/dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../services/auth.service';
 import { User } from '../interfaces/user';
-import { Observable, filter } from 'rxjs';
+import { Observable, Subscription, filter } from 'rxjs';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { FirebaseService } from '../services/firebase.service';
 import { UserProfilComponent } from './user-profil/user-profil.component';
@@ -27,7 +29,7 @@ import { VariablesService } from '../../variables.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', './header-mobile.component.scss'],
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
   @ViewChild('searchInputRef') userListRef!: ElementRef;
   @ViewChild('searchResult') userInputRef!: ElementRef;
 
@@ -40,10 +42,12 @@ export class HeaderComponent {
   searchResultsState: boolean = false;
   userID: string = '';
   userNotFoundChannel: boolean = false;
+  isMobile: boolean = false;
 
   private authService: AuthService = inject(AuthService);
   private databaseService: FirebaseService = inject(FirebaseService);
   public variableService: VariablesService = inject(VariablesService);
+  private mobileSubscription: Subscription | undefined;
 
   user$: Observable<User | null>;
 
@@ -55,6 +59,19 @@ export class HeaderComponent {
     this.user$.pipe(filter((user) => user !== null)).subscribe((user) => {
       this.userID = user!.uid;
     });
+
+    this.mobileSubscription = this.variableService.isMobile$.subscribe(
+      (isMobile) => {
+        this.isMobile = isMobile;
+        console.log('Is mobile view:', this.isMobile);
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    if (this.mobileSubscription) {
+      this.mobileSubscription.unsubscribe();
+    }
   }
 
   async onSearchChange(): Promise<void> {
