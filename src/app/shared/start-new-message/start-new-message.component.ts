@@ -688,7 +688,6 @@ async sendNewMessages() {
     });
   });
 
- 
   this.addedChannelsNewMessage.forEach((element) => {
     const channelKey = element.id;
     const channelMembers = element.data.members || [];
@@ -705,7 +704,6 @@ async sendNewMessages() {
     }
   });
 
-  
   try {
     await Promise.all(sendPromises);
     this.messageInput.nativeElement.innerText = '';
@@ -721,9 +719,4 @@ async sendNewMessages() {
     console.error('Fehler beim Senden einer oder mehrerer Nachrichten:', err);
   }
 }
-
-
-
-
-
 }
