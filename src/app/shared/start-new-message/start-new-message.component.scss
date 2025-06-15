@@ -1,0 +1,87 @@
+@import './../channel-chat/channel-chat.component.scss';
+@import './../header/header.component.scss';
+
+
+.newMessageHeader{
+   
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    box-shadow: none !important;
+}
+
+.newMessageHeaderTitle{
+    font-size: 24px;
+    
+}
+
+.newMessageSearchBar{
+    width: 100%;
+    border-radius: 20px;
+    height: 60px;
+    border-radius: 42px;
+    padding: 15px;
+    border-color: #535AF1;
+
+}
+
+.newMessageSearchResult{
+    top: 140px;
+    max-height: 600px;
+    overflow: scroll;
+}
+
+.newMessageBody{
+    display: flex;
+}
+
+.singleNewContact{
+   justify-content: center;
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    background-color: #ECEEFE;
+    border-radius: 30px;
+    padding: 4px 20px 4px 20px ;
+
+    >img{
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+    }
+}
+
+.singleAddedChannel{
+     justify-content: center;
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    background-color: #ECEEFE;
+    border-radius: 30px;
+    padding: 4px 20px 4px 20px ;
+}
+
+.sendToContainer{
+    display: flex;
+    align-self: flex-end;
+    padding: 10px 45px;
+    gap: 15px;
+}
+
+.cancelNewContact{
+    width: 20px !important;
+    height: 20px !important;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+
+    &:hover{
+        cursor: pointer;
+    }
+
+}
+
+.send-btn-container{
+    display: flex;
+    align-items: center;
+    color: #ED1E79;
+}

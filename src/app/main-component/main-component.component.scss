@@ -76,6 +76,12 @@
   // .channel-chat-container {
   // z-index: 102;
   // }
+
+  .main-container {
+    padding-left: 0;
+    padding-right: 0;
+    gap: 0;
+  }
 }
 
 @media screen and (max-width: 1440px) {

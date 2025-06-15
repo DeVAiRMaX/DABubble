@@ -47,10 +47,10 @@
     height: 100%;
     border-radius: 50%;
   }
-   &:hover .changeProfilePic{
-      display: flex !important;
-      cursor: pointer;
-    }
+  &:hover .changeProfilePic {
+    display: flex !important;
+    cursor: pointer;
+  }
 }
 
 .dialog-edit-profil-container-content {
@@ -158,26 +158,41 @@
   }
 }
 
-.changeProfilePic{
+.changeProfilePic {
   position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(236, 238, 254,0.4);
-    border-radius: 100px;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    
+  width: 100%;
+  height: 100%;
+  background-color: rgba(236, 238, 254, 0.4);
+  border-radius: 100px;
+  display: none;
+  justify-content: center;
+  align-items: center;
 }
 
-
-.changePictureIcon{
-background: url("/assets/img/icons/editPencil.png");
-width: 100%;
-    height: 100%;
-    border-radius: 100px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 25px;
+.changePictureIcon {
+  background: url("/assets/img/icons/editPencil.png");
+  width: 100%;
+  height: 100%;
+  border-radius: 100px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 25px;
 }
 
+@media screen and (max-width: 940px) {
+  .dialog-edit-profil-container {
+    position: fixed;
+    top: 50%;
+    right: unset !important;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    width: 95%;
+    border-radius: 16px;
+    padding: 16px 16px;
+    gap: 16px;
+  }
+  .edit-profil-btn-container {
+    justify-content: space-between;
+    gap: 0;
+}
+}

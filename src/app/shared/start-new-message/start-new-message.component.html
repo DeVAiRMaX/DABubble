@@ -1,0 +1,143 @@
+<div class="channel-chat-container">
+  <div class="channel-chat-header newMessageHeader">
+    <h2 class="newMessageHeaderTitle">Neue Nachricht</h2>
+
+    <input
+      class="newMessageSearchBar"
+      #searchInputRef
+      type="text"
+      placeholder="An: #channel oder @jemand"
+      [(ngModel)]="searchValue"
+      (ngModelChange)="onSearchChange()"
+    />
+
+    <div
+      class="search-Results newMessageSearchResult"
+      *ngIf="searchResultsState"
+      #searchResult
+    >
+      <div
+        class="result-container"
+        *ngFor="let result of searchResults; let i = index"
+        (click)="addUserToNewMessage(result, i)"
+      >
+        <ng-container *ngIf="result.type === 'User'">
+          <img [src]="result.data.avatar" alt="User Avatar" />
+          <p>{{ result.data.displayName }}</p>
+        </ng-container>
+
+        <ng-container *ngIf="result.type === 'Channel'">
+          <mat-icon fontIcon="forum"></mat-icon>
+          <p>{{ result.data.channelName }}</p>
+          <span
+            class="material-symbols-outlined user-not-found-msg"
+            *ngIf="result.userNotFoundChannel"
+          >
+            block
+          </span>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <div class="newMessageBody">
+    <div class="sendToContainer">
+      <div class="singleNewContact" *ngFor="let result of addedUsersNewMessage">
+        <ng-container>
+          <img [src]="result.data.avatar" alt="User Avatar" />
+          <p>{{ result.data.displayName }}</p>
+          <img
+            class="cancelNewContact"
+            [src]="'/assets/img/closeMenuPurple.png'"
+            alt="close"
+            (click)="removeUserFromNewMessage(result)"
+          />
+        </ng-container>
+      </div>
+
+      <div
+        class="singleAddedChannel"
+        *ngFor="let channel of addedChannelsNewMessage"
+      >
+        <ng-container>
+          <mat-icon fontIcon="forum"></mat-icon>
+          <p>{{ channel.data.channelName }}</p>
+          <img
+            class="cancelNewContact"
+            [src]="'/assets/img/closeMenuPurple.png'"
+            alt="close"
+            (click)="removeUserFromNewMessage(channel)"
+          />
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-container">
+    <div class="input-container-wrapper">
+      <div
+        #messageInput
+        class="textForMessageInput"
+        type="text"
+        [attr.placeholder]="'Nachricht an #'"
+        (input)="onInputForTagging($event)"
+        (keydown)="handleKeydown($event)"
+        contenteditable="true"
+      ></div>
+      <div class="icons">
+        <div>
+          <span
+            (click)="openTaggingPerClick('@', $event)"
+            class="material-symbols-outlined"
+            matTooltip="Person markieren"
+          >
+            alternate_email
+          </span>
+
+          <span
+            (click)="saveCursorPosition()"
+            class="material-symbols-outlined add-smiley-button"
+            matTooltip="Emoji hinzufügen"
+          >
+            sentiment_satisfied
+          </span>
+        </div>
+
+        <div class="taggedPersonsDiv">
+          <div
+            contenteditable="false"
+            aria-readonly="true"
+            class="taggedPerson"
+            (mousedown)="preventEdit($event)"
+            *ngFor="let person of taggedPersonsInChat"
+          >
+            <img class="taggedImage" [src]="person.img" />
+            <span> {{ person.name }}</span>
+            <span
+              (click)="removePersonFromTagged(person.name)"
+              class="closeTaggedPerson"
+            ></span>
+          </div>
+        </div>
+        <section class="send-btn-container">
+          <span>
+            {{
+              textFieldIsEmpty
+                ? "Das Eingabefeld ist leer"
+                : channelAccessDenied
+                ? "Sie haben keinen Zugriff auf diesen Channel"
+                : ""
+            }}
+          </span>
+          <img
+            src="./assets/img/icons/send.png"
+            class="send-btn"
+            alt="send"
+            (click)="sendNewMessages()"
+            matTooltip="Senden (Enter)"
+          />
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

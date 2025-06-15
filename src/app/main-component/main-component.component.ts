@@ -19,6 +19,7 @@ import { SubService } from '../shared/services/sub.service';
 import { ChannelWithKey } from '../shared/interfaces/channel';
 import { userData, User } from '../../app/shared/interfaces/user';
 import { Subscription } from 'rxjs';
+import { StartNewMessageComponent } from '../shared/start-new-message/start-new-message.component';
 
 @Component({
   selector: 'app-main-component',
@@ -30,6 +31,7 @@ import { Subscription } from 'rxjs';
     ThreadComponent,
     DirectMessageComponent,
     CommonModule,
+    StartNewMessageComponent
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.scss',
@@ -75,6 +77,9 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private readonly GRP_DATA_CHANNELS = 'dataLoadChannels';
   private readonly GRP_USER_DATA = 'mainUserData';
   private readonly GRP_ACTIVE_VIEW = 'activeViewListeners';
+
+  private readonly EMPTY_MESSAGE_SUB  = 'isEmptyMessageSub';
+  isemptyMessageVisible: boolean = true; 
 
   constructor() {}
 
@@ -170,6 +175,12 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       }
     );
     this.subService.add(activeDmUserSub, this.GRP_ACTIVE_VIEW);
+
+
+     const isEmptyMessage = this.variableService.isEmptyMessage$.subscribe((value)=>{
+      this.isemptyMessageVisible = value;
+    });
+    this.subService.add(isEmptyMessage ,this.EMPTY_MESSAGE_SUB);
   }
 
   loadUserSpecificData(uid: string): void {
@@ -261,5 +272,6 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     if (this.userLeavedSubscription) {
       this.userLeavedSubscription.unsubscribe();
     }
+     this.subService.unsubscribeGroup(this.EMPTY_MESSAGE_SUB);
   }
 }

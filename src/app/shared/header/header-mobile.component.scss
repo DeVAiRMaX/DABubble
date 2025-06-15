@@ -12,10 +12,13 @@
   .header-search {
     position: fixed;
     top: 98px;
-    z-index: 900;
-    left: 46px;
-    width: 86vw;
+    z-index: 999;
+    left: 0;
+    width: 100vw;
+    padding: 0 8px;
     input {
+      font-size: 14px !important;
+      padding: 17.5px 24px !important;
       border: 1px solid #adb0d9;
     }
   }

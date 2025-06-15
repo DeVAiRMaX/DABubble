@@ -38,6 +38,7 @@ export class VariablesService {
     if (user) {
       this.setActiveChannel(null);
       this.closeThread();
+      this.isEmptyMessageSubject.next(false);
     }
     this.activeDmUserSubject.next(user);
   }
@@ -50,6 +51,7 @@ export class VariablesService {
     if (channel) {
       this.setActiveDmUser(null);
       this.closeThread();
+      this.isEmptyMessageSubject.next(false);
     }
     this.activeChannelSubject.next(channel);
   }
@@ -57,6 +59,17 @@ export class VariablesService {
   getActiveChannel(): ChannelWithKey | null {
     return this.activeChannelSubject.getValue();
   }
+
+  setEmptyMessageTrue(){
+    this.activeChannelSubject.next(null);
+    this.activeDmUserSubject.next(null);
+    this.closeThread();
+    this.isEmptyMessageSubject.next(true);
+    console.log(this.isEmptyMessageSubject.value);
+  }
+
+  private isEmptyMessageSubject = new BehaviorSubject<boolean>(false);
+  isEmptyMessage$ = this.isEmptyMessageSubject.asObservable();
 
   private isClosedSubject = new BehaviorSubject<boolean>(
     this.getStoredValue('isClosed', false)

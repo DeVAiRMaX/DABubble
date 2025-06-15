@@ -4,7 +4,11 @@
       <img src="./assets/img/devspace.png" alt="Devspace Logo" />
       <h3>Devspace</h3>
     </div>
-    <span class="material-symbols-outlined edit_btn">edit_square</span>
+    <span
+      (click)="createNewMessage()"
+      class="material-symbols-outlined edit_btn"
+      >edit_square</span
+    >
   </div>
 
   <div class="channel-list-container">
@@ -135,4 +139,11 @@
       sideNavIsVisible ? "Workspace-Menü schließen" : "Workspace-Menü öffnen"
     }}</span>
   </div>
+</div>
+
+<div *ngIf="isMobile && sideNavIsVisible">
+  <button
+    (click)="showNewMessageOnMobile()"
+    class="newChatMobileButton"
+  ></button>
 </div>

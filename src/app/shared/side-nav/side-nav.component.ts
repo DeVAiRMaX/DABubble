@@ -170,4 +170,15 @@ export class SideNavComponent implements OnInit, OnDestroy {
       JSON.stringify(this.isMsgListExpanded)
     );
   }
+
+  createNewMessage(){
+    this.variableService.setEmptyMessageTrue();
+  }
+
+  showNewMessageOnMobile(){
+    this.createNewMessage();
+    this.toggleChannelNav();
+    console.log('New message on mobile view');
+    
+  }
 }
