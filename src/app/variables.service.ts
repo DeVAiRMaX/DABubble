@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { HostListener, Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { User } from './shared/interfaces/user';
 import { ChannelWithKey } from './shared/interfaces/channel';
@@ -12,6 +12,19 @@ export class VariablesService {
   }
 
   googleLogin: boolean = false;
+
+  private isMobileSubject = new BehaviorSubject<boolean>(
+    window.innerWidth <= 940
+  );
+  isMobile$ = this.isMobileSubject.asObservable();
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event?: Event) {
+    const isMobile = window.innerWidth <= 940;
+    if (this.isMobileSubject.value !== isMobile) {
+      this.isMobileSubject.next(isMobile);
+    }
+  }
 
   private activeDmUserSubject = new BehaviorSubject<User | null>(null);
   activeDmUser$ = this.activeDmUserSubject.asObservable();

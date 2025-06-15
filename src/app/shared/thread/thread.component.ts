@@ -45,6 +45,7 @@ import { ChannelWithKey } from '../interfaces/channel';
 import { fromEvent } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-thread',
@@ -78,6 +79,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     ElementRef<HTMLTextAreaElement>
   >;
 
+  private sanitizer: DomSanitizer = inject(DomSanitizer);
   private variableService: VariablesService = inject(VariablesService);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
@@ -136,14 +138,14 @@ export class ThreadComponent implements OnInit, OnDestroy {
                   );
               }
             }
-            return of('Channel'); // Fallback
+            return of('Channel');
           }),
           catchError((error) => {
             console.error(
               '[ThreadComponent] Error loading channel name for thread header:',
               error
             );
-            return of('Channel'); // Fallback
+            return of('Channel');
           })
         );
       }),
@@ -274,35 +276,25 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   sendThreadMessage(): void {
     let messageHtml = this.editableDiv.nativeElement.innerHTML;
-
-    // 1. Remove trailing <br> tags and any whitespace around them, or just trailing whitespace.
-    // This regex looks for one or more occurrences of <br> (with optional self-closing slash and space)
-    // or whitespace characters (\s) at the very end ($) of the string.
     messageHtml = messageHtml.replace(/(<br\s*\/?>|\s)+$/, '');
-
-    // 2. Trim any remaining leading/trailing whitespace from the string itself (e.g., if it started with spaces)
     messageHtml = messageHtml.trim();
 
-    // 3. Check if the content is effectively empty after cleaning
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = messageHtml;
     const cleanedTextContent = tempDiv.innerText.trim();
-    // Check for meaningful tags we care about (e.g., user mentions, channel mentions, images)
     const hasMeaningfulTags =
       tempDiv.querySelector('span.user-tag, span.channel-tag, img') !== null;
 
-    // If there's no visible text AND no meaningful tags, consider it empty.
     if (!cleanedTextContent && !hasMeaningfulTags) {
       console.warn(
         'Nachricht ist nach Bereinigung leer und wird nicht gesendet.'
       );
-      this.editableDiv.nativeElement.innerHTML = ''; // Clear the input visually
-      this.threadMessageText = ''; // Reset internal state
-      this.variableService.setTaggedContactsFromThread([]); // Clear any tagged contacts
-      return; // Stop further processing
+      this.editableDiv.nativeElement.innerHTML = '';
+      this.threadMessageText = '';
+      this.variableService.setTaggedContactsFromThread([]);
+      return;
     }
 
-    // Check for necessary metadata before sending
     if (
       !this.currentThreadKey ||
       !this.currentUser ||
@@ -318,12 +310,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Proceed to send the message
     this.firebaseService
       .sendThreadMessage(this.currentThreadKey, messageHtml, this.currentUser)
       .subscribe({
         next: () => {
-          this.editableDiv.nativeElement.innerHTML = ''; // Clear input after successful send
+          this.editableDiv.nativeElement.innerHTML = '';
           this.threadMessageText = '';
           this.variableService.setTaggedContactsFromThread([]);
         },
@@ -349,7 +340,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     const existingDialog = this.dialog.openDialogs.find(
       (d: MatDialogRef<any>) =>
         d.componentInstance instanceof TaggingPersonsDialogComponent &&
-        d.componentInstance.triggerChar === char // Assuming triggerChar exists
+        d.componentInstance.triggerChar === char
     );
 
     if (existingDialog) {
@@ -368,10 +359,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
       autoFocus: false,
       restoreFocus: false,
       data: {
-        mode: char === '@' ? 'user' : 'channel', // In thread, likely only 'user' mode for '@'
+        mode: char === '@' ? 'user' : 'channel',
         char: char,
         initialFilter: filterPrefix,
-        context: 'thread', // Important for dialog to know its context
+        context: 'thread',
       },
     });
 
@@ -390,10 +381,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
           this.editableDiv.nativeElement.focus();
         }
       );
-    this.subscriptions.add(contactSelectedSub); // Manage subscription
+    this.subscriptions.add(contactSelectedSub);
 
     dialogRef.afterClosed().subscribe(() => {
-      contactSelectedSub.unsubscribe(); // Clean up
+      contactSelectedSub.unsubscribe();
       this.editableDiv.nativeElement.focus();
       if (
         this.savedRange &&
@@ -572,8 +563,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   checkForMention(event: Event) {
     const inputElement = event.target as HTMLDivElement;
-    this.threadMessageText = inputElement.innerHTML; // Store HTML content
-    this.cacheCurrentRange(); // Always cache range on input
+    this.threadMessageText = inputElement.innerHTML;
+    this.cacheCurrentRange();
 
     if (!this.savedRange) return;
 
@@ -587,14 +578,14 @@ export class ThreadComponent implements OnInit, OnDestroy {
     ) {
       const textContent = range.startContainer.textContent!;
       const textBefore = textContent.substring(0, range.startOffset);
-      const wordMatch = textBefore.match(/(@)([\w\-äöüÄÖÜß]*)$/u); // Only for '@' in threads
+      const wordMatch = textBefore.match(/(@)([\w\-äöüÄÖÜß]*)$/u);
       if (wordMatch) {
         currentWordBeforeCursor = wordMatch[0];
         charBeforeCursor = wordMatch[1];
       }
     }
 
-    const fullInputText = inputElement.innerText; // For logical checks
+    const fullInputText = inputElement.innerText;
 
     if (charBeforeCursor === '@') {
       if (this.isInsideTagSpan(range.startContainer)) {
@@ -603,11 +594,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
       }
       this.openTagPeopleDialog('@', currentWordBeforeCursor || '@');
     } else {
-      // Close dialog if trigger char is removed or space is typed after it
       const openTagDialog = this.dialog.openDialogs.find(
         (d: MatDialogRef<any>) =>
           d.componentInstance instanceof TaggingPersonsDialogComponent &&
-          (d.componentInstance as any).triggerChar === '@' && // Specifically for '@'
+          (d.componentInstance as any).triggerChar === '@' &&
           (d.componentInstance as any).context === 'thread'
       );
       if (openTagDialog) {
@@ -622,18 +612,14 @@ export class ThreadComponent implements OnInit, OnDestroy {
         );
 
         if (lastTriggerIndex !== -1) {
-          // Get text from trigger up to cursor to update filter
-          // This needs to be robust against multiple @ symbols
           const textAfterLastTrigger =
             fullInputText.substring(lastTriggerIndex);
           if (textAfterLastTrigger.includes(' ')) {
-            // If space after @, close dialog
             openTagDialog.close();
           } else {
             relevantPartOfInput = textAfterLastTrigger;
           }
         } else {
-          // Trigger char not found anymore
           openTagDialog.close();
         }
 
@@ -669,7 +655,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     } else {
       range = document.createRange();
       range.selectNodeContents(inputEl);
-      range.collapse(false); // To end
+      range.collapse(false);
     }
     selection.removeAllRanges();
     selection.addRange(range);
@@ -678,7 +664,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       range.deleteContents();
     }
 
-    const triggerNode = document.createTextNode('@'); // Only '@' for threads
+    const triggerNode = document.createTextNode('@');
     range.insertNode(triggerNode);
 
     range.setStartAfter(triggerNode);
@@ -687,7 +673,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     selection.addRange(range);
     this.savedRange = range.cloneRange();
 
-    this.openTagPeopleDialog('@', '@'); // Open with '@'
+    this.openTagPeopleDialog('@', '@');
     this.lastInputValue = inputEl.innerText;
   }
 
@@ -696,7 +682,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     id: string,
     type: 'user' | 'channel'
   ): void {
-    if (type === 'channel') return; // No channel tags in thread input
+    if (type === 'channel') return;
 
     const inputEl = this.editableDiv.nativeElement;
     inputEl.focus();
@@ -720,7 +706,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    // Delete the filter prefix (e.g., "@sea")
     const activeFilterPrefix = this.variableService.getNameToFilter();
     if (activeFilterPrefix && activeFilterPrefix.startsWith('@')) {
       if (
@@ -743,7 +728,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
         }
       }
     } else if (!range.collapsed) {
-      // If no prefix but something selected, delete selection
       range.deleteContents();
     }
 
@@ -753,7 +737,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     tagSpan.setAttribute('contenteditable', 'false');
     tagSpan.innerText = `@${name}`;
 
-    const spaceChar = ' '; // Regular space
+    const spaceChar = ' ';
     const actualSpaceNode = document.createTextNode(spaceChar);
 
     range.insertNode(tagSpan);
@@ -767,9 +751,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
     selection.addRange(range);
     this.savedRange = range.cloneRange();
 
-    this.threadMessageText = inputEl.innerHTML; // Update with HTML
+    this.threadMessageText = inputEl.innerHTML;
     this.lastInputValue = inputEl.innerText;
-    this.variableService.setNameToFilter(''); // Clear filter
+    this.variableService.setNameToFilter('');
   }
 
   preventEdit(event: MouseEvent) {
@@ -781,7 +765,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     if (selection) {
       const range = document.createRange();
       range.selectNodeContents(textInput);
-      range.collapse(false); // To end
+      range.collapse(false);
       selection.removeAllRanges();
       selection.addRange(range);
       this.savedRange = range.cloneRange();
@@ -793,7 +777,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     if (index !== -1) {
       this.taggedPersonsInThreads.splice(index, 1);
       this.variableService.setTaggedContactsFromThread([
-        // Update service
         ...this.taggedPersonsInThreads,
       ]);
     }
@@ -866,17 +849,15 @@ export class ThreadComponent implements OnInit, OnDestroy {
     selection.addRange(range);
 
     this.savedRange = range.cloneRange();
-    this.threadMessageText = inputEl.innerHTML; // Update with HTML
+    this.threadMessageText = inputEl.innerHTML;
     this.lastInputValue = inputEl.innerText;
   }
 
   onInput(event: Event): void {
-    // Called on (input) from template
-    this.checkForMention(event); // Handles mentions and updates threadMessageText
+    this.checkForMention(event);
   }
 
   onEnter(event: KeyboardEvent): void {
-    // Called on (keydown.enter)
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.sendThreadMessage();
@@ -884,10 +865,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   onContentChanged(event: Event): void {
-    // This is the same as onInput, can be merged or removed if onInput handles all
     const el = this.editableDiv.nativeElement;
-    this.threadMessageText = el.innerHTML; // Keep HTML
-    this.checkForMention(event); // Process mentions
+    this.threadMessageText = el.innerHTML;
+    this.checkForMention(event);
   }
 
   startEditingThreadMessage(message: ThreadMessage): void {
@@ -898,7 +878,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return;
     }
     this.editingThreadMessageKey = message.key;
-    this.editThreadMessageText = message.message; // Assuming this is plain text or simple HTML for textarea
+    this.editThreadMessageText = message.message;
     this.cdRef.detectChanges();
 
     setTimeout(() => {
@@ -927,8 +907,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
     if (
       !this.editingThreadMessageKey ||
       !this.currentThreadKey ||
-      !newText || // Ensure not empty
-      newText === message.message // Ensure changed
+      !newText ||
+      newText === message.message
     ) {
       this.cancelEditThreadMessage();
       return;
@@ -938,7 +918,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       .updateThreadMessage(
         this.currentThreadKey,
         this.editingThreadMessageKey,
-        newText // Send plain text from textarea
+        newText
       )
       .subscribe({
         next: () => {
@@ -981,4 +961,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
       message.editedAt || ''
     }-${reactionsKey}`;
   };
+
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 }

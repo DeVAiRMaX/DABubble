@@ -1,4 +1,13 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { SharedModule } from './../../shared';
 import { DialogComponent } from '../header-dialog-profil/dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -15,10 +24,9 @@ import { ChannelWithKey } from '../interfaces/channel';
   standalone: true,
   imports: [SharedModule, AsyncPipe, NgIf],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss',
+  styleUrls: ['./header.component.scss', './header-mobile.component.scss'],
 })
 export class HeaderComponent {
-
   @ViewChild('searchInputRef') userListRef!: ElementRef;
   @ViewChild('searchResult') userInputRef!: ElementRef;
 
@@ -37,19 +45,15 @@ export class HeaderComponent {
 
   user$: Observable<User | null>;
 
-  constructor(public dialog: MatDialog, ) {
-    
-    this.user$ = this.authService.user$;          
+  constructor(public dialog: MatDialog) {
+    this.user$ = this.authService.user$;
   }
 
   ngOnInit(): void {
-    this.user$
-      .pipe(filter(user => user !== null))
-      .subscribe(user => {
-        this.userID = user!.uid;
-      });
+    this.user$.pipe(filter((user) => user !== null)).subscribe((user) => {
+      this.userID = user!.uid;
+    });
   }
-  
 
   async onSearchChange(): Promise<void> {
     const data = await this.databaseService.getDatabaseData();
@@ -60,45 +64,45 @@ export class HeaderComponent {
 
       const channels = data.channels
         ? Object.entries(data.channels as Record<string, any>)
-          .filter(([id, channel]) =>
-            channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
-          )
-          .map(([id, channel]) => ({
-            id: id,                
-            type: 'Channel',
-            data: channel,
-          }))
+            .filter(
+              ([id, channel]) =>
+                channel.channelName &&
+                channel.channelName.toLowerCase().includes(lowerSearchTerm)
+            )
+            .map(([id, channel]) => ({
+              id: id,
+              type: 'Channel',
+              data: channel,
+            }))
         : [];
-
 
       const users = data.users
         ? Object.entries(data.users as Record<string, any>)
-          .filter(([id, user]) =>
-            user.displayName && user.displayName.toLowerCase().includes(lowerSearchTerm)
-          )
-          .map(([id, user]) => ({
-            id: id,
-            type: 'User',
-            data: user,
-          }))
+            .filter(
+              ([id, user]) =>
+                user.displayName &&
+                user.displayName.toLowerCase().includes(lowerSearchTerm)
+            )
+            .map(([id, user]) => ({
+              id: id,
+              type: 'User',
+              data: user,
+            }))
         : [];
 
-        // const massages = data.direct-messages
-        // ? Object.entries(data.direct-messages as Record<string, any>)
-        //   .filter(([id, channel]) =>
-        //     channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
-        //   )
-        //   .map(([id, channel]) => ({
-        //     id: id,                
-        //     type: 'Channel',
-        //     data: channel,
-        //   }))
-        // : [];
+      // const massages = data.direct-messages
+      // ? Object.entries(data.direct-messages as Record<string, any>)
+      //   .filter(([id, channel]) =>
+      //     channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
+      //   )
+      //   .map(([id, channel]) => ({
+      //     id: id,
+      //     type: 'Channel',
+      //     data: channel,
+      //   }))
+      // : [];
 
-      this.searchResults = [
-        ...channels,
-        ...users,
-      ];
+      this.searchResults = [...channels, ...users];
     } else {
       this.searchResultsState = false;
       this.searchResults = [];
@@ -107,7 +111,10 @@ export class HeaderComponent {
 
   openResult(result: any): void {
     if (result.type === 'Channel') {
-      if (Array.isArray(result.data.members) && result.data.members.includes(this.userID)) {
+      if (
+        Array.isArray(result.data.members) &&
+        result.data.members.includes(this.userID)
+      ) {
         this.openResultChannel(result);
       } else {
         result.userNotFoundChannel = true;
@@ -116,16 +123,15 @@ export class HeaderComponent {
       this.openResultUser(result);
     }
   }
-  
 
   openResultUser(data: any) {
     const dialogRef = this.dialog.open(UserProfilComponent, {
       data: data,
       panelClass: 'custom-user-profil-container',
     });
-  
+
     this.searchResultsState = false;
-  
+
     dialogRef.afterClosed().subscribe((selectedUser: User | undefined) => {
       if (selectedUser) {
         console.log('[Header] Got user from dialog:', selectedUser);
@@ -133,11 +139,9 @@ export class HeaderComponent {
       }
     });
   }
-  
 
   openResultChannel(result: any & ChannelWithKey) {
     if (result.type === 'Channel') {
-
       const channelWithKey = { ...result.data, key: result.id };
 
       this.channelSelected.emit(channelWithKey);
@@ -147,8 +151,12 @@ export class HeaderComponent {
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent): void {
-    const clickedInsideInput = this.userInputRef?.nativeElement.contains(event.target);
-    const clickedInsideList = this.userListRef?.nativeElement.contains(event.target);
+    const clickedInsideInput = this.userInputRef?.nativeElement.contains(
+      event.target
+    );
+    const clickedInsideList = this.userListRef?.nativeElement.contains(
+      event.target
+    );
 
     if (!clickedInsideInput && !clickedInsideList) {
       this.searchResultsState = false;
@@ -157,7 +165,6 @@ export class HeaderComponent {
 
   closeDialog(dialog: string) {
     // this.dialogRef.close(EditProfilDialogComponent);
-
   }
 
   openDialog() {

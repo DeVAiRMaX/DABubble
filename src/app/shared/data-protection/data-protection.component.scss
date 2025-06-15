@@ -1,11 +1,7 @@
 .data-protection-container {
   max-height: calc(100% - 557px);
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  align-items: center;
   max-width: 100%;
- 
+
   padding-right: 16px;
   section {
     width: 100%;
@@ -74,7 +70,6 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  
 }
 
 .data-protection-box-header {
@@ -116,4 +111,92 @@
 
 li {
   list-style: disc;
+}
+
+@media screen and (max-width: 673px) {
+  .data-protection-container {
+    display: block;
+    max-height: unset !important;
+    padding-right: 0 !important;
+    word-wrap: break-word;
+    align-items: flex-start !important;
+    li{
+      list-style: none !important;
+    }
+  }
+  .data-protection-container-header {
+    padding: 1rem 0 !important;
+  }
+  .data-protection-container-header-logo {
+    margin-left: 8px;
+    h1 {
+      display: none;
+    }
+  }
+  .data-protection-container-header-text {
+    margin-right: 8px !important;
+  }
+  .data-protection-box-container {
+    padding: 0 8px !important;
+    section {
+      max-width: 100% !important;
+      box-sizing: border-box;
+    }
+  }
+  .data-protection-box {
+    width: 100% !important;
+    max-width: unset !important;
+    max-height: 98% !important;
+    min-width: unset !important;
+    padding: clamp(0.5rem, 5vw, 2rem) 1rem !important;
+    gap: 8px !important;
+    h2 {
+      font-size: 32px !important;
+    }
+  }
+  .data-protection-hint {
+    font-size: clamp(0.9rem, 4vw, 1rem);
+    margin-bottom: 8px !important;
+    margin-top: 8px !important;
+  }
+  .data-protection-actions {
+    gap: 8px !important;
+  }
+  .divider::before,
+  .divider::after {
+    width: 40% !important;
+  }
+  .divider {
+    margin: 8px 0 !important;
+    span {
+      padding: 0 8px !important;
+    }
+  }
+  .input-group {
+    margin-bottom: 0 !important;
+    gap: 22px !important;
+  }
+  .google-data-protection {
+    margin-bottom: 8px !important;
+  }
+  .data-protection-actions .guest-data-protection {
+    background-color: transparent;
+    border: 1px solid #797ef3;
+    color: #797ef3;
+    transition: all 0.1s ease-in-out;
+  }
+  .data-protection-actions button {
+    height: auto !important;
+    padding: 0.9rem !important;
+    font-size: clamp(0.8rem, 5vw, 1rem) !important;
+  }
+  .privacypolicy {
+    .error-message {
+      position: unset !important;
+    }
+  }
+  .footer {
+    margin-top: 8px !important;
+    gap: 8px !important;
+  }
 }

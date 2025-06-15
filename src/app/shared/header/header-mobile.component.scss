@@ -1,0 +1,37 @@
+@media screen and (max-width: 940px) {
+  .header-logo {
+    img {
+      width: 45px;
+      height: 45px;
+    }
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .header-search {
+    position: fixed;
+    top: 98px;
+    z-index: 999;
+    left: 46px;
+    width: 86vw;
+    input {
+      border: 1px solid #adb0d9;
+    }
+  }
+
+  .header-user-avatar {
+    img {
+      width: 45px;
+      height: 45px;
+    }
+  }
+
+  .header-user-name {
+    display: none;
+  }
+
+  mat-icon {
+    display: none;
+  }
+}

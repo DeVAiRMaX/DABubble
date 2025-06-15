@@ -11,31 +11,31 @@
   >
     >
   </app-side-nav>
+  <div class="main-content">
+    <app-channel-chat
+      class="channel-chat-container"
+      *ngIf="selectedChannel && !selectedOtherUser"
+      [channel]="selectedChannel"
+    >
+    </app-channel-chat>
 
-  <app-channel-chat
-    class="channel-chat-container"
-    *ngIf="selectedChannel && !selectedOtherUser"
-    [channel]="selectedChannel"
-  >
-  </app-channel-chat>
+    <app-start-new-message
+      class="channel-chat-container"
+      *ngIf="isemptyMessageVisible"
+    >
+    </app-start-new-message>
 
-  <app-start-new-message
-    class="channel-chat-container"
-    *ngIf="isemptyMessageVisible"
-  >
-  </app-start-new-message>
+    <app-direct-message
+      *ngIf="selectedOtherUser && !selectedChannel"
+      [otherUser]="selectedOtherUser"
+      class="direct-message-container"
+    >
+    </app-direct-message>
 
-  <app-direct-message
-    *ngIf="selectedOtherUser && !selectedChannel"
-    [otherUser]="selectedOtherUser"
-    class="direct-message-container"
-  >
-  </app-direct-message>
-
-  <app-thread
-    *ngIf="threadIsVisible"
-    class="thread-container"
-    class="thread-container"
-    [@slideInOut]
-  ></app-thread>
+    <app-thread
+      *ngIf="threadIsVisible"
+      class="thread-container"
+      [@slideInOut]
+    ></app-thread>
+  </div>
 </div>

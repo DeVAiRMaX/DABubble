@@ -52,7 +52,10 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     MatTooltipModule,
   ],
   templateUrl: './channel-chat.component.html',
-  styleUrl: './channel-chat.component.scss',
+  styleUrls: [
+    './channel-chat.component.scss',
+    './channel-chat-mobile.component.scss',
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChannelChatComponent
@@ -137,11 +140,8 @@ export class ChannelChatComponent
 
   ngAfterViewInit() {
     this.scrollToBottom();
-    // It's generally safer to focus elements in ngAfterViewInit
-    // when you are sure the view and its children are initialized.
     if (this.messageInput && this.messageInput.nativeElement) {
       setTimeout(() => {
-        // Use setTimeout to ensure focus happens after any potential digest cycle
         this.messageInput.nativeElement.focus();
       }, 0);
     }
@@ -211,9 +211,7 @@ export class ChannelChatComponent
         this.channelChatBody.nativeElement.scrollTop =
           this.channelChatBody.nativeElement.scrollHeight;
       }
-    } catch (err) {
-      // console.warn('Es konnte nicht gescrollt werden', err);
-    }
+    } catch (err) {}
   }
 
   getReactionLimit(): number {
