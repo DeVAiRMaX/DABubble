@@ -1,8 +1,25 @@
 <ng-container *ngIf="user$ | async as user; else loggedOutHeader">
   <div class="header-container">
-    <div class="header-logo">
+    <div
+      *ngIf="
+        !this.variableService.isMobile$ ||
+        !this.variableService.channelChatView()
+      "
+      class="header-logo"
+    >
       <img src="./assets/img/logo.png" alt="logo" />
       <h2>DABubble</h2>
+    </div>
+    <div
+      *ngIf="
+        this.variableService.isMobile$ && this.variableService.channelChatView()
+      "
+      class="header-logo"
+      (click)="showSideNavMobile()"
+    >
+      <img class="arrow-left" src="./assets/img/icons/arrow-left.png" alt="" />
+      <img src="./assets/img/devspace.png" alt="logo" />
+      <h2>Devspace</h2>
     </div>
     <div class="header-search">
       <input

@@ -18,6 +18,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { FirebaseService } from '../services/firebase.service';
 import { UserProfilComponent } from './user-profil/user-profil.component';
 import { ChannelWithKey } from '../interfaces/channel';
+import { VariablesService } from '../../variables.service';
 
 @Component({
   selector: 'app-header',
@@ -42,6 +43,7 @@ export class HeaderComponent {
 
   private authService: AuthService = inject(AuthService);
   private databaseService: FirebaseService = inject(FirebaseService);
+  public variableService: VariablesService = inject(VariablesService);
 
   user$: Observable<User | null>;
 
@@ -175,5 +177,10 @@ export class HeaderComponent {
         'Dialog kann nicht geöffnet werden, kein Benutzer eingeloggt.'
       );
     }
+  }
+
+  showSideNavMobile() {
+    this.variableService.hideChannelChatView();
+    this.variableService.toggleSideNav();
   }
 }
