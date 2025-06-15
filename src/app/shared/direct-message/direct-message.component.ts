@@ -97,7 +97,9 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
       } else {
         this.resetState();
       }
-      this.messageInput.nativeElement.focus();
+      if (!this.variableService.isMobile$) {
+        this.messageInput.nativeElement.focus();
+      }
     }
   }
 

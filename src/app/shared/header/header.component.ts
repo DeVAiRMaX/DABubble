@@ -165,10 +165,6 @@ export class HeaderComponent {
     }
   }
 
-  closeDialog(dialog: string) {
-    // this.dialogRef.close(EditProfilDialogComponent);
-  }
-
   openDialog() {
     if (this.authService.getCurrentUser()) {
       this.dialog.open(DialogComponent, {});
@@ -180,7 +176,8 @@ export class HeaderComponent {
   }
 
   showSideNavMobile() {
+    this.variableService.hidesDmChatView();
     this.variableService.hideChannelChatView();
-    this.variableService.toggleSideNav();
+    this.variableService.showSideNav();
   }
 }

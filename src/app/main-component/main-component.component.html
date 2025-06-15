@@ -26,6 +26,9 @@
       *ngIf="selectedOtherUser && !selectedChannel"
       [otherUser]="selectedOtherUser"
       class="direct-message-container"
+      [class.z-index999]="
+        this.variableService.showDmChatView() && this.variableService.isMobile$
+      "
     >
     </app-direct-message>
 

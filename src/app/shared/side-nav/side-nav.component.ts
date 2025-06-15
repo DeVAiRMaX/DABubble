@@ -132,11 +132,13 @@ export class SideNavComponent implements OnInit, OnDestroy {
 
   selectUserForDm(user: User): void {
     this.userSelected.emit(user);
+    this.variableService.showsDmChatView();
   }
 
   selectSelfChat(): void {
     if (this.currentUser) {
       this.userSelected.emit(this.currentUser);
+      this.variableService.showsDmChatView();
     } else {
       console.error('[SideNav] Cannot select self-chat, currentUser is null.');
     }

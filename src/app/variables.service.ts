@@ -98,7 +98,7 @@ export class VariablesService {
   activeThreadKey$ = this.activeThreadKeySubject.asObservable();
 
   public channelChatView = signal<boolean>(false);
-  public readonly isVisible = this.channelChatView.asReadonly();
+  public readonly chatIsVisible = this.channelChatView.asReadonly();
 
   toggleChannelChatView(): void {
     this.channelChatView.update((currentValue) => !currentValue);
@@ -110,6 +110,21 @@ export class VariablesService {
 
   public hideChannelChatView(): void {
     this.channelChatView.set(false);
+  }
+
+  public showDmChatView = signal<boolean>(false);
+  public readonly dmIsVisible = this.showDmChatView.asReadonly();
+
+  togglesDmChatView(): void {
+    this.showDmChatView.update((currentValue) => !currentValue);
+  }
+
+  public showsDmChatView(): void {
+    this.showDmChatView.set(true);
+  }
+
+  public hidesDmChatView(): void {
+    this.showDmChatView.set(false);
   }
 
   toggleAddUserToChannelOverlay() {
@@ -126,6 +141,20 @@ export class VariablesService {
     const newValue = !this.sideNavIsVisibleSubject.value;
     this.sideNavIsVisibleSubject.next(newValue);
     this.saveToStorage('sideNavIsVisible', newValue);
+  }
+
+  public showSideNav(): void {
+    if (this.sideNavIsVisibleSubject.value !== true) {
+      this.sideNavIsVisibleSubject.next(true);
+      this.saveToStorage('sideNavIsVisible', true);
+    }
+  }
+
+  public hideSideNav(): void {
+    if (this.sideNavIsVisibleSubject.value !== false) {
+      this.sideNavIsVisibleSubject.next(false);
+      this.saveToStorage('sideNavIsVisible', false);
+    }
   }
 
   toggleThread() {
