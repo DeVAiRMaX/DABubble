@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import {
   Database,
   ref,
+  onValue,
   set,
   get,
   push,
@@ -1279,4 +1280,20 @@ async getChannelNames(): Promise<void> {
       })
     );
   }
+
+  async getAllDirectMessageKeys() {
+  const messagesRef = ref(this.database, 'direct-messages');
+  
+  try {
+    const snapshot = await get(messagesRef);
+    if (snapshot.exists()) {
+      return snapshot.val(); // Gibt das Objekt mit allen Nachrichten zurück
+    } else {
+      return null; // Es gibt keine Daten an diesem Pfad
+    }
+  } catch (error) {
+    console.error("Fehler beim Abrufen der Daten:", error);
+    return null;
+  }
+}
 }

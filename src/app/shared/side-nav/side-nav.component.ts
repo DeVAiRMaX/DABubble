@@ -153,4 +153,8 @@ export class SideNavComponent implements OnInit, OnDestroy {
       JSON.stringify(this.isMsgListExpanded)
     );
   }
+
+  createNewMessage(){
+    this.variableService.setEmptyMessageTrue();
+  }
 }

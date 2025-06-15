@@ -19,6 +19,12 @@
   >
   </app-channel-chat>
 
+  <app-start-new-message
+    class="channel-chat-container"
+    *ngIf="isemptyMessageVisible"
+  >
+  </app-start-new-message>
+
   <app-direct-message
     *ngIf="selectedOtherUser && !selectedChannel"
     [otherUser]="selectedOtherUser"
