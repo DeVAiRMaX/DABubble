@@ -126,6 +126,8 @@ export class SideNavComponent implements OnInit, OnDestroy {
 
   selectChannel(channel: ChannelWithKey): void {
     this.channelSelected.emit(channel);
+
+    this.variableService.showChannelChatView();
   }
 
   selectUserForDm(user: User): void {

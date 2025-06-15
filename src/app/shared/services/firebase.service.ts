@@ -1233,29 +1233,26 @@ export class FirebaseService {
     );
   }
 
+  async getChannelNames(): Promise<void> {
+    const dbRef = ref(this.database, 'channels');
+    this.channelListDatabase = []; // Leeren Sie die Liste, bevor Sie neue Daten abrufen
 
-async getChannelNames(): Promise<void> {
-  const dbRef = ref(this.database, 'channels');
-  this.channelListDatabase = []; // Leeren Sie die Liste, bevor Sie neue Daten abrufen
+    try {
+      const snapshot = await get(dbRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        Object.keys(data).forEach((key) => {
+          const channel = data[key];
 
-  try {
-    const snapshot = await get(dbRef);
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      Object.keys(data).forEach((key) => {
-        const channel = data[key];
-        
-        this.channelListDatabase.push(channel.channelName);
-        
-      });
-      
-    } else {
-      console.log("Keine Channels gefunden.");
+          this.channelListDatabase.push(channel.channelName);
+        });
+      } else {
+        console.log('Keine Channels gefunden.');
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Channels:', error);
     }
-  } catch (error) {
-    console.error("Fehler beim Laden der Channels:", error);
   }
-}
 
   getAllChannelsWithNameAndKey(): Observable<ChannelNameAndKey[]> {
     const channelsRef = ref(this.database, 'channels');

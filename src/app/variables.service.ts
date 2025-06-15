@@ -1,4 +1,4 @@
-import { HostListener, Injectable } from '@angular/core';
+import { HostListener, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { User } from './shared/interfaces/user';
 import { ChannelWithKey } from './shared/interfaces/channel';
@@ -96,6 +96,21 @@ export class VariablesService {
 
   private activeThreadKeySubject = new BehaviorSubject<string | null>(null);
   activeThreadKey$ = this.activeThreadKeySubject.asObservable();
+
+  public channelChatView = signal<boolean>(false);
+  public readonly isVisible = this.channelChatView.asReadonly();
+
+  toggleChannelChatView(): void {
+    this.channelChatView.update((currentValue) => !currentValue);
+  }
+
+  public showChannelChatView(): void {
+    this.channelChatView.set(true);
+  }
+
+  public hideChannelChatView(): void {
+    this.channelChatView.set(false);
+  }
 
   toggleAddUserToChannelOverlay() {
     const newValue = !this.addUserToChannelOverlayIsVisibleSubject.value;

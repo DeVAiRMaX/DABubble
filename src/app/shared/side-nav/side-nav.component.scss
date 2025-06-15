@@ -24,7 +24,7 @@
   .side-nav-header {
     display: none;
   }
-  .side-nav-container{
+  .side-nav-container {
     padding: 109px 30px 32px 30px;
   }
 }
@@ -54,6 +54,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 20%;
 }
 
 .edit_btn {
@@ -220,6 +221,7 @@
   bottom: 25%;
   left: 0px;
   user-select: none;
+  z-index: 9991;
 
   > div {
     display: flex;
