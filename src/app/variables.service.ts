@@ -18,8 +18,7 @@ export class VariablesService {
   );
   isMobile$ = this.isMobileSubject.asObservable();
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event?: Event) {
+  public checkWindowSize(): void {
     const isMobile = window.innerWidth <= 940;
     if (this.isMobileSubject.value !== isMobile) {
       this.isMobileSubject.next(isMobile);
@@ -60,7 +59,7 @@ export class VariablesService {
     return this.activeChannelSubject.getValue();
   }
 
-  setEmptyMessageTrue(){
+  setEmptyMessageTrue() {
     this.activeChannelSubject.next(null);
     this.activeDmUserSubject.next(null);
     this.closeThread();
