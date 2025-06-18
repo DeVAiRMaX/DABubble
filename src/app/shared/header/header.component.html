@@ -32,8 +32,15 @@
       <img src="./assets/img/devspace.png" alt="logo" />
       <h2>Devspace</h2>
     </div>
-
-    <div class="header-search">
+    <div
+      *ngIf="
+        !(isMobile$ | async) ||
+        ((isMobile$ | async) &&
+          !variableService.channelChatView() &&
+          !variableService.showDmChatView())
+      "
+      class="header-search"
+    >
       <input
         #searchInputRef
         type="text"

@@ -22,6 +22,12 @@ export class VariablesService {
     const isMobile = window.innerWidth <= 940;
     if (this.isMobileSubject.value !== isMobile) {
       this.isMobileSubject.next(isMobile);
+
+      if (isMobile) {
+        this.hideChannelChatView();
+        this.hidesDmChatView();
+        this.showSideNav();
+      }
     }
   }
 
@@ -64,7 +70,6 @@ export class VariablesService {
     this.activeDmUserSubject.next(null);
     this.closeThread();
     this.isEmptyMessageSubject.next(true);
-    console.log(this.isEmptyMessageSubject.value);
   }
 
   private isEmptyMessageSubject = new BehaviorSubject<boolean>(false);

@@ -266,9 +266,7 @@
   }
 }
 
-
-
-.newChatMobileButton{
+.newChatMobileButton {
   position: absolute;
   right: 30px;
   bottom: 37px;
@@ -276,16 +274,14 @@
   height: 60px;
   border-radius: 50%;
   border: none;
-  background: url('/assets/img/icons/editPencil_white.png');
-  background-color: #444DF2;
+  background: url("/assets/img/icons/editPencil_white.png");
+  background-color: #444df2;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 25px 25px;
 
-
   &:hover {
     cursor: pointer;
-    background-color: #535AF1;
+    background-color: #535af1;
   }
-
 }

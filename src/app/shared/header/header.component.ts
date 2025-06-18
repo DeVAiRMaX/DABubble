@@ -164,10 +164,6 @@ export class HeaderComponent implements OnInit {
   openDialog() {
     if (this.authService.getCurrentUser()) {
       this.dialog.open(DialogComponent, {});
-    } else {
-      console.log(
-        'Dialog kann nicht geöffnet werden, kein Benutzer eingeloggt.'
-      );
     }
   }
 

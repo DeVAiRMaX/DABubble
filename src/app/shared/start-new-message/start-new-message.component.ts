@@ -12,7 +12,6 @@ import { SharedModule } from '../../shared';
 import { AuthService } from '../services/auth.service';
 import { firstValueFrom } from 'rxjs';
 
-
 @Component({
   selector: 'app-start-new-message',
   standalone: true,
@@ -21,35 +20,32 @@ import { firstValueFrom } from 'rxjs';
   styleUrls: ['./start-new-message.component.scss'],
 })
 export class StartNewMessageComponent {
-
   @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
   @Input() channel!: ChannelWithKey;
   private savedRange: Range | null = null;
   private subService: SubService = inject(SubService);
   private variableService: VariablesService = inject(VariablesService);
   private dialog: MatDialog = inject(MatDialog);
-    private authService: AuthService = inject(AuthService);
-   private firebaseService: FirebaseService = inject(FirebaseService);
-    taggedPersonsInChat = this.variableService.getTaggedContactsFromChat();
+  private authService: AuthService = inject(AuthService);
+  private firebaseService: FirebaseService = inject(FirebaseService);
+  taggedPersonsInChat = this.variableService.getTaggedContactsFromChat();
   lastInputValue: string = '';
-searchResultsState: boolean = false;
+  searchResultsState: boolean = false;
   currentUser: User | null = null;
   realUser: User | null = null;
   searchValue: string = '';
-   searchResults: any[] = [];
-   addedUsersNewMessage: any[] = [];
-   addedChannelsNewMessage: any[] = [];
-   textFieldIsEmpty: boolean = false;
-   channelAccessDenied: boolean = false;
+  searchResults: any[] = [];
+  addedUsersNewMessage: any[] = [];
+  addedChannelsNewMessage: any[] = [];
+  textFieldIsEmpty: boolean = false;
+  channelAccessDenied: boolean = false;
 
+  ngOnInit(): void {
+    this.realUser = this.authService.getCurrentUser();
+    console.log(this.realUser);
+  }
 
-ngOnInit(): void {
-this.realUser = this.authService.getCurrentUser();
-console.log(this.realUser);
-  
-}
-
- onInputForTagging(event: Event) {
+  onInputForTagging(event: Event) {
     this.saveCursorPositionInternal();
     this.checkForMention(event);
     this.checkIfInptutIsEmpty();
@@ -59,12 +55,12 @@ console.log(this.realUser);
     const inputEl = this.messageInput?.nativeElement;
     if (!inputEl) return;
     const messageText = inputEl.innerText.trim();
-    if(messageText === '') {
+    if (messageText === '') {
       this.textFieldIsEmpty = true;
+    } else {
+      this.textFieldIsEmpty = false;
     }
-    else {this.textFieldIsEmpty = false;}
   }
-
 
   saveCursorPositionInternal() {
     const inputEl = this.messageInput?.nativeElement;
@@ -86,8 +82,7 @@ console.log(this.realUser);
     }
   }
 
-
-   checkForMention(event: Event) {
+  checkForMention(event: Event) {
     const inputElement = event.target as HTMLDivElement;
     if (!this.savedRange) {
       this.saveCursorPositionInternal();
@@ -150,9 +145,7 @@ console.log(this.realUser);
     this.lastInputValue = fullInputText;
   }
 
-
-
-   isInsideTagSpan(node: Node | null): boolean {
+  isInsideTagSpan(node: Node | null): boolean {
     let currentNode = node;
     while (currentNode && currentNode !== this.messageInput.nativeElement) {
       if (currentNode.nodeType === Node.ELEMENT_NODE) {
@@ -170,7 +163,6 @@ console.log(this.realUser);
     }
     return false;
   }
-
 
   openTagPeopleOrChannelDialog(char: '@' | '#', filterPrefix: string) {
     const targetElement = this.messageInput.nativeElement;
@@ -246,7 +238,6 @@ console.log(this.realUser);
       }
     });
   }
- 
 
   insertTagIntoInput(name: string, id: string, type: 'user' | 'channel'): void {
     const inputEl = this.messageInput.nativeElement;
@@ -353,18 +344,14 @@ console.log(this.realUser);
     this.variableService.setNameToFilter('');
   }
 
-
-
-   handleKeydown(event: KeyboardEvent): void {
+  handleKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.sendMessage();
     }
   }
 
-
-
-    sendMessage(): void {
+  sendMessage(): void {
     const messageHtml = this.messageInput.nativeElement.innerHTML.trim();
     const messageText = this.messageInput.nativeElement.innerText.trim();
     if (
@@ -389,14 +376,12 @@ console.log(this.realUser);
           this.messageInput.nativeElement.innerHTML = '';
           this.lastInputValue = '';
           this.variableService.setTaggedContactsFromChat([]);
-         
         },
         error: (err) => {},
       });
   }
 
-
-   openTaggingPerClick(char: '@' | '#', event: Event) {
+  openTaggingPerClick(char: '@' | '#', event: Event) {
     event.preventDefault();
     const inputEl = this.messageInput.nativeElement;
     inputEl.focus();
@@ -435,38 +420,35 @@ console.log(this.realUser);
     this.lastInputValue = inputEl.innerText;
   }
 
- saveCursorPosition() {
+  saveCursorPosition() {
     this.saveCursorPositionInternal();
     this.openAddSmileyToChannelDialog();
   }
 
-
-
-    openAddSmileyToChannelDialog() {
-      const targetElement = this.messageInput.nativeElement.closest(
-        '.input-container-wrapper'
+  openAddSmileyToChannelDialog() {
+    const targetElement = this.messageInput.nativeElement.closest(
+      '.input-container-wrapper'
+    );
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+        panelClass: '',
+        backdropClass: 'transparentBackdrop',
+        position: {
+          bottom: `${window.innerHeight - rect.top + 10}px`,
+          left: `${rect.left}px`,
+        },
+        data: { channelKey: this.channel?.key },
+      });
+      dialogRef.componentInstance.emojiSelected.subscribe(
+        (selectedEmoji: string) => {
+          this.insertEmojiAtCursor(selectedEmoji);
+        }
       );
-      if (targetElement) {
-        const rect = targetElement.getBoundingClientRect();
-        const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
-          panelClass: '',
-          backdropClass: 'transparentBackdrop',
-          position: {
-            bottom: `${window.innerHeight - rect.top + 10}px`,
-            left: `${rect.left}px`,
-          },
-          data: { channelKey: this.channel?.key },
-        });
-        dialogRef.componentInstance.emojiSelected.subscribe(
-          (selectedEmoji: string) => {
-            this.insertEmojiAtCursor(selectedEmoji);
-          }
-        );
-      }
     }
+  }
 
-
-      insertEmojiAtCursor(emoji: string): void {
+  insertEmojiAtCursor(emoji: string): void {
     const inputEl = this.messageInput.nativeElement;
     inputEl.focus();
     const selection = window.getSelection();
@@ -501,9 +483,7 @@ console.log(this.realUser);
     this.lastInputValue = inputEl.innerText;
   }
 
-
-
-   preventEdit(event: MouseEvent) {
+  preventEdit(event: MouseEvent) {
     event.preventDefault();
     const textInput = this.messageInput.nativeElement;
     textInput.focus();
@@ -517,204 +497,204 @@ console.log(this.realUser);
     }
   }
 
-   removePersonFromTagged(name: string) {
+  removePersonFromTagged(name: string) {
     const index = this.taggedPersonsInChat.findIndex((e) => e.name === name);
     if (index !== -1) {
       this.taggedPersonsInChat.splice(index, 1);
     }
   }
 
-
-   async onSearchChange(): Promise<void> {
+  async onSearchChange(): Promise<void> {
     const data = await this.firebaseService.getDatabaseData();
 
     if (this.searchValue.trim().length > 0) {
       this.searchResultsState = true;
-     
+
       const lowerSearchTerm = this.searchValue.toLowerCase();
 
       const channels = data.channels
         ? Object.entries(data.channels as Record<string, any>)
-          .filter(([id, channel]) =>
-            channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
-          )
-          .map(([id, channel]) => ({
-            id: id,                
-            type: 'Channel',
-            data: channel,
-          }))
+            .filter(
+              ([id, channel]) =>
+                channel.channelName &&
+                channel.channelName.toLowerCase().includes(lowerSearchTerm)
+            )
+            .map(([id, channel]) => ({
+              id: id,
+              type: 'Channel',
+              data: channel,
+            }))
         : [];
-
 
       const users = data.users
         ? Object.entries(data.users as Record<string, any>)
-          .filter(([id, user]) =>
-            user.displayName && user.displayName.toLowerCase().includes(lowerSearchTerm)
-          )
-          .map(([id, user]) => ({
-            id: id,
-            type: 'User',
-            data: user,
-          }))
+            .filter(
+              ([id, user]) =>
+                user.displayName &&
+                user.displayName.toLowerCase().includes(lowerSearchTerm)
+            )
+            .map(([id, user]) => ({
+              id: id,
+              type: 'User',
+              data: user,
+            }))
         : [];
 
-        // const massages = data.direct-messages
-        // ? Object.entries(data.direct-messages as Record<string, any>)
-        //   .filter(([id, channel]) =>
-        //     channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
-        //   )
-        //   .map(([id, channel]) => ({
-        //     id: id,                
-        //     type: 'Channel',
-        //     data: channel,
-        //   }))
-        // : [];
+      // const massages = data.direct-messages
+      // ? Object.entries(data.direct-messages as Record<string, any>)
+      //   .filter(([id, channel]) =>
+      //     channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
+      //   )
+      //   .map(([id, channel]) => ({
+      //     id: id,
+      //     type: 'Channel',
+      //     data: channel,
+      //   }))
+      // : [];
 
-      this.searchResults = [
-        ...channels,
-        ...users,
-      ];
+      this.searchResults = [...channels, ...users];
 
-      this.searchResults = this.searchResults.filter(result => {
-  if (result.type === 'Channel') {
-    return !this.addedChannelsNewMessage.some(c => c.id === result.id);
-  } else if (result.type === 'User') {
-    return !this.addedUsersNewMessage.some(u => u.id === result.id);
-  }
-  return true;
-});
-
-
+      this.searchResults = this.searchResults.filter((result) => {
+        if (result.type === 'Channel') {
+          return !this.addedChannelsNewMessage.some((c) => c.id === result.id);
+        } else if (result.type === 'User') {
+          return !this.addedUsersNewMessage.some((u) => u.id === result.id);
+        }
+        return true;
+      });
     } else {
       this.searchResultsState = false;
       this.searchResults = [];
-      
-
     }
 
-   await this.authUser();
+    await this.authUser();
   }
 
-
-  async authUser(){
-   const authSub = this.authService.user$.subscribe((user) => {
+  async authUser() {
+    const authSub = this.authService.user$.subscribe((user) => {
       this.currentUser = user;
-      
     });
-   
-   
-}
-
-addUserToNewMessage(result: any, index: number) {
-  
-  if(result.type === 'User') {
-  
-   this.addedUsersNewMessage.push(result);
-  }else if(result.type === 'Channel') {
-   
-    this.addedChannelsNewMessage.push(result);
-  }
- 
-
-  this.searchResults.splice(index, 1);
-}
-  
-
-removeUserFromNewMessage(user: any) {
-  if (user.type === 'User') {
-    const index = this.addedUsersNewMessage.indexOf(user);
-    if (index > -1) this.addedUsersNewMessage.splice(index, 1);
-  } else if (user.type === 'Channel') {
-    const index = this.addedChannelsNewMessage.indexOf(user);
-    if (index > -1) this.addedChannelsNewMessage.splice(index, 1);
   }
 
-  this.onSearchChange();
-}
-
-printChannelNames() {
-  this.currentUser?.channelKeys?.forEach(channelKey => {
-    this.firebaseService.getChannel(channelKey).subscribe({
-      next: (channel) => {
-        if (channel) {
-          console.log('Channel Name:', channel.channelName);
-        } else {
-          console.log(`Kein Channel gefunden für Key: ${channelKey}`);
-        }
-      },
-      error: (err) => {
-        console.error(`Fehler beim Laden des Channels mit Key ${channelKey}:`, err);
-      }
-    });
-  });
-}
-
-async sendNewMessages() {
-  const realUserID = this.realUser?.uid;
-  const displayName = this.realUser?.displayName || 'Unbekannt';
-  const messageText = this.messageInput.nativeElement.innerText.trim();
-
-  if (!realUserID) {
-    console.warn('realUserID is undefined, cannot send message.');
-    return;
-  }
-
-  if (!messageText) {
-    this.textFieldIsEmpty = true;
-    return;
-  }
-
-
-  const sendPromises: Promise<any>[] = [];
-  const listObj = await this.firebaseService.getAllDirectMessageKeys();
-
-  if(this.addedUsersNewMessage.length === 0 && this.addedChannelsNewMessage.length === 0) {
-    return;
-  }
-
-  this.addedUsersNewMessage.forEach((element) => {
-    const userToCheckUID = element.data.uid;
-
-    Object.keys(listObj).forEach((chatKey) => {
-      if (chatKey.includes(realUserID) && chatKey.includes(userToCheckUID)) {
-        console.log('Chat gefunden für User:', chatKey);
-       const sendPromise = firstValueFrom(
-  this.firebaseService.sendDirectMessage(chatKey, messageText, this.realUser!)
-);
-        sendPromises.push(sendPromise);
-      }
-    });
-  });
-
-  this.addedChannelsNewMessage.forEach((element) => {
-    const channelKey = element.id;
-    const channelMembers = element.data.members || [];
-
-    if (channelMembers.includes(realUserID)) {
-      console.log('Nachricht wird an Channel gesendet:', channelKey);
-      const sendPromise = firstValueFrom(
-  this.firebaseService.sendMessage(channelKey, messageText, realUserID, displayName, this.realUser!.avatar)
-);
-      sendPromises.push(sendPromise);
-    } else {
-      console.log('Sie haben keinen Zugriff auf diesen Channel:', channelKey);
-      this.channelAccessDenied = true;
+  addUserToNewMessage(result: any, index: number) {
+    if (result.type === 'User') {
+      this.addedUsersNewMessage.push(result);
+    } else if (result.type === 'Channel') {
+      this.addedChannelsNewMessage.push(result);
     }
-  });
 
-  try {
-    await Promise.all(sendPromises);
-    this.messageInput.nativeElement.innerText = '';
-    console.log('Alle Nachrichten erfolgreich gesendet.');
-    this.addedUsersNewMessage = [];
-    this.addedChannelsNewMessage = [];
-    this.searchValue = '';
-    this.searchResultsState = false;
-    this.textFieldIsEmpty = false;
-    this.channelAccessDenied = false;
-    
-  } catch (err) {
-    console.error('Fehler beim Senden einer oder mehrerer Nachrichten:', err);
+    this.searchResults.splice(index, 1);
   }
-}
+
+  removeUserFromNewMessage(user: any) {
+    if (user.type === 'User') {
+      const index = this.addedUsersNewMessage.indexOf(user);
+      if (index > -1) this.addedUsersNewMessage.splice(index, 1);
+    } else if (user.type === 'Channel') {
+      const index = this.addedChannelsNewMessage.indexOf(user);
+      if (index > -1) this.addedChannelsNewMessage.splice(index, 1);
+    }
+
+    this.onSearchChange();
+  }
+
+  printChannelNames() {
+    this.currentUser?.channelKeys?.forEach((channelKey) => {
+      this.firebaseService.getChannel(channelKey).subscribe({
+        next: (channel) => {
+          if (channel) {
+            console.log('Channel Name:', channel.channelName);
+          } else {
+            console.log(`Kein Channel gefunden für Key: ${channelKey}`);
+          }
+        },
+        error: (err) => {
+          console.error(
+            `Fehler beim Laden des Channels mit Key ${channelKey}:`,
+            err
+          );
+        },
+      });
+    });
+  }
+
+  async sendNewMessages() {
+    const realUserID = this.realUser?.uid;
+    const displayName = this.realUser?.displayName || 'Unbekannt';
+    const messageText = this.messageInput.nativeElement.innerText.trim();
+
+    if (!realUserID) {
+      console.warn('realUserID is undefined, cannot send message.');
+      return;
+    }
+
+    if (!messageText) {
+      this.textFieldIsEmpty = true;
+      return;
+    }
+
+    const sendPromises: Promise<any>[] = [];
+    const listObj = await this.firebaseService.getAllDirectMessageKeys();
+
+    if (
+      this.addedUsersNewMessage.length === 0 &&
+      this.addedChannelsNewMessage.length === 0
+    ) {
+      return;
+    }
+
+    this.addedUsersNewMessage.forEach((element) => {
+      const userToCheckUID = element.data.uid;
+
+      Object.keys(listObj).forEach((chatKey) => {
+        if (chatKey.includes(realUserID) && chatKey.includes(userToCheckUID)) {
+          console.log('Chat gefunden für User:', chatKey);
+          const sendPromise = firstValueFrom(
+            this.firebaseService.sendDirectMessage(
+              chatKey,
+              messageText,
+              this.realUser!
+            )
+          );
+          sendPromises.push(sendPromise);
+        }
+      });
+    });
+
+    this.addedChannelsNewMessage.forEach((element) => {
+      const channelKey = element.id;
+      const channelMembers = element.data.members || [];
+
+      if (channelMembers.includes(realUserID)) {
+        console.log('Nachricht wird an Channel gesendet:', channelKey);
+        const sendPromise = firstValueFrom(
+          this.firebaseService.sendMessage(
+            channelKey,
+            messageText,
+            realUserID,
+            displayName,
+            this.realUser!.avatar
+          )
+        );
+        sendPromises.push(sendPromise);
+      } else {
+        console.log('Sie haben keinen Zugriff auf diesen Channel:', channelKey);
+        this.channelAccessDenied = true;
+      }
+    });
+
+    try {
+      await Promise.all(sendPromises);
+      this.messageInput.nativeElement.innerText = '';
+      console.log('Alle Nachrichten erfolgreich gesendet.');
+      this.addedUsersNewMessage = [];
+      this.addedChannelsNewMessage = [];
+      this.searchValue = '';
+      this.searchResultsState = false;
+      this.textFieldIsEmpty = false;
+      this.channelAccessDenied = false;
+    } catch (err) {
+      console.error('Fehler beim Senden einer oder mehrerer Nachrichten:', err);
+    }
+  }
 }

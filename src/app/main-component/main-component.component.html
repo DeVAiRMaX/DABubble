@@ -22,6 +22,7 @@
 
     <app-start-new-message
       class="channel-chat-container"
+      [class.z.index999]="this.variableService.showDmChatView()"
       *ngIf="isemptyMessageVisible"
     >
     </app-start-new-message>
