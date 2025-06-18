@@ -21,12 +21,26 @@
 }
 
 @media screen and (max-width: 940px) {
+  .channel-list-body {
+    gap: 8px  !important;
+  }
+  .channel-list-container {
+    flex: 1;
+  }
   .side-nav-header {
     display: none;
   }
   .side-nav-container {
-    padding: 109px 30px 32px 30px;
+    height: 100%;
+    padding: 77px 8px 8px 8px;
+    gap: 8px;
   }
+  .channel-list-header {
+    margin-bottom: 0 !important;
+  }
+  .msg-list-body {
+    gap: 8px  !important;
+}
 }
 
 .rotated {

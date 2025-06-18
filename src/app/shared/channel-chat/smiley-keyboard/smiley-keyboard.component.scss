@@ -1,0 +1,13 @@
+@media screen and (max-width: 940px)  {
+    emoji-picker{
+        width: 90vw;
+        max-height: 217px;
+        opacity: 0.8;
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 146px;
+        border-radius: 30px;
+    }
+}
+

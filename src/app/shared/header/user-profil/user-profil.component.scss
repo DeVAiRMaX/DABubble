@@ -1,11 +1,11 @@
 ::ng-deep .custom-user-profil-container {
-    .mdc-dialog__container {
-      border-radius: 30px !important;
-    }
-    .mdc-dialog__surface {
-      border-radius: 30px !important;
-    }
+  .mdc-dialog__container {
+    border-radius: 30px !important;
   }
+  .mdc-dialog__surface {
+    border-radius: 30px !important;
+  }
+}
 
 .user-card-container {
   width: 500px;
@@ -27,15 +27,15 @@
 }
 
 .close-btn {
-    cursor: pointer;
-    border-radius: 50%;
-    padding: 10px;
-    transition: all 0.1s ease-in-out;
-    &:hover {
-      background-color: #eceefe;
-      color: #535af1;
-    }
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 10px;
+  transition: all 0.1s ease-in-out;
+  &:hover {
+    background-color: #eceefe;
+    color: #535af1;
   }
+}
 
 .user-card-avatar {
   width: 100%;
@@ -110,31 +110,51 @@
   }
 }
 
-.send-msg-btn{
-    width: 100%;
+.send-msg-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  button {
+    padding: 12px 25px;
+    border-radius: 50px;
+    background-color: #444df2;
+    border: 1px solid transparent;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 500;
+    font-family: "Nunito", sans-serif;
     display: flex;
-    justify-content: center;
     align-items: center;
-    button{
-        padding: 12px 25px;
-        border-radius: 50px;
-        background-color: #444DF2;
-        border: 1px solid transparent;
-        color: #fff;
-        font-size: 18px;
-        font-weight: 500;
-        font-family: 'Nunito', sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: all 0.1s ease-in-out;
-        span{
-            font-size: 20px;
-        }
-        &:hover{
-            background-color: #7d7bf2;
-        }
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    span {
+      font-size: 20px;
     }
+    &:hover {
+      background-color: #7d7bf2;
+    }
+  }
+}
+@media screen and (max-width: 940px) {
+  .user-card-container {
+    width: auto;
+    padding: 24px 16px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    border-radius: 30px;
+  }
+
+  .mail-adress {
+    gap: 8px;
+  }
+  .user-card-info {
+    gap: 8px;
+  }
 }

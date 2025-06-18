@@ -45,3 +45,9 @@ h1{
     left: 40px;
     width: fit-content;
 }
+
+@media screen and (max-width: 940px) {
+    .wholeOverlay{
+        border-radius: 0 !important ;
+    }
+  }

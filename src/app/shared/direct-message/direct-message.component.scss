@@ -646,3 +646,60 @@
 .edit-textbox {
   min-height: 155px;
 }
+
+@media screen and (max-width: 940px) {
+  .no-messages-user {
+    gap: 8px;
+  }
+  .no-messages-user {
+    img {
+      width: 50px;
+      border-radius: 50%;
+    }
+  }
+  .no-messages-text {
+    p {
+      font-size: 16px;
+    }
+  }
+  .dm-message-container {
+    padding: 0 16px;
+  }
+  .message-avatar img {
+    width: 40px;
+    height: 40px;
+  }
+  .msg-bubble {
+    padding: 8px 16px;
+  }
+  .message-layout {
+    padding: 8px 0;
+  }
+  .date-divider {
+    padding: 8px 0;
+    width: 100%;
+  }
+  .input-container {
+    padding: 0 16px 16px 16px;
+  }
+  .dm-header {
+    padding: 16px 16px;
+  }
+  .input-container-wrapper {
+    padding: 4px;
+  }
+  .own-message {
+    > .reactionMenu {
+      top: 0 !important;
+      left: 0 !important;
+      border-radius: 0 !important;
+    }
+  }
+  .othersMessage {
+    .reactionMenu {
+      top: 0;
+      right: 0;
+      border-radius: 0;
+    }
+  }
+}

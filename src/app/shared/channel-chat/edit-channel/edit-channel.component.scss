@@ -356,7 +356,7 @@
   }
 }
 
-.edit-channel-description-headline{
+.edit-channel-description-headline {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -378,4 +378,19 @@
   }
 }
 
-
+@media screen and (max-width: 940px) {
+  .dialog-profil-container {
+    width: 95vw;
+    max-width: 100%;
+    padding: 16px;
+    gap: 16px;
+    height: auto !important;
+    min-height: unset !important;
+  }
+  .channel-card-description {
+    max-height: unset !important;
+    min-height: unset !important;
+    padding: 8px 16px;
+    gap: 16px;
+  }
+}

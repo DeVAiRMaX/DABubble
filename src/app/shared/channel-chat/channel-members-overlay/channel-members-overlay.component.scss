@@ -34,9 +34,9 @@
       background-size: 24px 24px;
       border: none;
       border-radius: 100px;
-        &:focus {
-          outline: none;
-        }
+      &:focus {
+        outline: none;
+      }
       &:hover {
         background: url("/assets/img/closeMenuPurple.png");
         background-repeat: no-repeat;
@@ -77,7 +77,7 @@
         color: black;
       }
 
-      >mat-icon{
+      > mat-icon {
         display: none;
       }
 
@@ -85,14 +85,15 @@
         background-color: #eceefe;
         border-radius: 100px;
         cursor: pointer;
-        mat-icon{
+        mat-icon {
           display: block;
           position: absolute;
           right: 16px;
           transition: all 0.1s ease-in-out;
-          &:hover{
+          &:hover {
             color: #797ef3;
-          }}
+          }
+        }
       }
     }
   }
@@ -155,10 +156,34 @@
   }
 }
 
-.user-dont-be-empty{
-  p{
+.user-dont-be-empty {
+  p {
     font-family: "Nunito";
     font-size: 16px;
     color: red;
+  }
+}
+
+@media screen and (max-width: 940px) {
+  .channelMembersOverlay {
+    display: flex;
+    flex-direction: column;
+    max-width: 415px;
+    min-height: max-content;
+    box-sizing: border-box;
+    background-color: white;
+    padding: 16px;
+    gap: 8px;
+    box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
+  }
+  .channelMembersOverlay {
+    .addMembers {
+      margin-top: 0;
+    }
+  }
+  .channelMembersOverlay {
+    > .overlayTop {
+      margin-bottom: 0;
+    }
   }
 }

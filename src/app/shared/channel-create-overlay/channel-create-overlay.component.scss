@@ -133,7 +133,7 @@ textarea {
       background-color: #797ef3;
       color: white;
     }
-  
+
     &:disabled {
       background-color: #cccccc;
       color: #666666;
@@ -148,25 +148,36 @@ textarea {
   }
 }
 
-.error-txt{
-  color: #ED1E79;
-
+.error-txt {
+  color: #ed1e79;
 }
 
-@media(max-width: 670px){
-  .add-channel-formular{
-    height: 100vh;
-  }
-
-  @media(max-width: 455px){
-    .add-channel-subheadline{
+@media (max-width: 670px) {
+  @media (max-width: 455px) {
+    .add-channel-subheadline {
       > span {
         font-size: 14px;
       }
     }
 
-    input, textarea{
+    input,
+    textarea {
       font-size: 14px;
     }
   }
+}
+
+@media screen and (max-width: 940px) {
+  .add-channel-formular {
+    width: 95vw;
+    max-width: 100%;
+    max-width: unset;
+    padding: 16px;
+    gap: 8px;
+  }
+  input, textarea {
+    height: fit-content;
+    padding:12px;
+    font-size: 14px;
+}
 }
