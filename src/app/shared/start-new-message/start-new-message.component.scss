@@ -64,6 +64,7 @@
 .sendToContainer{
     display: flex;
     align-self: flex-end;
+    flex-wrap: wrap;
     padding: 10px 45px;
     gap: 15px;
 }
@@ -84,4 +85,32 @@
     display: flex;
     align-items: center;
     color: #ED1E79;
+}
+
+@media screen and (max-width: 500px){
+  .newMessageSearchResult{
+    width: 80% !important;
+  }
+
+  .sendToContainer{
+    max-height: 300px;
+    overflow: scroll;
+    >div>p{
+      font-size: 12px;
+    }
+  }
+
+  .singleNewContact{
+    gap: 6px;
+    padding: 4px 10px 4px 10px;
+
+    >.cancelNewContact{
+        width: 15px !important;
+        height: 15px !important;
+    }
+  }
+
+  .newMessageInput{
+    font-size: 14px;
+  }
 }

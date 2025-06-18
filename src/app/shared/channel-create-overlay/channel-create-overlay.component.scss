@@ -152,3 +152,21 @@ textarea {
   color: #ED1E79;
 
 }
+
+@media(max-width: 670px){
+  .add-channel-formular{
+    height: 100vh;
+  }
+
+  @media(max-width: 455px){
+    .add-channel-subheadline{
+      > span {
+        font-size: 14px;
+      }
+    }
+
+    input, textarea{
+      font-size: 14px;
+    }
+  }
+}

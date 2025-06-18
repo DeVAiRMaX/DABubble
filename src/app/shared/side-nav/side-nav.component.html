@@ -124,6 +124,12 @@
       </div>
     </div>
   </div>
+  <div *ngIf="isMobile && sideNavIsVisible">
+    <button
+      (click)="showNewMessageOnMobile()"
+      class="newChatMobileButton"
+    ></button>
+  </div>
 </div>
 
 <div (click)="toggleChannelNav()" class="hide-side-nav-div">
@@ -139,11 +145,4 @@
       sideNavIsVisible ? "Workspace-Menü schließen" : "Workspace-Menü öffnen"
     }}</span>
   </div>
-</div>
-
-<div *ngIf="isMobile && sideNavIsVisible">
-  <button
-    (click)="showNewMessageOnMobile()"
-    class="newChatMobileButton"
-  ></button>
 </div>

@@ -621,17 +621,15 @@ addUserToNewMessage(result: any, index: number) {
   
 
 removeUserFromNewMessage(user: any) {
-
-  if(user.type === 'User'){
-    this.addedUsersNewMessage.splice(user, 1);
-  }else if(user.type === 'Channel') {
-    this.addedChannelsNewMessage.splice(user, 1);
+  if (user.type === 'User') {
+    const index = this.addedUsersNewMessage.indexOf(user);
+    if (index > -1) this.addedUsersNewMessage.splice(index, 1);
+  } else if (user.type === 'Channel') {
+    const index = this.addedChannelsNewMessage.indexOf(user);
+    if (index > -1) this.addedChannelsNewMessage.splice(index, 1);
   }
-  
- 
-  this.onSearchChange();
- 
 
+  this.onSearchChange();
 }
 
 printChannelNames() {
