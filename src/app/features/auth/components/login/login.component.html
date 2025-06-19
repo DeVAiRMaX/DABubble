@@ -1,6 +1,10 @@
 <div class="animation-background" [@BackgroundAnimation]="BackgroundState">
   <div class="animation-container" [@ContainerAnimation]="ContainerState">
-    <div class="animation-logo" [@logoAnimation]="logoState">
+    <div
+  class="animation-logo"
+  [@logoAnimation]="logoAnimationTrigger === 'logoAnimation' ? logoState : null"
+  [@logoFadeIn]="logoAnimationTrigger === 'logoFadeIn' ? logoState : null"
+>
       <img src="./assets/img/logo.png" alt="logo" />
     </div>
     <div class="animation-text" [@textAnimation]="textState">

@@ -20,84 +20,36 @@ import { CommonModule } from '@angular/common';
   styleUrl: './login.component.scss',
   animations: [
     trigger('logoAnimation', [
-      state(
-        'center',
-        style({
-          transform: 'translateX(50%)',
-        })
-      ),
-      state(
-        'left',
-        style({
-          transform: 'translateX(0%)',
-        })
-      ),
+      state('center', style({ transform: 'translateX(50%)' })),
+      state('left', style({ transform: 'translateX(0%)' })),
       transition('center => left', [animate('0.4s ease-out')]),
     ]),
+    trigger('logoFadeIn', [
+      state('hidden', style({ opacity: 0 })),
+      state('visible', style({ opacity: 1 })),
+      transition('hidden => visible', [animate('0.6s ease-in')]),
+    ]),
     trigger('textAnimation', [
-      state(
-        'visible',
-        style({
-          transform: 'translateY(0)',
-          opacity: 1,
-        })
-      ),
-      state(
-        'hidden',
-        style({
-          transform: 'translateY(300%)',
-          opacity: 0,
-        })
-      ),
+      state('visible', style({ transform: 'translateY(0)', opacity: 1 })),
+      state('hidden', style({ transform: 'translateY(300%)', opacity: 0 })),
       transition('hidden => visible', [animate('0.5s 0.7s ease-out')]),
     ]),
     trigger('ContainerAnimation', [
-      state(
-        'center',
-        style({
-          opacity: 1,
-        })
-      ),
-      state(
-        'leftTop',
-        style({
-          transform: 'translateX(-200%) translateY(-240%) scale(0.5)',
-          opacity: 0,
-        })
-      ),
+      state('center', style({ opacity: 1 })),
+      state('leftTop', style({
+        transform: 'translateX(-200%) translateY(-240%) scale(0.5)',
+        opacity: 0,
+      })),
       transition('center => leftTop', [animate('1.2s ease-out')]),
     ]),
     trigger('BackgroundAnimation', [
-      state(
-        'visible',
-        style({
-          opacity: 1,
-        })
-      ),
-      state(
-        'hidden',
-        style({
-          opacity: 0,
-          display: 'none',
-        })
-      ),
+      state('visible', style({ opacity: 1 })),
+      state('hidden', style({ opacity: 0, display: 'none' })),
       transition('visible => hidden', [animate('0.5s ease-out')]),
     ]),
     trigger('loginContainerAnimation', [
-      state(
-        'hidden',
-        style({
-          opacity: 0,
-          display: 'none',
-        })
-      ),
-      state(
-        'visible',
-        style({
-          opacity: 1,
-          display: 'flex',
-        })
-      ),
+      state('hidden', style({ opacity: 0, display: 'none' })),
+      state('visible', style({ opacity: 1, display: 'flex' })),
       transition('hidden => visible', [animate('0.65s ease-out')]),
     ]),
   ],
@@ -107,7 +59,9 @@ export class LoginComponent implements OnInit {
   private database: FirebaseService = inject(FirebaseService);
   private router = inject(Router);
 
-  logoState: 'center' | 'left' = 'center';
+  logoState: 'center' | 'left' | 'hidden' | 'visible' = 'center';
+  logoAnimationTrigger = 'logoAnimation';
+
   textState: 'hidden' | 'visible' = 'hidden';
   ContainerState: 'center' | 'leftTop' = 'center';
   BackgroundState: 'visible' | 'hidden' = 'visible';
@@ -118,7 +72,18 @@ export class LoginComponent implements OnInit {
   loginError: string | null = null;
 
   ngOnInit(): void {
+    this.setResponsiveAnimation();
     this.startAnimation();
+  }
+
+  setResponsiveAnimation(): void {
+    if (window.innerWidth <= 673) {
+      this.logoAnimationTrigger = 'logoFadeIn';
+      this.logoState = 'hidden';
+    } else {
+      this.logoAnimationTrigger = 'logoAnimation';
+      this.logoState = 'center';
+    }
   }
 
   loginWithGoogle() {
@@ -126,12 +91,11 @@ export class LoginComponent implements OnInit {
   }
 
   startAnimation(): void {
-    this.logoState = 'center';
     this.textState = 'hidden';
     this.ContainerState = 'center';
 
     setTimeout(() => {
-      this.logoState = 'left';
+      this.logoState = this.logoAnimationTrigger === 'logoFadeIn' ? 'visible' : 'left';
     }, 500);
 
     setTimeout(() => {

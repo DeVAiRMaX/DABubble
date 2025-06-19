@@ -624,3 +624,43 @@
     color: white;
   }
 }
+
+@media screen and (max-width: 940px) {
+  .thread-header {
+    padding: 16px;
+  }
+  .msg-right-container {
+    gap: 8px;
+    padding: 8px 16px !important;
+  }
+  .msg-container-user-img {
+    img {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  .count-answers {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 0;
+    padding-left: 8px;
+  }
+  .input-container {
+    padding: 0 16px 16px 16px;
+  }
+  .input-container-wrapper {
+    padding: 4px;
+    gap: 0;
+  }
+  .msg-right-container.ownMessage {
+    > .reactionMenu {
+      top: 0;
+      left: 0;
+    }
+  }
+  .reactionMenu {
+    border-radius: 0;
+  }
+}

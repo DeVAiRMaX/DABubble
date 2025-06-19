@@ -1,11 +1,15 @@
 <ng-container *ngIf="user$ | async as user; else loggedOutHeader">
   <div class="header-container">
+    <div *ngIf="!(isMobile$ | async)" class="header-logo">
+      <img src="./assets/img/logo.png" alt="logo" />
+      <h2>DABubble</h2>
+    </div>
+
     <div
       *ngIf="
-        !this.isMobile ||
-        (this.isMobile &&
-          !this.variableService.channelChatView() &&
-            !this.variableService.showDmChatView())
+        (isMobile$ | async) &&
+        !variableService.channelChatView() &&
+        !variableService.showDmChatView()
       "
       class="header-logo"
     >
@@ -14,18 +18,29 @@
     </div>
     <div
       *ngIf="
-        this.isMobile &&
-        (this.variableService.channelChatView() ||
-          this.variableService.showDmChatView())
+        (isMobile$ | async) &&
+        (variableService.channelChatView() || variableService.showDmChatView())
       "
       class="header-logo"
       (click)="showSideNavMobile()"
     >
-      <img class="arrow-left" src="./assets/img/icons/arrow-left.png" alt="" />
+      <img
+        class="arrow-left"
+        src="./assets/img/icons/arrow-left.png"
+        alt="Zurück"
+      />
       <img src="./assets/img/devspace.png" alt="logo" />
       <h2>Devspace</h2>
     </div>
-    <div class="header-search">
+    <div
+      *ngIf="
+        !(isMobile$ | async) ||
+        ((isMobile$ | async) &&
+          !variableService.channelChatView() &&
+          !variableService.showDmChatView())
+      "
+      class="header-search"
+    >
       <input
         #searchInputRef
         type="text"
@@ -33,10 +48,7 @@
         [(ngModel)]="searchValue"
         (ngModelChange)="onSearchChange()"
       />
-
-      
-
-      <div class="search-Results" *ngIf="searchResultsState" #searchResult>
+      <div class="search-Results" *ngIf="searchResultsState" #searchResultRef>
         <div
           class="result-container"
           *ngFor="let result of searchResults"
@@ -46,7 +58,6 @@
             <img [src]="result.data.avatar" alt="User Avatar" />
             <p>{{ result.data.displayName }}</p>
           </ng-container>
-
           <ng-container *ngIf="result.type === 'Channel'">
             <mat-icon fontIcon="forum"></mat-icon>
             <p>{{ result.data.channelName }}</p>

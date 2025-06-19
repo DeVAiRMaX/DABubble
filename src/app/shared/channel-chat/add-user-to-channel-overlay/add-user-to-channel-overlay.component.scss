@@ -117,7 +117,7 @@
     &:hover {
       background-color: #797ef3;
     }
-    
+
     &:disabled {
       background-color: #cccccc;
       color: #666666;
@@ -174,7 +174,7 @@
     border-radius: 50%;
   }
   span {
-    &:hover{
+    &:hover {
       color: #797ef3;
     }
   }
@@ -200,4 +200,31 @@
 .selected-user-item {
   width: auto;
   padding: 4px 8px;
+}
+
+@media screen and (max-width: 940px) {
+  .add-user-to-channel-overlay {
+    width: 100vw;
+    max-width: 100%;
+    max-height: 450px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .result-user-list {
+    width: fit-content;
+    min-width: 311px;
+    max-height: 300px;
+    position: fixed;
+    top: 293px;
+    left: 50%;
+    border-radius: 30px;
+    transform: translateX(-50%);
+    padding: 8px 8px 8px 8px;
+    overflow-y: auto;
+    div{
+      max-height: unset !important;
+    }
+}
 }

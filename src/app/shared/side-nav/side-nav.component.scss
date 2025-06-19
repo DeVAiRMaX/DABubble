@@ -21,12 +21,26 @@
 }
 
 @media screen and (max-width: 940px) {
+  .channel-list-body {
+    gap: 8px  !important;
+  }
+  .channel-list-container {
+    flex: 1;
+  }
   .side-nav-header {
     display: none;
   }
   .side-nav-container {
-    padding: 109px 30px 32px 30px;
+    height: 100%;
+    padding: 77px 8px 8px 8px;
+    gap: 8px;
   }
+  .channel-list-header {
+    margin-bottom: 0 !important;
+  }
+  .msg-list-body {
+    gap: 8px  !important;
+}
 }
 
 .rotated {
@@ -266,9 +280,7 @@
   }
 }
 
-
-
-.newChatMobileButton{
+.newChatMobileButton {
   position: absolute;
   right: 30px;
   bottom: 37px;
@@ -276,16 +288,14 @@
   height: 60px;
   border-radius: 50%;
   border: none;
-  background: url('/assets/img/icons/editPencil_white.png');
-  background-color: #444DF2;
+  background: url("/assets/img/icons/editPencil_white.png");
+  background-color: #444df2;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 25px 25px;
 
-
   &:hover {
     cursor: pointer;
-    background-color: #535AF1;
+    background-color: #535af1;
   }
-
 }

@@ -4,7 +4,6 @@ import {
   EventEmitter,
   HostListener,
   Input,
-  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -12,10 +11,10 @@ import {
 } from '@angular/core';
 import { SharedModule } from './../../shared';
 import { DialogComponent } from '../header-dialog-profil/dialog.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../services/auth.service';
 import { User } from '../interfaces/user';
-import { Observable, Subscription, filter } from 'rxjs';
+import { Observable, filter } from 'rxjs';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { FirebaseService } from '../services/firebase.service';
 import { UserProfilComponent } from './user-profil/user-profil.component';
@@ -29,9 +28,9 @@ import { VariablesService } from '../../variables.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss', './header-mobile.component.scss'],
 })
-export class HeaderComponent implements OnInit, OnDestroy {
-  @ViewChild('searchInputRef') userListRef!: ElementRef;
-  @ViewChild('searchResult') userInputRef!: ElementRef;
+export class HeaderComponent implements OnInit {
+  @ViewChild('searchInputRef') searchInputRef!: ElementRef;
+  @ViewChild('searchResultRef') searchResultRef!: ElementRef;
 
   @Input() channel!: ChannelWithKey;
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
@@ -42,44 +41,36 @@ export class HeaderComponent implements OnInit, OnDestroy {
   searchResultsState: boolean = false;
   userID: string = '';
   userNotFoundChannel: boolean = false;
-  isMobile: boolean = false;
 
   private authService: AuthService = inject(AuthService);
   private databaseService: FirebaseService = inject(FirebaseService);
   public variableService: VariablesService = inject(VariablesService);
-  private mobileSubscription: Subscription | undefined;
 
   user$: Observable<User | null>;
+  isMobile$: Observable<boolean>;
 
   constructor(public dialog: MatDialog) {
+    this.variableService.checkWindowSize();
     this.user$ = this.authService.user$;
+    this.isMobile$ = this.variableService.isMobile$;
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event?: Event) {
+    this.variableService.checkWindowSize();
   }
 
   ngOnInit(): void {
     this.user$.pipe(filter((user) => user !== null)).subscribe((user) => {
       this.userID = user!.uid;
     });
-
-    this.mobileSubscription = this.variableService.isMobile$.subscribe(
-      (isMobile) => {
-        this.isMobile = isMobile;
-        console.log('Is mobile view:', this.isMobile);
-      }
-    );
-  }
-
-  ngOnDestroy(): void {
-    if (this.mobileSubscription) {
-      this.mobileSubscription.unsubscribe();
-    }
   }
 
   async onSearchChange(): Promise<void> {
-    const data = await this.databaseService.getDatabaseData();
-
     if (this.searchValue.trim().length > 0) {
       this.searchResultsState = true;
       const lowerSearchTerm = this.searchValue.toLowerCase();
+      const data = await this.databaseService.getDatabaseData();
 
       const channels = data.channels
         ? Object.entries(data.channels as Record<string, any>)
@@ -108,18 +99,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
               data: user,
             }))
         : [];
-
-      // const massages = data.direct-messages
-      // ? Object.entries(data.direct-messages as Record<string, any>)
-      //   .filter(([id, channel]) =>
-      //     channel.channelName && channel.channelName.toLowerCase().includes(lowerSearchTerm)
-      //   )
-      //   .map(([id, channel]) => ({
-      //     id: id,
-      //     type: 'Channel',
-      //     data: channel,
-      //   }))
-      // : [];
 
       this.searchResults = [...channels, ...users];
     } else {
@@ -153,8 +132,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((selectedUser: User | undefined) => {
       if (selectedUser) {
-        console.log('[Header] Got user from dialog:', selectedUser);
-        this.userSelected.emit(selectedUser); // 🔥 gibt an MainComponent weiter
+        this.userSelected.emit(selectedUser);
       }
     });
   }
@@ -162,7 +140,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   openResultChannel(result: any & ChannelWithKey) {
     if (result.type === 'Channel') {
       const channelWithKey = { ...result.data, key: result.id };
-
       this.channelSelected.emit(channelWithKey);
     }
     this.searchResultsState = false;
@@ -170,25 +147,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent): void {
-    const clickedInsideInput = this.userInputRef?.nativeElement.contains(
-      event.target
-    );
-    const clickedInsideList = this.userListRef?.nativeElement.contains(
-      event.target
-    );
+    if (this.searchResultsState) {
+      const clickedInsideInput = this.searchInputRef?.nativeElement.contains(
+        event.target
+      );
+      const clickedInsideList = this.searchResultRef?.nativeElement.contains(
+        event.target
+      );
 
-    if (!clickedInsideInput && !clickedInsideList) {
-      this.searchResultsState = false;
+      if (!clickedInsideInput && !clickedInsideList) {
+        this.searchResultsState = false;
+      }
     }
   }
 
   openDialog() {
     if (this.authService.getCurrentUser()) {
       this.dialog.open(DialogComponent, {});
-    } else {
-      console.log(
-        'Dialog kann nicht geöffnet werden, kein Benutzer eingeloggt.'
-      );
     }
   }
 
