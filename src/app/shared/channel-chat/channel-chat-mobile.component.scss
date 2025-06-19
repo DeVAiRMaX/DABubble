@@ -1,0 +1,67 @@
+@media(max-width: 500px){
+
+    .channel-chat-header{
+        width: 100vw;
+
+    }
+
+    .channel-chat-body{
+        width: 100vw;;
+    }
+
+    .channel-chat-container{
+        >.input-container{
+            width: 100vw;
+        }
+    }
+
+    .channel-chat-message-container{
+        >.message-layout{
+            >.message-avatar{
+                >img{
+                    width: 40px;
+                    height: 40px;
+                }
+            }
+
+            >.message-content-wrapper{
+                >.msg-bubble{
+                    >p{
+                        font-size: 14px;
+                    }
+                }
+
+                >.message-footer{
+                    >.msg-count{
+                        font-size: 12px;
+                    }
+
+                    >.last-msg-time{
+                        font-size: 12px;
+                    }
+
+                    >.reaction{
+                        >span{
+                            font-size: 12px;
+                        }
+                        >p{
+                            font-size: 12px;
+                        }
+
+                        >.reactionOwner{
+                            >.reactionOwnerUser{
+                                font-size: 12px;
+                            }
+                            >span{
+                                font-size: 12px;
+                            }
+                        }
+                    }
+                }
+
+                
+            }
+           
+        }
+    }
+}

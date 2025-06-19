@@ -16,7 +16,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-start-new-message',
   standalone: true,
-  imports: [CommonModule, SharedModule, AsyncPipe, NgIf],
+  imports: [CommonModule, SharedModule, NgIf],
   templateUrl: './start-new-message.component.html',
   styleUrls: ['./start-new-message.component.scss'],
 })
