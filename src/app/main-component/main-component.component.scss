@@ -64,10 +64,12 @@
 }
 
 @media screen and (max-width: 940px) {
-  .direct-message-container, .thread-container, .channel-chat-container {
+  .direct-message-container,
+  .thread-container,
+  .channel-chat-container {
     height: calc(100vh - 76.98px);
     bottom: 0;
-}
+  }
   .side-nav-container {
     height: calc(100vh - 76.98px);
     bottom: 0;
@@ -87,6 +89,7 @@
     padding-left: 0;
     padding-right: 0;
     gap: 0;
+    background-color: white;
   }
 }
 

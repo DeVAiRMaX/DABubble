@@ -98,7 +98,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
     this.mobileSubscription = this.variableService.isMobile$.subscribe(
       (isMobile) => {
         this.isMobile = isMobile;
-        console.log('Is mobile view:', this.isMobile);
       }
     );
   }
