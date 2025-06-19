@@ -13,6 +13,14 @@
         >.input-container{
             width: 100vw;
         }
+
+        >.channel-chat-header{
+            >.channel-chat-header-right{
+                >.channel-chat-header-right-user-container{
+                    display: none;
+                }
+            }
+        }
     }
 
     .channel-chat-message-container{
