@@ -46,6 +46,7 @@ import { fromEvent } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { SubService } from '../services/sub.service';
 
 @Component({
   selector: 'app-thread',
@@ -78,6 +79,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   @ViewChildren('editThreadInput') editThreadInputs!: QueryList<
     ElementRef<HTMLTextAreaElement>
   >;
+  @ViewChild('messageInput') messageInput!: ElementRef<HTMLDivElement>;
 
   private sanitizer: DomSanitizer = inject(DomSanitizer);
   private variableService: VariablesService = inject(VariablesService);
@@ -87,6 +89,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   private savedRange: Range | null = null;
   private destroy$ = new Subject<void>();
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private subService: SubService = inject(SubService);
 
   editingThreadMessageKey: string | null = null;
   editThreadMessageText: string = '';
@@ -332,82 +335,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.variableService.toggleThread();
   }
 
-  openTagPeopleDialog(char: '@' | '#', filterPrefix: string) {
-    const targetElement = this.editableDiv.nativeElement;
-    const rect = targetElement.getBoundingClientRect();
-    this.variableService.setNameToFilter(filterPrefix);
-
-    const existingDialog = this.dialog.openDialogs.find(
-      (d: MatDialogRef<any>) =>
-        d.componentInstance instanceof TaggingPersonsDialogComponent &&
-        d.componentInstance.triggerChar === char
-    );
-
-    if (existingDialog) {
-      return;
-    }
-
-    const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
-      position: {
-        bottom: `${window.innerHeight - rect.top + 5}px`,
-        left: `${rect.left}px`,
-      },
-      panelClass: ['tagging-dialog', 'thread-tagging-dialog'],
-      backdropClass: 'transparentBackdrop',
-      hasBackdrop: true,
-      disableClose: false,
-      autoFocus: false,
-      restoreFocus: false,
-      data: {
-        mode: char === '@' ? 'user' : 'channel',
-        char: char,
-        initialFilter: filterPrefix,
-        context: 'thread',
-      },
-    });
-
-    const contactSelectedSub =
-      dialogRef.componentInstance.contactSelected.subscribe(
-        (selectedItem: {
-          id: string;
-          name: string;
-          type: 'user' | 'channel';
-        }) => {
-          this.insertTagIntoThreadInput(
-            selectedItem.name,
-            selectedItem.id,
-            selectedItem.type
-          );
-          this.editableDiv.nativeElement.focus();
-        }
-      );
-    this.subscriptions.add(contactSelectedSub);
-
-    dialogRef.afterClosed().subscribe(() => {
-      contactSelectedSub.unsubscribe();
-      this.editableDiv.nativeElement.focus();
-      if (
-        this.savedRange &&
-        this.editableDiv.nativeElement.contains(
-          this.savedRange.commonAncestorContainer
-        )
-      ) {
-        const selection = window.getSelection();
-        if (selection) {
-          selection.removeAllRanges();
-          selection.addRange(this.savedRange);
-        }
-      }
-      const currentTextInInput = this.editableDiv.nativeElement.innerText;
-      const lastCharInInput = currentTextInInput.slice(-1);
-      if (lastCharInInput !== '@' && lastCharInInput !== '#') {
-        this.variableService.setNameToFilter('');
-      } else {
-        this.variableService.setNameToFilter(lastCharInInput);
-      }
-    });
-  }
-
   groupReactions(reactions: Reaction[] | undefined): GroupedReaction[] {
     if (!reactions || reactions.length === 0) {
       return [];
@@ -561,86 +488,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  checkForMention(event: Event) {
-    const inputElement = event.target as HTMLDivElement;
-    this.threadMessageText = inputElement.innerHTML;
-    this.cacheCurrentRange();
-
-    if (!this.savedRange) return;
-
-    const range = this.savedRange;
-    let charBeforeCursor = '';
-    let currentWordBeforeCursor = '';
-
-    if (
-      range.startContainer.nodeType === Node.TEXT_NODE &&
-      range.startOffset > 0
-    ) {
-      const textContent = range.startContainer.textContent!;
-      const textBefore = textContent.substring(0, range.startOffset);
-      const wordMatch = textBefore.match(/(@)([\w\-äöüÄÖÜß]*)$/u);
-      if (wordMatch) {
-        currentWordBeforeCursor = wordMatch[0];
-        charBeforeCursor = wordMatch[1];
-      }
-    }
-
-    const fullInputText = inputElement.innerText;
-
-    if (charBeforeCursor === '@') {
-      if (this.isInsideTagSpan(range.startContainer)) {
-        this.lastInputValue = fullInputText;
-        return;
-      }
-      this.openTagPeopleDialog('@', currentWordBeforeCursor || '@');
-    } else {
-      const openTagDialog = this.dialog.openDialogs.find(
-        (d: MatDialogRef<any>) =>
-          d.componentInstance instanceof TaggingPersonsDialogComponent &&
-          (d.componentInstance as any).triggerChar === '@' &&
-          (d.componentInstance as any).context === 'thread'
-      );
-      if (openTagDialog) {
-        const dialogInstance =
-          openTagDialog.componentInstance as TaggingPersonsDialogComponent & {
-            triggerChar: string;
-            context?: string;
-          };
-        let relevantPartOfInput = '';
-        const lastTriggerIndex = fullInputText.lastIndexOf(
-          dialogInstance.triggerChar
-        );
-
-        if (lastTriggerIndex !== -1) {
-          const textAfterLastTrigger =
-            fullInputText.substring(lastTriggerIndex);
-          if (textAfterLastTrigger.includes(' ')) {
-            openTagDialog.close();
-          } else {
-            relevantPartOfInput = textAfterLastTrigger;
-          }
-        } else {
-          openTagDialog.close();
-        }
-
-        if (
-          relevantPartOfInput.startsWith(dialogInstance.triggerChar) &&
-          !relevantPartOfInput.includes(' ')
-        ) {
-          this.variableService.setNameToFilter(relevantPartOfInput);
-        } else if (
-          !relevantPartOfInput.startsWith(dialogInstance.triggerChar)
-        ) {
-          openTagDialog.close();
-        }
-      }
-    }
-    this.lastInputValue = fullInputText;
-  }
-
-  openTaggingPerClick(event: Event) {
+  openTaggingPerClick(char: '@' | '#', event: Event) {
     event.preventDefault();
-    const inputEl = this.editableDiv.nativeElement;
+    const inputEl = this.messageInput.nativeElement;
     inputEl.focus();
 
     const selection = window.getSelection();
@@ -664,7 +514,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       range.deleteContents();
     }
 
-    const triggerNode = document.createTextNode('@');
+    const triggerNode = document.createTextNode(char);
     range.insertNode(triggerNode);
 
     range.setStartAfter(triggerNode);
@@ -673,22 +523,101 @@ export class ThreadComponent implements OnInit, OnDestroy {
     selection.addRange(range);
     this.savedRange = range.cloneRange();
 
-    this.openTagPeopleDialog('@', '@');
+    this.openTagPeopleOrChannelDialog(char, char);
     this.lastInputValue = inputEl.innerText;
   }
+  // ###############################################################
+  // ###############################################################
+  // ###############################################################
 
-  insertTagIntoThreadInput(
-    name: string,
-    id: string,
-    type: 'user' | 'channel'
-  ): void {
-    if (type === 'channel') return;
+  openTagPeopleOrChannelDialog(char: '@' | '#', filterPrefix: string) {
+    const targetElement = this.messageInput.nativeElement;
+    const rect = targetElement.getBoundingClientRect();
+    this.variableService.setNameToFilter(filterPrefix);
 
-    const inputEl = this.editableDiv.nativeElement;
+    const existingDialog = this.dialog.openDialogs.find(
+      (d: MatDialogRef<any>) =>
+        d.componentInstance instanceof TaggingPersonsDialogComponent &&
+        d.componentInstance.triggerChar === char
+    );
+
+    if (existingDialog) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
+      position: {
+        bottom: `${window.innerHeight - rect.top + 5}px`,
+        left: `${rect.left}px`,
+      },
+      panelClass: ['tagging-dialog'],
+      backdropClass: 'transparentBackdrop',
+      hasBackdrop: true,
+      disableClose: false,
+      autoFocus: false,
+      restoreFocus: false,
+      data: {
+        mode: char === '@' ? 'user' : 'channel',
+        char: char,
+        initialFilter: filterPrefix,
+      },
+    });
+
+    const contactSelectedSub =
+      dialogRef.componentInstance.contactSelected.subscribe(
+        (selectedItem: {
+          id: string;
+          name: string;
+          type: 'user' | 'channel';
+        }) => {
+          this.insertTagIntoInput(
+            selectedItem.name,
+            selectedItem.id,
+            selectedItem.type
+          );
+          this.messageInput.nativeElement.focus();
+        }
+      );
+    this.subService.add(contactSelectedSub, 'taggingDialogSub');
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.subService.unsubscribeGroup('taggingDialogSub');
+      this.messageInput.nativeElement.focus();
+      if (
+        this.savedRange &&
+        this.messageInput.nativeElement.contains(
+          this.savedRange.commonAncestorContainer
+        )
+      ) {
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(this.savedRange);
+        }
+      }
+      const currentTextInInput = this.messageInput.nativeElement.innerText;
+      const lastCharInInput = currentTextInInput.slice(-1);
+      if (lastCharInInput !== '@' && lastCharInInput !== '#') {
+        this.variableService.setNameToFilter('');
+      } else {
+        this.variableService.setNameToFilter(lastCharInInput);
+      }
+    });
+  }
+
+  // ###############################################################
+  // ###############################################################
+  // ###############################################################
+  // ###############################################################
+
+  insertTagIntoInput(name: string, id: string, type: 'user' | 'channel'): void {
+    const inputEl = this.messageInput.nativeElement;
     inputEl.focus();
 
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+    if (!selection || selection.rangeCount === 0) {
+      return;
+    }
 
     let range: Range;
     if (
@@ -706,52 +635,82 @@ export class ThreadComponent implements OnInit, OnDestroy {
     selection.removeAllRanges();
     selection.addRange(range);
 
+    const container = range.startContainer;
+    let offset = range.startOffset;
     const activeFilterPrefix = this.variableService.getNameToFilter();
-    if (activeFilterPrefix && activeFilterPrefix.startsWith('@')) {
+    let successfullyDeletedPrefix = false;
+
+    if (
+      activeFilterPrefix &&
+      (activeFilterPrefix.startsWith('@') || activeFilterPrefix.startsWith('#'))
+    ) {
       if (
-        range.startContainer.nodeType === Node.TEXT_NODE &&
-        range.startOffset >= activeFilterPrefix.length
+        container.nodeType === Node.TEXT_NODE &&
+        offset >= activeFilterPrefix.length
       ) {
-        const textNode = range.startContainer as Text;
+        const textNode = container as Text;
         const textContent = textNode.textContent || '';
-        if (
-          textContent.substring(
-            range.startOffset - activeFilterPrefix.length,
-            range.startOffset
-          ) === activeFilterPrefix
-        ) {
-          range.setStart(
-            textNode,
-            range.startOffset - activeFilterPrefix.length
-          );
-          range.deleteContents();
+        const textBeforeCursor = textContent.substring(0, offset);
+
+        if (textBeforeCursor.endsWith(activeFilterPrefix)) {
+          range.setStart(textNode, offset - activeFilterPrefix.length);
+          try {
+            range.deleteContents();
+            successfullyDeletedPrefix = true;
+          } catch (e) {}
+          offset = range.startOffset;
         }
       }
-    } else if (!range.collapsed) {
-      range.deleteContents();
+    }
+
+    if (!successfullyDeletedPrefix) {
+      if (!range.collapsed) {
+        try {
+          range.deleteContents();
+          successfullyDeletedPrefix = true;
+        } catch (e) {}
+        offset = range.startOffset;
+      } else if (container.nodeType === Node.TEXT_NODE && offset > 0) {
+        const textNode = container as Text;
+        const charBefore = (textNode.textContent || '')[offset - 1];
+        const expectedTrigger = type === 'user' ? '@' : '#';
+        if (charBefore === expectedTrigger) {
+          try {
+            range.setStart(textNode, offset - 1);
+            range.deleteContents();
+            successfullyDeletedPrefix = true;
+            offset = range.startOffset;
+          } catch (e) {}
+        }
+      }
     }
 
     const tagSpan = document.createElement('span');
-    tagSpan.classList.add('user-tag');
-    tagSpan.setAttribute(`data-user-id`, id);
+    tagSpan.classList.add(type === 'user' ? 'user-tag' : 'channel-tag');
+    tagSpan.setAttribute(`data-${type}-id`, id);
     tagSpan.setAttribute('contenteditable', 'false');
-    tagSpan.innerText = `@${name}`;
+    tagSpan.innerText = (type === 'user' ? '@' : '#') + name;
 
-    const spaceChar = ' ';
+    const spaceChar = '\u00A0';
     const actualSpaceNode = document.createTextNode(spaceChar);
 
-    range.insertNode(tagSpan);
-    range.setStartAfter(tagSpan);
-    range.collapse(true);
-    range.insertNode(actualSpaceNode);
-    range.setStartAfter(actualSpaceNode);
-    range.collapse(true);
+    try {
+      range.insertNode(tagSpan);
+      range.setStartAfter(tagSpan);
+      range.collapse(true);
+      range.insertNode(actualSpaceNode);
+      range.setStartAfter(actualSpaceNode);
+      range.collapse(true);
 
-    selection.removeAllRanges();
-    selection.addRange(range);
-    this.savedRange = range.cloneRange();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      this.savedRange = range.cloneRange();
+    } catch (e) {
+      const fallbackText = tagSpan.innerText + spaceChar;
+      document.execCommand('insertText', false, fallbackText);
+      this.saveCursorPositionInternal();
+    }
 
-    this.threadMessageText = inputEl.innerHTML;
     this.lastInputValue = inputEl.innerText;
     this.variableService.setNameToFilter('');
   }
@@ -867,6 +826,94 @@ export class ThreadComponent implements OnInit, OnDestroy {
   onContentChanged(event: Event): void {
     const el = this.editableDiv.nativeElement;
     this.threadMessageText = el.innerHTML;
+    this.checkForMention(event);
+  }
+
+  checkForMention(event: Event) {
+    const inputElement = event.target as HTMLDivElement;
+    if (!this.savedRange) {
+      this.saveCursorPositionInternal();
+      if (!this.savedRange) return;
+    }
+
+    const range = this.savedRange;
+    let charBeforeCursor = '';
+    let currentWordBeforeCursor = '';
+
+    if (
+      range.startContainer.nodeType === Node.TEXT_NODE &&
+      range.startOffset > 0
+    ) {
+      const textContent = range.startContainer.textContent!;
+      const textBefore = textContent.substring(0, range.startOffset);
+      const wordMatch = textBefore.match(/([@#])([\w\-äöüÄÖÜß]*)$/u);
+      if (wordMatch) {
+        currentWordBeforeCursor = wordMatch[0];
+        charBeforeCursor = wordMatch[1];
+      }
+    }
+
+    const fullInputText = inputElement.innerText;
+
+    if (charBeforeCursor === '@') {
+      if (this.isInsideTagSpan(range.startContainer)) {
+        this.lastInputValue = fullInputText;
+        return;
+      }
+      this.openTagPeopleOrChannelDialog('@', currentWordBeforeCursor || '@');
+    } else if (charBeforeCursor === '#') {
+      if (this.isInsideTagSpan(range.startContainer)) {
+        this.lastInputValue = fullInputText;
+        return;
+      }
+      this.openTagPeopleOrChannelDialog('#', currentWordBeforeCursor || '#');
+    } else {
+      const openTagDialog = this.dialog.openDialogs.find(
+        (d: MatDialogRef<any>) =>
+          d.componentInstance instanceof TaggingPersonsDialogComponent
+      );
+      if (openTagDialog) {
+        const dialogInstance =
+          openTagDialog.componentInstance as TaggingPersonsDialogComponent;
+        let relevantPartOfInput = '';
+        const lastTriggerIndex = fullInputText.lastIndexOf(
+          dialogInstance.triggerChar
+        );
+        if (lastTriggerIndex !== -1) {
+          relevantPartOfInput = fullInputText.substring(lastTriggerIndex);
+        }
+        if (relevantPartOfInput.startsWith(dialogInstance.triggerChar)) {
+          this.variableService.setNameToFilter(relevantPartOfInput);
+        } else {
+          openTagDialog.close();
+        }
+      }
+    }
+    this.lastInputValue = fullInputText;
+  }
+
+  saveCursorPositionInternal() {
+    const inputEl = this.messageInput?.nativeElement;
+    if (!inputEl) return;
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const currentRange = selection.getRangeAt(0);
+      if (
+        inputEl.contains(currentRange.commonAncestorContainer) ||
+        document.activeElement === inputEl
+      ) {
+        this.savedRange = currentRange.cloneRange();
+      }
+    } else if (document.activeElement === inputEl) {
+      const range = document.createRange();
+      range.selectNodeContents(inputEl);
+      range.collapse(true);
+      this.savedRange = range;
+    }
+  }
+
+  onInputForTagging(event: Event) {
+    this.saveCursorPositionInternal();
     this.checkForMention(event);
   }
 

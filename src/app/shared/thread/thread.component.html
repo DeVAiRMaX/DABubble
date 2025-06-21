@@ -279,8 +279,10 @@
     <div class="input-container-wrapper threadwrapper">
       <div
         #editableDiv
+        #messageInput
         contenteditable="true"
         (input)="onContentChanged($event)"
+        (input)="onInputForTagging($event)"
         (keydown)="onEnter($event)"
         class="textForThreadInput"
         [attr.data-placeholder]="'Antworten...'"
@@ -289,12 +291,20 @@
       <div class="icons">
         <div>
           <span
-            (click)="openTaggingPerClick($event)"
+            (click)="openTaggingPerClick('@', $event)"
             class="material-symbols-outlined"
             matTooltip="Person markieren"
             matTooltipPosition="above"
           >
             alternate_email
+          </span>
+          <span
+            (click)="openTaggingPerClick('#', $event)"
+            class="material-symbols-outlined"
+            matTooltip="Channel markieren"
+            style="cursor: pointer"
+          >
+            tag
           </span>
           <span
             class="material-symbols-outlined"
