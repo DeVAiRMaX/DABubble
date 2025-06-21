@@ -74,6 +74,7 @@ import { SubService } from '../services/sub.service';
   ],
 })
 export class ThreadComponent implements OnInit, OnDestroy {
+  @ViewChild('threadBody') threadBody!: ElementRef;
   @Input() channel!: ChannelWithKey;
   @ViewChild('editableDiv') editableDiv!: ElementRef<HTMLDivElement>;
   @ViewChildren('editThreadInput') editThreadInputs!: QueryList<
@@ -90,6 +91,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
   private subService: SubService = inject(SubService);
+  private readonly SUB_GROUP_NAME = 'threadSubs';
 
   editingThreadMessageKey: string | null = null;
   editThreadMessageText: string = '';
@@ -190,6 +192,17 @@ export class ThreadComponent implements OnInit, OnDestroy {
       fromEvent(el, 'mouseup')
         .pipe(takeUntil(this.destroy$))
         .subscribe(() => this.cacheCurrentRange());
+    }
+
+    if (this.threadBody && this.threadBody.nativeElement) {
+      this.subService.add(
+        fromEvent<Event>(this.threadBody.nativeElement, 'click').subscribe(
+          (event: Event) => {
+            this.handleMessageTagClick(event);
+          }
+        ),
+        this.SUB_GROUP_NAME
+      );
     }
   }
 
@@ -525,6 +538,70 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
     this.openTagPeopleOrChannelDialog(char, char);
     this.lastInputValue = inputEl.innerText;
+  }
+
+  handleMessageTagClick(event: Event): void {
+    const targetElement = event.target as HTMLElement;
+    const messageContainer = targetElement.closest(
+      '.msg-left-container, .msg-right-container'
+    );
+    if (targetElement.classList.contains('user-tag') && messageContainer) {
+      event.preventDefault();
+      const userId = targetElement.getAttribute('data-user-id');
+
+      if (userId && this.currentUser?.uid) {
+        if (userId === this.currentUser.uid) {
+          this.firebaseService
+            .ensureDirectMessageConversation(
+              this.currentUser.uid,
+              this.currentUser.uid
+            )
+            .subscribe((conversationId) => {
+              this.variableService.setActiveChannel(null);
+              this.variableService.setActiveDmUser(this.currentUser!);
+              this.variableService.closeThread();
+            });
+          return;
+        }
+        this.firebaseService
+          .ensureDirectMessageConversation(this.currentUser.uid, userId)
+          .subscribe((conversationId) => {
+            this.firebaseService.getUserData(userId).subscribe((dmUserData) => {
+              if (dmUserData) {
+                const targetUser: User = {
+                  uid: dmUserData.uid,
+                  displayName: dmUserData.displayName,
+                  email: dmUserData.email,
+                  avatar: (dmUserData as any).avatar,
+                  channelKeys: dmUserData.channelKeys || [],
+                };
+                this.variableService.setActiveChannel(null);
+                this.variableService.setActiveDmUser(targetUser);
+                this.variableService.closeThread();
+              }
+            });
+          });
+      }
+    } else if (
+      targetElement.classList.contains('channel-tag') &&
+      messageContainer
+    ) {
+      event.preventDefault();
+      const channelId = targetElement.getAttribute('data-channel-id');
+      if (channelId) {
+        this.firebaseService.getChannel(channelId).subscribe((channelData) => {
+          if (channelData) {
+            const channelWithKey: ChannelWithKey = {
+              ...channelData,
+              key: channelId,
+            };
+            this.variableService.setActiveDmUser(null);
+            this.variableService.setActiveChannel(channelWithKey);
+            this.variableService.closeThread();
+          }
+        });
+      }
+    }
   }
   // ###############################################################
   // ###############################################################
