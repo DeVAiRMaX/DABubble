@@ -45,8 +45,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "17kB",
-                  "maximumError": "18kB"
+                  "maximumWarning": "29kB",
+                  "maximumError": "30kB"
                 }
               ],
               "outputHashing": "all"
@@ -94,6 +94,7 @@
             ],
             "styles": [
               "@angular/material/prebuilt-themes/azure-blue.css",
+              "public/assets/fonts/nunito.css",
               "src/styles.scss"
             ],
             "scripts": []
