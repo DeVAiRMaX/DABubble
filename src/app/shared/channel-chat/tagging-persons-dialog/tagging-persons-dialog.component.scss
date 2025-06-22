@@ -1,9 +1,9 @@
 .wholeDialog {
   display: flex;
   flex-direction: column;
-  width: 350px;
+  
   max-width: 350px;
-  height: 467px;
+ 
   max-height: 467px;
   overflow-y: scroll;
   box-sizing: border-box;
@@ -52,6 +52,35 @@
       font-size: 18px;
       line-height: 100%;
       letter-spacing: 0%;
+    }
+  }
+}
+
+
+@media screen and (max-width: 400px ){
+
+  .wholeDialog{
+    >.singleContact{
+      >img{
+        width: 35px;
+        height: 35px;
+      }
+
+        &::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background-color: #92c83e;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 5px;
+      left: 45px;
+      border: 2px solid white;
+    }
+
+    >span{
+      font-size: 14px;
+    }
     }
   }
 }

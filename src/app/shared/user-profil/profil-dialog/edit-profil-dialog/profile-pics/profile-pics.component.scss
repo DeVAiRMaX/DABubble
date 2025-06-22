@@ -49,5 +49,40 @@ h1{
 @media screen and (max-width: 940px) {
     .wholeOverlay{
         border-radius: 0 !important ;
+
+        >.avatarMenu{
+            >.singlePicDiv{
+               width: 100px;
+               height: 100px;
+            }
+        }
+    }
+  }
+
+
+  @media screen and (max-width: 525px){
+   .wholeOverlay{
+    >h1{
+        font-size: 22px;
+
+    }
+
+    >.avatarMenu{
+        gap: 25px;
+
+        >.singlePicDiv{
+            width: 80px;
+            height: 80px;;
+        }
+    }
+   }
+  }
+
+  @media screen and (max-width: 360px){
+    .wholeOverlay{
+        >h1{
+            font-size: 18px;
+            left: 20px;
+        }
     }
   }
