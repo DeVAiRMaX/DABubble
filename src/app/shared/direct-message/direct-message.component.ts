@@ -326,21 +326,31 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
-  openEmojiPickerForReaction(message: Message | null): void {
-    if (!message || !message.key || !this.conversationId || !this.currentUser)
-      return;
+ openEmojiPickerForReaction(message: Message | null): void {
+  if (!message || !message.key || !this.conversationId || !this.currentUser)
+    return;
 
-    const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
-      panelClass: 'emoji-picker-dialog-reaction',
-      backdropClass: 'transparentBackdrop',
-    });
+  
+  (document.activeElement as HTMLElement)?.blur();
 
-    dialogRef.componentInstance.emojiSelected.subscribe(
-      (selectedEmoji: string) => {
-        this.toggleReaction(message, selectedEmoji);
-      }
-    );
-  }
+  const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
+    panelClass: 'emoji-picker-dialog-reaction',
+    backdropClass: 'transparentBackdrop',
+  });
+
+  
+  dialogRef.afterOpened().subscribe(() => {
+    const el = document.querySelector('.search') as HTMLElement;
+    el?.focus(); // falls du ein gezieltes Eingabefeld o. Ä. hast
+  });
+
+  dialogRef.componentInstance.emojiSelected.subscribe(
+    (selectedEmoji: string) => {
+      this.toggleReaction(message, selectedEmoji);
+    }
+  );
+}
+
 
   trackByMessageKey: TrackByFunction<Message> = (
     index: number,
@@ -446,6 +456,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
     const targetElement = this.messageInput.nativeElement;
     this.saveCursorPosition();
     if (targetElement) {
+      (document.activeElement as HTMLElement)?.blur();
       const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
         panelClass: 'emoji-picker-dialog',
@@ -456,8 +467,20 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
         },
       });
 
+      let selectedEmoji: string | null = null;
+
       dialogRef.componentInstance.emojiSelected.subscribe((emoji: string) => {
-        this.insertEmojiAtCursor(emoji);
+        selectedEmoji = emoji;
+        dialogRef.close();
+      
+      });
+
+      dialogRef.afterClosed().subscribe(() => {
+        if(selectedEmoji){
+          setTimeout(() => {
+            this.insertEmojiAtCursor(selectedEmoji!);
+          }, 10);
+        }
       });
     }
   }

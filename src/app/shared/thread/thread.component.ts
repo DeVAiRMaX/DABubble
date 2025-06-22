@@ -471,10 +471,17 @@ export class ThreadComponent implements OnInit, OnDestroy {
   openEmojiPickerForReaction(message: Message | ThreadMessage | null): void {
     if (!message || !message.key || !this.currentUser) return;
 
+    (document.activeElement as HTMLElement)?.blur();
+
     const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
       panelClass: 'emoji-picker-dialog-reaction',
       backdropClass: 'transparentBackdrop',
     });
+
+     dialogRef.afterOpened().subscribe(() => {
+    const el = document.querySelector('.search') as HTMLElement;
+    el?.focus(); 
+  });
 
     dialogRef.componentInstance.emojiSelected.subscribe(
       (selectedEmoji: string) => {
@@ -828,6 +835,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       '.input-container-wrapper'
     );
     if (targetElement) {
+      (document.activeElement as HTMLElement)?.blur();
       const rect = targetElement.getBoundingClientRect();
       const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
         panelClass: ['emoji-picker-dialog', 'thread-emoji-picker'],
@@ -838,11 +846,21 @@ export class ThreadComponent implements OnInit, OnDestroy {
         },
       });
 
+      let selectedEmoji: string | null = null;
+
       dialogRef.componentInstance.emojiSelected.subscribe(
-        (selectedEmoji: string) => {
-          this.insertEmojiAtCursor(selectedEmoji);
-        }
-      );
+        (emoji: string) => {
+          selectedEmoji = emoji;
+          dialogRef.close(); 
+        });
+
+        dialogRef.afterClosed().subscribe(() => {
+          if(selectedEmoji){
+            setTimeout(() => {
+              this.insertEmojiAtCursor(selectedEmoji!);
+            }, 10);
+          }
+        });
     } else {
       console.warn(
         "Could not find '.input-container-wrapper' for emoji picker positioning in thread."

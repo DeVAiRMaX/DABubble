@@ -879,6 +879,7 @@ export class ChannelChatComponent
     );
     if (targetElement) {
       const rect = targetElement.getBoundingClientRect();
+      (document.activeElement as HTMLElement)?.blur();
       const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
         panelClass: '',
         backdropClass: 'transparentBackdrop',
@@ -888,11 +889,22 @@ export class ChannelChatComponent
         },
         data: { channelKey: this.channel?.key },
       });
+
+      let selectedEmoji: string | null = null;
+
       dialogRef.componentInstance.emojiSelected.subscribe(
-        (selectedEmoji: string) => {
-          this.insertEmojiAtCursor(selectedEmoji);
-        }
-      );
+        (emoji: string) => {
+          selectedEmoji = emoji;
+         dialogRef.close();
+        });
+
+        dialogRef.afterClosed().subscribe(() => {
+          if(selectedEmoji){
+            setTimeout(() => {
+              this.insertEmojiAtCursor(selectedEmoji!);
+            }, 10);
+          }
+        });
     }
   }
 
@@ -947,10 +959,19 @@ export class ChannelChatComponent
 
   openEmojiPickerForReaction(message: Message): void {
     if (!this.currentUser || !message.key || !this.channel?.key) return;
+
+    (document.activeElement as HTMLElement)?.blur();
+
     const dialogRef = this.dialog.open(SmileyKeyboardComponent, {
       panelClass: 'emoji-picker-dialog-reaction',
       backdropClass: 'transparentBackdrop',
     });
+
+dialogRef.afterOpened().subscribe(() => {
+  const el = document.querySelector('.search') as HTMLElement;
+  el?.focus();
+})
+
     dialogRef.componentInstance.emojiSelected.subscribe(
       (selectedEmoji: string) => {
         this.toggleReaction(message, selectedEmoji);
