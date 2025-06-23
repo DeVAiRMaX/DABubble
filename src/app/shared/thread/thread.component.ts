@@ -543,6 +543,14 @@ export class ThreadComponent implements OnInit, OnDestroy {
     selection.addRange(range);
     this.savedRange = range.cloneRange();
 
+    const tempFocusable = document.createElement('button');
+tempFocusable.style.position = 'absolute';
+tempFocusable.style.opacity = '0';
+tempFocusable.style.pointerEvents = 'none';
+document.body.appendChild(tempFocusable);
+tempFocusable.focus();
+document.body.removeChild(tempFocusable);
+
     this.openTagPeopleOrChannelDialog(char, char);
     this.lastInputValue = inputEl.innerText;
   }
