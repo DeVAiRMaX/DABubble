@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {
@@ -11,6 +11,8 @@ import {
 import { AuthService } from '../../../../shared/services/auth.service';
 import { FirebaseService } from '../../../../shared/services/firebase.service';
 import { CommonModule } from '@angular/common';
+import { VariablesService } from '../../../../variables.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -52,11 +54,22 @@ import { CommonModule } from '@angular/common';
       state('visible', style({ opacity: 1, display: 'flex' })),
       transition('hidden => visible', [animate('0.65s ease-out')]),
     ]),
+    trigger('loginFeedbackFade', [
+  transition(':enter', [
+    style({ opacity: 0, transform: 'translateY(20px)' }),
+    animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+  ]),
+  transition(':leave', [
+    animate('300ms ease-in', style({ opacity: 0, transform: 'translateY(20px)' })),
+  ]),
+]),
+    
   ],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   private authService: AuthService = inject(AuthService);
   private database: FirebaseService = inject(FirebaseService);
+  private variableService = inject(VariablesService);
   private router = inject(Router);
 
   logoState: 'center' | 'left' | 'hidden' | 'visible' = 'center';
@@ -69,11 +82,23 @@ export class LoginComponent implements OnInit {
 
   userEmail: string = '';
   userPassword: string = '';
+  isAboutToLogin : boolean = false;
+  private subscription!: Subscription;
+  
   loginError: string | null = null;
 
   ngOnInit(): void {
     this.setResponsiveAnimation();
     this.startAnimation();
+    this.subscription = this.variableService.isAboutToLogin$.subscribe((status) => {
+      this.isAboutToLogin = status;
+    });
+
+  }
+
+  ngOnDestroy(): void {
+    
+    this.subscription.unsubscribe();
   }
 
   setResponsiveAnimation(): void {

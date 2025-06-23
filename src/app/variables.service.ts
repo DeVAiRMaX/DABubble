@@ -75,6 +75,16 @@ export class VariablesService {
   private isEmptyMessageSubject = new BehaviorSubject<boolean>(false);
   isEmptyMessage$ = this.isEmptyMessageSubject.asObservable();
 
+  private  isAboutToLoginSubject = new BehaviorSubject<boolean>(false);
+  isAboutToLogin$ = this.isAboutToLoginSubject.asObservable();
+
+  async setLoginStatusToTrue(){
+    this.isAboutToLoginSubject.next(true);
+    setTimeout(() => {
+      this.isAboutToLoginSubject.next(false);
+    }, 800);
+  }
+
   private isClosedSubject = new BehaviorSubject<boolean>(
     this.getStoredValue('isClosed', false)
   );

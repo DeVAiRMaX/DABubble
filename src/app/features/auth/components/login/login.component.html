@@ -1,10 +1,12 @@
 <div class="animation-background" [@BackgroundAnimation]="BackgroundState">
   <div class="animation-container" [@ContainerAnimation]="ContainerState">
     <div
-  class="animation-logo"
-  [@logoAnimation]="logoAnimationTrigger === 'logoAnimation' ? logoState : null"
-  [@logoFadeIn]="logoAnimationTrigger === 'logoFadeIn' ? logoState : null"
->
+      class="animation-logo"
+      [@logoAnimation]="
+        logoAnimationTrigger === 'logoAnimation' ? logoState : null
+      "
+      [@logoFadeIn]="logoAnimationTrigger === 'logoFadeIn' ? logoState : null"
+    >
       <img src="./assets/img/logo.png" alt="logo" />
     </div>
     <div class="animation-text" [@textAnimation]="textState">
@@ -85,6 +87,10 @@
         <a [routerLink]="['/impressum']">Impressum</a>
         <a [routerLink]="['/datenschutz']">Datenschutz</a>
       </div>
+    </div>
+
+    <div *ngIf="isAboutToLogin" @loginFeedbackFade class="loginFeedback">
+      Du wirst nun eingeloggt
     </div>
   </div>
 </div>

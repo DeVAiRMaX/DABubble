@@ -31,6 +31,7 @@ export class AuthService {
   private firebaseService: FirebaseService = inject(FirebaseService);
   public database: Database = inject(Database);
   private variablesService = inject(VariablesService);
+  
 
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
@@ -153,7 +154,12 @@ export class AuthService {
         email,
         password
       );
-      this.router.navigate(['/dashboard']);
+       await this.variablesService.setLoginStatusToTrue();
+       console.log(this.variablesService.isAboutToLogin$.subscribe(value => console.log('Login status:', value)));
+       setTimeout(() => {
+         this.router.navigate(['/dashboard']);
+       }, 700);
+     
     } catch (error: any) {
       console.error('Error during email/password login:', error);
 
