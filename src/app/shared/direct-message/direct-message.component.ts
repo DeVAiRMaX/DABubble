@@ -7,6 +7,7 @@ import {
   OnChanges,
   SimpleChanges,
   ViewChild,
+  AfterViewChecked,
   ElementRef,
   ChangeDetectorRef,
   CUSTOM_ELEMENTS_SCHEMA,
@@ -43,7 +44,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrls: ['./direct-message.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
+export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy, AfterViewChecked {
   @Input() otherUser: User | null = null;
 
   private firebaseService: FirebaseService = inject(FirebaseService);
@@ -71,6 +72,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   >;
 
   private savedRange: Range | null = null;
+   private shouldFocusInput: boolean = false;
 
   private readonly SUB_AUTH_DM = 'directMessageAuthUser';
   private readonly SUB_MESSAGES_DM = 'directMessageMessagesStream';
@@ -91,6 +93,7 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['otherUser']) {
+      this.shouldFocusInput = true;
       this.cancelEdit();
       if (changes['otherUser'].currentValue) {
         this.initializeConversation();
@@ -106,6 +109,13 @@ export class DirectMessageComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.subService.unsubscribeGroup(this.SUB_AUTH_DM);
     this.subService.unsubscribeGroup(this.SUB_MESSAGES_DM);
+  }
+
+  ngAfterViewChecked(): void {
+    if(this.shouldFocusInput && this.messageInput?.nativeElement) {
+      this.messageInput.nativeElement.focus();
+      this.shouldFocusInput = false;
+    }
   }
 
   ngAfterViewInit() {

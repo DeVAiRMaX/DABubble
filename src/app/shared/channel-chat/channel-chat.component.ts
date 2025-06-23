@@ -13,6 +13,7 @@ import {
   QueryList,
   ViewChildren,
   AfterViewInit,
+  AfterViewChecked,
   TrackByFunction,
   HostListener,
 } from '@angular/core';
@@ -59,7 +60,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChannelChatComponent
-  implements OnInit, OnChanges, OnDestroy, AfterViewInit
+  implements OnInit,AfterViewChecked, OnChanges, OnDestroy, AfterViewInit
 {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
@@ -90,6 +91,8 @@ export class ChannelChatComponent
   private router: Router = inject(Router);
   private sanitizer: DomSanitizer = inject(DomSanitizer);
   private readonly INPUT_EVENTS_GROUP = this.SUB_GROUP_NAME + '_InputEvents';
+  private shouldFocusInput: boolean = false;
+
 
   isShowingAllReactions = new Map<string, boolean>();
   isMobileView: boolean = window.innerWidth < 800;
@@ -262,12 +265,21 @@ export class ChannelChatComponent
       });
   }
 
+
+  ngAfterViewChecked(): void {
+    if(this.shouldFocusInput && this.messageInput?.nativeElement){
+      this.messageInput.nativeElement.focus();
+      this.shouldFocusInput = false;
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (
       changes['channel'] &&
       changes['channel'].currentValue?.key !==
         changes['channel'].previousValue?.key
     ) {
+      this.shouldFocusInput = true;
       this.cancelEdit();
       this.getChannelMembers();
     } else if (changes['channel']) {
@@ -564,7 +576,7 @@ export class ChannelChatComponent
   openTaggingPerClick(char: '@' | '#', event: Event) {
     event.preventDefault();
     const inputEl = this.messageInput.nativeElement;
-    inputEl.focus();
+    
 
     const selection = window.getSelection();
     if (!selection) return;
@@ -614,6 +626,8 @@ export class ChannelChatComponent
     if (existingDialog) {
       return;
     }
+
+    this.messageInput.nativeElement.blur();
 
     const dialogRef = this.dialog.open(TaggingPersonsDialogComponent, {
       position: {
