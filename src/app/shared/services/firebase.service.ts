@@ -3,6 +3,7 @@ import {
   Database,
   ref,
   onValue,
+  remove,
   set,
   get,
   push,
@@ -232,6 +233,7 @@ export class FirebaseService {
   async removeUserChannel(channelKey: string, uid: string): Promise<void> {
     const membersRef = ref(this.database, `channels/${channelKey}/members`);
     const userRef = ref(this.database, `users/${uid}/channelKeys`);
+    const channelRef = ref(this.database, `channels/${channelKey}`);
 
     const [membersSnap, userChannelsSnap] = await Promise.all([
       get(membersRef),
@@ -259,6 +261,10 @@ export class FirebaseService {
       set(membersRef, updatedMembers),
       set(userRef, updatedUserChannels),
     ]);
+
+    if(updatedMembers.length === 0){
+      await remove(channelRef);
+    }
   }
 
   getChannelsForUser(uid: string): Observable<ChannelWithKey[]> {
