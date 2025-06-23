@@ -118,18 +118,22 @@ export class ChannelCreateOverlayComponent {
     this.channelCreateOverlayAnimation = 'open';
   }
 
-  closeDialog() {
-    this.channelCreateOverlayAnimation = 'close';
-    setTimeout(() => {
-      if (this.dialogRef) {
-        this.dialogRef.close();
-      } else {
-        console.error(
-          'DialogRef ist nicht verfügbar in ChannelCreateOverlayComponent'
-        );
-      }
-    }, 100);
-  }
+closeDialog() {
+  if (document.activeElement instanceof HTMLElement) {
+  document.activeElement.blur();}
+  const trap = document.getElementsByClassName('header-search')[0] as HTMLElement;
+  trap?.focus(); // Fokus liegt jetzt *nicht* im app-root
+
+  this.channelCreateOverlayAnimation = 'close';
+
+  setTimeout(() => {
+    this.dialogRef?.close();
+  }, 100);
+}
+
+
+
+
 
 
   checkIfChannelDoubles(name: string){

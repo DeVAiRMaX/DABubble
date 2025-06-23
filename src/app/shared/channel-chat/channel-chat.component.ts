@@ -142,7 +142,7 @@ export class ChannelChatComponent
     this.scrollToBottom();
     if (this.messageInput && this.messageInput.nativeElement) {
       setTimeout(() => {
-        this.messageInput.nativeElement.focus();
+        // this.messageInput.nativeElement.focus();
       }, 0);
     }
 
@@ -293,7 +293,7 @@ export class ChannelChatComponent
     if (this.channel && this.messageInput && this.messageInput.nativeElement) {
       setTimeout(() => {
         if (this.messageInput && this.messageInput.nativeElement) {
-          this.messageInput.nativeElement.focus();
+          // this.messageInput.nativeElement.focus();
         }
       }, 0);
     }
@@ -471,31 +471,41 @@ export class ChannelChatComponent
   }
 
   async openChannelMembersDialog() {
-    this.firebaseService.getChannel(this.channel?.key).subscribe((user) => {
-      if (this.channel) this.channel.members = user?.members || [];
-    });
+ 
 
-    const targetElement = document.querySelector(
-      '.channel-chat-header-right-user-container'
-    );
-    if (targetElement) {
-      const rect = targetElement.getBoundingClientRect();
-      const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
-        position: { top: `${rect.bottom + 20 + window.scrollY}px` },
-        panelClass: ['custom-dialog', 'memberOverlay'],
-        data: {
-          channelMember: this.channel.members,
-          channelKey: this.channel.key,
-        },
-      });
-      const childEventSub = dialogRef.componentInstance.childEvent.subscribe(
-        () => {
-          this.openAddUserToChannelDialog();
-        }
+  this.firebaseService.getChannel(this.channel?.key).subscribe((user) => {
+    
+
+    if (this.channel) {
+   
+      this.channel.members = user?.members || [];
+
+     
+      const targetElement = document.querySelector(
+        '.channel-chat-header-right-user-container'
       );
-      this.subService.add(childEventSub, this.SUB_GROUP_NAME);
+      if (targetElement) {
+        const rect = targetElement.getBoundingClientRect();
+        const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
+          position: { top: `${rect.bottom + 20 + window.scrollY}px` },
+          panelClass: ['custom-dialog', 'memberOverlay'],
+          data: {
+            channelMember: this.channel.members,
+            channelKey: this.channel.key,
+          },
+        });
+
+        const childEventSub =
+          dialogRef.componentInstance.childEvent.subscribe(() => {
+            this.openAddUserToChannelDialog();
+          });
+
+        this.subService.add(childEventSub, this.SUB_GROUP_NAME);
+      }
     }
-  }
+  });
+}
+
 
   startOrOpenThread(message: Message): void {
     if (!message || !message.key || !this.channel?.key || !this.currentUser) {

@@ -204,7 +204,24 @@ export class EditChannelComponent implements OnDestroy {
   }
 
   closeDialog() {
+
+   
+if (document.activeElement instanceof HTMLElement) {
+  document.activeElement.blur();
+
+  // UND: Kurzzeitig Fokus auf "unsichtbares" Dummy-Element legen
+  const tempFocusable = document.createElement('button');
+  tempFocusable.style.position = 'absolute';
+  tempFocusable.style.opacity = '0';
+  tempFocusable.style.pointerEvents = 'none';
+  document.body.appendChild(tempFocusable);
+  tempFocusable.focus();
+  document.body.removeChild(tempFocusable);
+}
+
     this.editChannelAnimation = 'close';
+
+   
     setTimeout(() => {
       this.dialogRef.close();
     }, 150);
