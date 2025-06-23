@@ -7,7 +7,6 @@
   </div>
   <div class="register-box-container">
     <div class="register-box">
-      
       <div class="register-box-header">
         <span
           class="material-symbols-outlined back-arrow-btn"
@@ -24,36 +23,99 @@
 
       <form [formGroup]="registerForm" class="input-group">
         <div class="person-input">
-          <input type="text" placeholder="Name und Nachname" formControlName="displayName" />
-          <div *ngIf="formControls['displayName'].invalid && (formControls['displayName'].dirty || formControls['displayName'].touched)" class="error-message">
-            <span *ngIf="formControls['displayName'].errors?.['required']">Name ist erforderlich.</span>
-            <span *ngIf="formControls['displayName'].errors?.['minlength']">Name muss mindestens 3 Zeichen lang sein.</span>
+          <input
+            type="text"
+            placeholder="Name und Nachname"
+            formControlName="displayName"
+          />
+          <div
+            *ngIf="
+              formControls['displayName'].invalid &&
+              (formControls['displayName'].dirty ||
+                formControls['displayName'].touched)
+            "
+            class="error-message"
+          >
+            <span *ngIf="formControls['displayName'].errors?.['required']"
+              >Name ist erforderlich.</span
+            >
+            <span *ngIf="formControls['displayName'].errors?.['minlength']"
+              >Name muss mindestens 3 Zeichen lang sein.</span
+            >
           </div>
         </div>
 
         <div class="email-input">
-          <input type="email" placeholder="Beispielname@email.com" formControlName="email" />
-          <div *ngIf="formControls['email'].invalid && (formControls['email'].dirty || formControls['email'].touched)" class="error-message">
-            <span *ngIf="formControls['email'].errors?.['required']">E-Mail ist erforderlich.</span>
-            <span *ngIf="formControls['email'].errors?.['email']">Bitte geben Sie eine gültige E-Mail-Adresse ein.</span>
+          <input
+            type="email"
+            placeholder="Beispielname@email.com"
+            formControlName="email"
+          />
+          <div
+            *ngIf="
+              formControls['email'].invalid &&
+              (formControls['email'].dirty || formControls['email'].touched)
+            "
+            class="error-message"
+          >
+            <span *ngIf="formControls['email'].errors?.['required']">
+              E-Mail ist erforderlich.
+            </span>
+            <span
+              *ngIf="!formControls['email'].errors?.['required'] && formControls['email'].errors?.['strictEmail']"
+            >
+              Bitte geben Sie eine gültige E-Mail-Adresse mit Domainendung ein.
+            </span>
+            <span
+              *ngIf="!formControls['email'].errors?.['required'] && !formControls['email'].errors?.['strictEmail'] && formControls['email'].errors?.['email']"
+            >
+              Bitte geben Sie eine gültige E-Mail-Adresse ein.
+            </span>
           </div>
         </div>
 
         <div class="password-input">
-          <input type="password" placeholder="Passwort" formControlName="password" />
-          <div *ngIf="formControls['password'].invalid && (formControls['password'].dirty || formControls['password'].touched)" class="error-message">
-            <span *ngIf="formControls['password'].errors?.['required']">Passwort ist erforderlich.</span>
-            <span *ngIf="formControls['password'].errors?.['minlength']">Passwort muss mindestens 6 Zeichen lang sein.</span>
+          <input
+            type="password"
+            placeholder="Passwort"
+            formControlName="password"
+          />
+          <div
+            *ngIf="
+              formControls['password'].invalid &&
+              (formControls['password'].dirty ||
+                formControls['password'].touched)
+            "
+            class="error-message"
+          >
+            <span *ngIf="formControls['password'].errors?.['required']"
+              >Passwort ist erforderlich.</span
+            >
+            <span *ngIf="formControls['password'].errors?.['minlength']"
+              >Passwort muss mindestens 6 Zeichen lang sein.</span
+            >
           </div>
         </div>
 
         <div class="privacypolicy">
           <div class="checkbox-container">
             <input type="checkbox" formControlName="privacyPolicy" />
-            <p>Ich stimme der <a [routerLink]="['/datenschutz']">Datenschutzerklärung</a> zu.</p>
+            <p>
+              Ich stimme der
+              <a [routerLink]="['/datenschutz']">Datenschutzerklärung</a> zu.
+            </p>
           </div>
-          <div *ngIf="formControls['privacyPolicy'].invalid && (formControls['privacyPolicy'].dirty || formControls['privacyPolicy'].touched)" class="error-message">
-            <span *ngIf="formControls['privacyPolicy'].errors?.['required']">Sie müssen den Datenschutzbestimmungen zustimmen.</span>
+          <div
+            *ngIf="
+              formControls['privacyPolicy'].invalid &&
+              (formControls['privacyPolicy'].dirty ||
+                formControls['privacyPolicy'].touched)
+            "
+            class="error-message"
+          >
+            <span *ngIf="formControls['privacyPolicy'].errors?.['required']"
+              >Sie müssen den Datenschutzbestimmungen zustimmen.</span
+            >
           </div>
         </div>
         <mat-progress-bar mode="query" *ngIf="isLoading"></mat-progress-bar>
@@ -62,13 +124,20 @@
           <p>Die eingegebene E-Mail existiert bereits!</p>
         </div>
 
-        
         <div class="register-actions">
-          <button class="register-btn" (click)="registNewUser()" [disabled]="registerForm.invalid">Weiter</button>
+          <section class="emailWarning" *ngIf="emailInvalid">
+            Die E-Mail Addresse muss ein &#64;-Zeichen, und eine korrekte
+            Endung, wie z.B. .de oder .com haben
+          </section>
+          <button
+            class="register-btn"
+            (click)="registNewUser()"
+            [disabled]="registerForm.invalid"
+          >
+            Weiter
+          </button>
         </div>
-        
       </form>
-      
     </div>
 
     <div class="footer">
