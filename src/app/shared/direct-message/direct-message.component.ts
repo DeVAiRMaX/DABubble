@@ -18,7 +18,7 @@ import {
 import { SharedModule } from '../../shared';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, of, fromEvent } from 'rxjs';
+import { Observable, of, fromEvent, Subscription } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { FirebaseService } from '../services/firebase.service';
 import { AuthService } from '../services/auth.service';
@@ -63,6 +63,7 @@ export class DirectMessageComponent
   private dialog: MatDialog = inject(MatDialog);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
   private sanitizer: DomSanitizer = inject(DomSanitizer);
+  private profileNameChangedSubscription: Subscription | undefined;
 
   currentUser: User | null = null;
   conversationId: string | null = null;
@@ -100,6 +101,20 @@ export class DirectMessageComponent
       }
     });
     this.subService.add(authSub, this.SUB_AUTH_DM);
+
+    this.profileNameChangedSubscription =
+      this.variableService.profileNameChanged$.subscribe(() => {
+        if (this.otherUser && this.otherUser.uid) {
+          this.firebaseService
+            .getUserData(this.otherUser.uid)
+            .subscribe((updatedUser) => {
+              if (updatedUser) {
+                this.otherUser = updatedUser as User;
+                this.cdRef.markForCheck();
+              }
+            });
+        }
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -116,6 +131,10 @@ export class DirectMessageComponent
 
   ngOnDestroy(): void {
     this.subService.unsubscribeGroup(this.SUB_GROUP_NAME);
+
+    if (this.profileNameChangedSubscription) {
+      this.profileNameChangedSubscription.unsubscribe();
+    }
   }
 
   ngAfterViewInit() {

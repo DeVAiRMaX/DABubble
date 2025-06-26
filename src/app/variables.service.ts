@@ -38,6 +38,13 @@ export class VariablesService {
     this.channelNameChangedSource.next();
   }
 
+  private profileNameChangedSource = new Subject<void>();
+  profileNameChanged$ = this.profileNameChangedSource.asObservable();
+
+  public notifyProfileNameChanged(): void {
+    this.profileNameChangedSource.next();
+  }
+
   private activeDmUserSubject = new BehaviorSubject<User | null>(null);
   activeDmUser$ = this.activeDmUserSubject.asObservable();
 

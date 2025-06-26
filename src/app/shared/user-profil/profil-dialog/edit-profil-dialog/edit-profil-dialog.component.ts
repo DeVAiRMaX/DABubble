@@ -6,19 +6,20 @@ import { Observable } from 'rxjs';
 import { User } from '../../../../shared/interfaces/user';
 import { ProfilePicsComponent } from './profile-pics/profile-pics.component';
 import { FirebaseService } from '../../../../shared/services/firebase.service';
-
+import { VariablesService } from '../../../../variables.service';
 
 @Component({
   selector: 'app-edit-profil-dialog',
   standalone: true,
   imports: [SharedModule],
   templateUrl: './edit-profil-dialog.component.html',
-  styleUrl: './edit-profil-dialog.component.scss'
+  styleUrl: './edit-profil-dialog.component.scss',
 })
 export class EditProfilDialogComponent {
-
   private authService: AuthService = inject(AuthService);
   private firebaseService: FirebaseService = inject(FirebaseService);
+  private variableService: VariablesService = inject(VariablesService);
+
   user$: Observable<User | null>;
 
   displayName: string = '';
@@ -29,18 +30,19 @@ export class EditProfilDialogComponent {
 
   emptyUserName: boolean = false;
 
-  constructor(public dialog: MatDialog, public dialogRef: MatDialogRef<EditProfilDialogComponent>, public pictureDialog: MatDialogRef<ProfilePicsComponent>) {
+  constructor(
+    public dialog: MatDialog,
+    public dialogRef: MatDialogRef<EditProfilDialogComponent>,
+    public pictureDialog: MatDialogRef<ProfilePicsComponent>
+  ) {
     this.user$ = this.authService.user$;
   }
 
   ngOnInit(): void {
-  
-  const user = this.authService.getCurrentUser();
-  this.oldUserPic = user?.avatar || '';
-  console.log(this.oldUserPic);
-  this.displayName = user?.displayName || '';
-  this.checkFormInvalid();
-    
+    const user = this.authService.getCurrentUser();
+    this.oldUserPic = user?.avatar || '';
+    this.displayName = user?.displayName || '';
+    this.checkFormInvalid();
   }
 
   closeDialog() {
@@ -52,42 +54,36 @@ export class EditProfilDialogComponent {
 
     if (this.displayName == '') {
       this.emptyUserName = true;
-      return
+      this.variableService.notifyProfileNameChanged();
+      return;
     }
     if (currentUser) {
       this.authService.updateUserName(currentUser, this.displayName);
+      this.variableService.notifyProfileNameChanged();
     } else {
       console.error('Current user not found.');
     }
     this.closeDialog();
   }
 
- checkFormInvalid() {
-  if (this.displayName.trim() !== '' || this.changedProfilePic) {
-    this.formInvalid = true;
-  } else {
-    this.formInvalid = false;
+  checkFormInvalid() {
+    if (this.displayName.trim() !== '' || this.changedProfilePic) {
+      this.formInvalid = true;
+    } else {
+      this.formInvalid = false;
+    }
+  }
+
+  changeProfilePic() {
+    const profileDialogRef = this.dialog.open(ProfilePicsComponent, {});
+
+    profileDialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.firebaseService.updateAvatar(
+          result,
+          this.authService.getCurrentUserUID()!
+        );
+      }
+    });
   }
 }
-
-  changeProfilePic(){
-
-    const profileDialogRef = this.dialog.open(ProfilePicsComponent, {
-});
-
-profileDialogRef.afterClosed().subscribe((result) => {
-  if(result){
-    console.log(result);
-    this.firebaseService.updateAvatar(result, this.authService.getCurrentUserUID()!);
-    
-  }
-});
-
- 
-  }
-
- 
-
-}
-
-

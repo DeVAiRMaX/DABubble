@@ -60,7 +60,6 @@
               <p class="msg-time">{{ message.time | date : "HH:mm" }} Uhr</p>
             </div>
             <div class="msg-bubble msg-left">
-              <!-- HIER WURDE [innerHTML] VERWENDET, UM TAGS ZU RENDERN -->
               <p [innerHTML]="getSafeHtml(message.message)"></p>
               <span class="edited-indicator" *ngIf="message.editedAt"
                 >(bearbeitet)</span
@@ -151,7 +150,6 @@
               class="msg-bubble msg-right"
               *ngIf="editingMessageKey !== message.key"
             >
-              <!-- HIER WURDE [innerHTML] VERWENDET, UM TAGS ZU RENDERN -->
               <p [innerHTML]="getSafeHtml(message.message)"></p>
               <span class="edited-indicator" *ngIf="message.editedAt"
                 >(bearbeitet)</span
