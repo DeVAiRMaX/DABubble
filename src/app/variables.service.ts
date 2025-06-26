@@ -31,6 +31,13 @@ export class VariablesService {
     }
   }
 
+  private channelNameChangedSource = new Subject<void>();
+  channelNameChanged$ = this.channelNameChangedSource.asObservable();
+
+  public notifyChannelNameChanged(): void {
+    this.channelNameChangedSource.next();
+  }
+
   private activeDmUserSubject = new BehaviorSubject<User | null>(null);
   activeDmUser$ = this.activeDmUserSubject.asObservable();
 
@@ -75,10 +82,10 @@ export class VariablesService {
   private isEmptyMessageSubject = new BehaviorSubject<boolean>(false);
   isEmptyMessage$ = this.isEmptyMessageSubject.asObservable();
 
-  private  isAboutToLoginSubject = new BehaviorSubject<boolean>(false);
+  private isAboutToLoginSubject = new BehaviorSubject<boolean>(false);
   isAboutToLogin$ = this.isAboutToLoginSubject.asObservable();
 
-  async setLoginStatusToTrue(){
+  async setLoginStatusToTrue() {
     this.isAboutToLoginSubject.next(true);
     setTimeout(() => {
       this.isAboutToLoginSubject.next(false);

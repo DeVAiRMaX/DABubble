@@ -60,7 +60,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChannelChatComponent
-  implements OnInit,AfterViewChecked, OnChanges, OnDestroy, AfterViewInit
+  implements OnInit, AfterViewChecked, OnChanges, OnDestroy, AfterViewInit
 {
   addUserToChannelOverlayIsVisible: boolean = false;
   lastInputValue: string = '';
@@ -92,7 +92,6 @@ export class ChannelChatComponent
   private sanitizer: DomSanitizer = inject(DomSanitizer);
   private readonly INPUT_EVENTS_GROUP = this.SUB_GROUP_NAME + '_InputEvents';
   private shouldFocusInput: boolean = false;
-
 
   isShowingAllReactions = new Map<string, boolean>();
   isMobileView: boolean = window.innerWidth < 800;
@@ -265,9 +264,8 @@ export class ChannelChatComponent
       });
   }
 
-
   ngAfterViewChecked(): void {
-    if(this.shouldFocusInput && this.messageInput?.nativeElement){
+    if (this.shouldFocusInput && this.messageInput?.nativeElement) {
       this.messageInput.nativeElement.focus();
       this.shouldFocusInput = false;
     }
@@ -483,41 +481,34 @@ export class ChannelChatComponent
   }
 
   async openChannelMembersDialog() {
- 
+    this.firebaseService.getChannel(this.channel?.key).subscribe((user) => {
+      if (this.channel) {
+        this.channel.members = user?.members || [];
 
-  this.firebaseService.getChannel(this.channel?.key).subscribe((user) => {
-    
-
-    if (this.channel) {
-   
-      this.channel.members = user?.members || [];
-
-     
-      const targetElement = document.querySelector(
-        '.channel-chat-header-right-user-container'
-      );
-      if (targetElement) {
-        const rect = targetElement.getBoundingClientRect();
-        const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
-          position: { top: `${rect.bottom + 20 + window.scrollY}px` },
-          panelClass: ['custom-dialog', 'memberOverlay'],
-          data: {
-            channelMember: this.channel.members,
-            channelKey: this.channel.key,
-          },
-        });
-
-        const childEventSub =
-          dialogRef.componentInstance.childEvent.subscribe(() => {
-            this.openAddUserToChannelDialog();
+        const targetElement = document.querySelector(
+          '.channel-chat-header-right-user-container'
+        );
+        if (targetElement) {
+          const rect = targetElement.getBoundingClientRect();
+          const dialogRef = this.dialog.open(ChannelMembersOverlayComponent, {
+            position: { top: `${rect.bottom + 20 + window.scrollY}px` },
+            panelClass: ['custom-dialog', 'memberOverlay'],
+            data: {
+              channelMember: this.channel.members,
+              channelKey: this.channel.key,
+            },
           });
 
-        this.subService.add(childEventSub, this.SUB_GROUP_NAME);
-      }
-    }
-  });
-}
+          const childEventSub =
+            dialogRef.componentInstance.childEvent.subscribe(() => {
+              this.openAddUserToChannelDialog();
+            });
 
+          this.subService.add(childEventSub, this.SUB_GROUP_NAME);
+        }
+      }
+    });
+  }
 
   startOrOpenThread(message: Message): void {
     if (!message || !message.key || !this.channel?.key || !this.currentUser) {
@@ -576,7 +567,6 @@ export class ChannelChatComponent
   openTaggingPerClick(char: '@' | '#', event: Event) {
     event.preventDefault();
     const inputEl = this.messageInput.nativeElement;
-    
 
     const selection = window.getSelection();
     if (!selection) return;
@@ -916,19 +906,18 @@ export class ChannelChatComponent
 
       let selectedEmoji: string | null = null;
 
-      dialogRef.componentInstance.emojiSelected.subscribe(
-        (emoji: string) => {
-          selectedEmoji = emoji;
-         dialogRef.close();
-        });
+      dialogRef.componentInstance.emojiSelected.subscribe((emoji: string) => {
+        selectedEmoji = emoji;
+        dialogRef.close();
+      });
 
-        dialogRef.afterClosed().subscribe(() => {
-          if(selectedEmoji){
-            setTimeout(() => {
-              this.insertEmojiAtCursor(selectedEmoji!);
-            }, 10);
-          }
-        });
+      dialogRef.afterClosed().subscribe(() => {
+        if (selectedEmoji) {
+          setTimeout(() => {
+            this.insertEmojiAtCursor(selectedEmoji!);
+          }, 10);
+        }
+      });
     }
   }
 
@@ -991,10 +980,10 @@ export class ChannelChatComponent
       backdropClass: 'transparentBackdrop',
     });
 
-dialogRef.afterOpened().subscribe(() => {
-  const el = document.querySelector('.search') as HTMLElement;
-  el?.focus();
-})
+    dialogRef.afterOpened().subscribe(() => {
+      const el = document.querySelector('.search') as HTMLElement;
+      el?.focus();
+    });
 
     dialogRef.componentInstance.emojiSelected.subscribe(
       (selectedEmoji: string) => {
