@@ -130,6 +130,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   selectUserForDm(user: User): void {
+
     this.userSelected.emit(user);
     this.variableService.showsDmChatView();
   }

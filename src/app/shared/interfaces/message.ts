@@ -12,6 +12,7 @@ export interface Message {
   editedAt?: number;
 }
 
+
 export interface Reaction {
   emoji: string;
   userId: string;

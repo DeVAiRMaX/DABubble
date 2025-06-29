@@ -17,6 +17,7 @@ import { FirebaseService } from '../shared/services/firebase.service';
 import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
 import { ChannelWithKey } from '../shared/interfaces/channel';
+import { Message } from '../shared/interfaces/message';
 import { userData, User } from '../../app/shared/interfaces/user';
 import { Subscription } from 'rxjs';
 import { StartNewMessageComponent } from '../shared/start-new-message/start-new-message.component';
@@ -61,6 +62,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   uid: string | null = null;
   userChannels: ChannelWithKey[] = [];
   selectedChannel: ChannelWithKey | null = null;
+  selectedMsg: Message | null = null;
   selectedOtherUser: User | null = null;
 
   private subService: SubService = inject(SubService);
@@ -82,7 +84,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
 
   isemptyMessageVisible: boolean = true;
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     const sideNavSub = this.variableService.sideNavIsVisible$.subscribe(
@@ -246,6 +248,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     this.subService.add(channelSub, this.GRP_DATA_CHANNELS);
   }
 
+
   onChannelSelected(channel: ChannelWithKey | null): void {
     if (channel) {
       this.selectedChannel = { ...channel };
@@ -257,6 +260,33 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       this.selectedChannel = null;
       this.variableService.setActiveChannel(null);
     }
+    this.cdRef.markForCheck();
+  }
+
+  onChannelMsgSelected(payload: { channel: ChannelWithKey; msg: Message } | null): void {
+    if (payload) {
+      const { channel, msg } = payload;
+
+      this.selectedChannel = { ...channel };
+      this.selectedMsg = { ...msg };
+
+      // Reset anderer Zustände
+      if (this.selectedOtherUser) {
+        this.selectedOtherUser = null;
+      }
+
+      // Channel aktiv setzen
+      this.variableService.setActiveChannel(channel);
+
+      // Nachricht aktiv setzen (z. B. für Scroll oder Highlight)
+      this.variableService.setActiveMsg(msg);
+    } else {
+      this.selectedChannel = null;
+      this.selectedMsg = null;
+      this.variableService.setActiveChannel(null);
+      this.variableService.setActiveMsg(null);
+    }
+
     this.cdRef.markForCheck();
   }
 
