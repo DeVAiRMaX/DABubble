@@ -147,6 +147,30 @@ mat-icon {
   }
 }
 
+.channel-messages {
+  margin-left: 2rem;
+  padding-top: 0.5rem;
+  border-left: 2px solid #ccc;
+}
+
+.channel-message {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.channel-message .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.channel-message .message {
+  max-width: 100%;
+}
+
+
 .user-not-found-msg {
   font-size: 40px;
   color: red;

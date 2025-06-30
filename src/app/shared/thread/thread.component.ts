@@ -478,10 +478,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
       backdropClass: 'transparentBackdrop',
     });
 
-     dialogRef.afterOpened().subscribe(() => {
-    const el = document.querySelector('.search') as HTMLElement;
-    el?.focus(); 
-  });
+    dialogRef.afterOpened().subscribe(() => {
+      const el = document.querySelector('.search') as HTMLElement;
+      el?.focus();
+    });
 
     dialogRef.componentInstance.emojiSelected.subscribe(
       (selectedEmoji: string) => {
@@ -544,12 +544,12 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.savedRange = range.cloneRange();
 
     const tempFocusable = document.createElement('button');
-tempFocusable.style.position = 'absolute';
-tempFocusable.style.opacity = '0';
-tempFocusable.style.pointerEvents = 'none';
-document.body.appendChild(tempFocusable);
-tempFocusable.focus();
-document.body.removeChild(tempFocusable);
+    tempFocusable.style.position = 'absolute';
+    tempFocusable.style.opacity = '0';
+    tempFocusable.style.pointerEvents = 'none';
+    document.body.appendChild(tempFocusable);
+    tempFocusable.focus();
+    document.body.removeChild(tempFocusable);
 
     this.openTagPeopleOrChannelDialog(char, char);
     this.lastInputValue = inputEl.innerText;
@@ -618,9 +618,6 @@ document.body.removeChild(tempFocusable);
       }
     }
   }
-  // ###############################################################
-  // ###############################################################
-  // ###############################################################
 
   openTagPeopleOrChannelDialog(char: '@' | '#', filterPrefix: string) {
     const targetElement = this.messageInput.nativeElement;
@@ -696,11 +693,6 @@ document.body.removeChild(tempFocusable);
       }
     });
   }
-
-  // ###############################################################
-  // ###############################################################
-  // ###############################################################
-  // ###############################################################
 
   insertTagIntoInput(name: string, id: string, type: 'user' | 'channel'): void {
     const inputEl = this.messageInput.nativeElement;
@@ -856,19 +848,18 @@ document.body.removeChild(tempFocusable);
 
       let selectedEmoji: string | null = null;
 
-      dialogRef.componentInstance.emojiSelected.subscribe(
-        (emoji: string) => {
-          selectedEmoji = emoji;
-          dialogRef.close(); 
-        });
+      dialogRef.componentInstance.emojiSelected.subscribe((emoji: string) => {
+        selectedEmoji = emoji;
+        dialogRef.close();
+      });
 
-        dialogRef.afterClosed().subscribe(() => {
-          if(selectedEmoji){
-            setTimeout(() => {
-              this.insertEmojiAtCursor(selectedEmoji!);
-            }, 10);
-          }
-        });
+      dialogRef.afterClosed().subscribe(() => {
+        if (selectedEmoji) {
+          setTimeout(() => {
+            this.insertEmojiAtCursor(selectedEmoji!);
+          }, 10);
+        }
+      });
     } else {
       console.warn(
         "Could not find '.input-container-wrapper' for emoji picker positioning in thread."

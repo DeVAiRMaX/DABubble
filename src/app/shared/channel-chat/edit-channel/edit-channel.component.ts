@@ -138,6 +138,7 @@ export class EditChannelComponent implements OnDestroy {
 
         this.editChannelName = false;
         this.channelNameEmpty = false;
+        this.variableService.notifyChannelNameChanged();
       } catch (error) {
         console.error('Error updating channel name:', error);
       }
@@ -204,24 +205,21 @@ export class EditChannelComponent implements OnDestroy {
   }
 
   closeDialog() {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
 
-   
-if (document.activeElement instanceof HTMLElement) {
-  document.activeElement.blur();
-
-  // UND: Kurzzeitig Fokus auf "unsichtbares" Dummy-Element legen
-  const tempFocusable = document.createElement('button');
-  tempFocusable.style.position = 'absolute';
-  tempFocusable.style.opacity = '0';
-  tempFocusable.style.pointerEvents = 'none';
-  document.body.appendChild(tempFocusable);
-  tempFocusable.focus();
-  document.body.removeChild(tempFocusable);
-}
+      // UND: Kurzzeitig Fokus auf "unsichtbares" Dummy-Element legen
+      const tempFocusable = document.createElement('button');
+      tempFocusable.style.position = 'absolute';
+      tempFocusable.style.opacity = '0';
+      tempFocusable.style.pointerEvents = 'none';
+      document.body.appendChild(tempFocusable);
+      tempFocusable.focus();
+      document.body.removeChild(tempFocusable);
+    }
 
     this.editChannelAnimation = 'close';
 
-   
     setTimeout(() => {
       this.dialogRef.close();
     }, 150);

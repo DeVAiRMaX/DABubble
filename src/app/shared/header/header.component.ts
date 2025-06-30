@@ -14,12 +14,15 @@ import { DialogComponent } from '../header-dialog-profil/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../services/auth.service';
 import { User } from '../interfaces/user';
+import { Message } from '../interfaces/message';
 import { Observable, filter } from 'rxjs';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { FirebaseService } from '../services/firebase.service';
 import { UserProfilComponent } from './user-profil/user-profil.component';
 import { ChannelWithKey } from '../interfaces/channel';
 import { VariablesService } from '../../variables.service';
+import { ref } from 'firebase/database';
+import { DirectMessageComponent } from '../direct-message/direct-message.component';
 
 @Component({
   selector: 'app-header',
@@ -35,6 +38,8 @@ export class HeaderComponent implements OnInit {
   @Input() channel!: ChannelWithKey;
   @Output() channelSelected = new EventEmitter<ChannelWithKey>();
   @Output() userSelected = new EventEmitter<User>();
+  @Output() channelMessageSelected = new EventEmitter<{ channel: ChannelWithKey; msg: Message }>();
+
 
   searchValue: string = '';
   searchResults: any[] = [];
@@ -88,54 +93,152 @@ export class HeaderComponent implements OnInit {
       const lowerSearchTerm = this.searchValue.toLowerCase();
       const data = await this.databaseService.getDatabaseData();
 
-      const channels = data.channels
-        ? Object.entries(data.channels as Record<string, any>)
-            .filter(
-              ([id, channel]) =>
-                channel.channelName &&
-                channel.channelName.toLowerCase().includes(lowerSearchTerm)
-            )
-            .map(([id, channel]) => ({
-              id: id,
-              type: 'Channel',
-              data: channel,
-            }))
+      // Channels
+      const userChannels = Object.entries(data.channels || {}).filter(
+        ([_, channel]: [string, any]) =>
+          Array.isArray(channel.members) && channel.members.includes(this.userID)
+      );
+
+      const channelNameMatches = userChannels
+        .filter(([_, channel]: [string, any]) =>
+          channel.channelName?.toLowerCase().includes(lowerSearchTerm)
+        )
+        .map(([id, channel]: [string, any]) => ({
+          id: id,
+          type: 'Channel',
+          data: channel,
+        }));
+
+      // Channel Msgs
+      const channelMessageMatches = userChannels.flatMap(([channelId, channel]: [string, any]) => {
+        return Object.entries(channel.messages || {})
+          .filter(([msgId, msg]: any) =>
+            msg.message &&
+            typeof msg.message === 'string' &&
+            msg.message.toLowerCase().includes(lowerSearchTerm)
+          )
+          .map(([msgId, msg]: any) => {
+            return {
+              id: msgId,
+              type: 'ChannelMessage',
+              data: {
+                ...msg,
+                channelId: channelId,
+                channelName: channel.channelName,
+              },
+            };
+          });
+      });
+
+      // Direct Messages
+      const directMassages = data["direct-messages"]
+        ? Object.entries(data["direct-messages"] as Record<string, any>)
+          .filter(([_, directMessage]) => {
+            if (!directMessage.messages) return false;
+   
+            return Object.values(directMessage.messages).some(
+              (msg: any) => msg.senderUid === this.userID
+            );
+          })
+          .flatMap(([conversationId, directMessage]) => {
+            return Object.entries(directMessage.messages)
+              .filter(([msgId, msg]: any) =>
+                msg.message &&
+                typeof msg.message === "string" &&
+                msg.message.toLowerCase().includes(lowerSearchTerm)
+              )
+              .map(([msgId, msg]: any) => {
+                return {
+                  id: msgId,
+                  type: 'Message',
+                  data: msg,
+                  conversationId: conversationId
+                };
+              });
+          })
         : [];
 
+      // Users
       const users = data.users
         ? Object.entries(data.users as Record<string, any>)
-            .filter(
-              ([id, user]) =>
-                user.displayName &&
-                user.displayName.toLowerCase().includes(lowerSearchTerm)
-            )
-            .map(([id, user]) => ({
-              id: id,
-              type: 'User',
-              data: user,
-            }))
+          .filter(
+            ([id, user]) =>
+              user.displayName &&
+              user.displayName.toLowerCase().includes(lowerSearchTerm)
+          )
+          .map(([id, user]) => ({
+            id: id,
+            type: 'User',
+            data: user,
+          }))
         : [];
 
-      this.searchResults = [...channels, ...users];
+      this.searchResults = [
+        ...channelNameMatches,
+        ...users,
+        ...channelMessageMatches,
+        ...directMassages,
+      ];
+
     } else {
       this.searchResultsState = false;
       this.searchResults = [];
     }
   }
 
+
+
+
+
+  getFirstMessageText(directMessage: any): string {
+    if (!directMessage.messages) return '';
+
+    const messagesArray = Object.values(directMessage.messages);
+    const firstMessage = messagesArray[0] as any;
+
+    return firstMessage?.message || '';
+  }
+
   openResult(result: any): void {
     if (result.type === 'Channel') {
-      if (
-        Array.isArray(result.data.members) &&
-        result.data.members.includes(this.userID)
-      ) {
+      if (Array.isArray(result.data.members) && result.data.members.includes(this.userID)) {
         this.openResultChannel(result);
       } else {
         result.userNotFoundChannel = true;
       }
     } else if (result.type === 'User') {
       this.openResultUser(result);
+    } else if (result.type === 'Message') {
+      this.openResultMsg(result);
+    } else if (result.type === 'ChannelMessage') {
+      this.openResultChannelMessage(result);
     }
+  }
+
+  openResultChannelMessage(result: any) {
+    if (result.type === 'ChannelMessage') {
+      const channelWithKey = {
+        ...result.data,
+        key: result.data.channelId,
+      };
+  
+      const msgWithKey = {
+        ...result.data,
+        key: result.id,
+      };
+  
+      this.channelMessageSelected.emit({
+        channel: channelWithKey,
+        msg: msgWithKey,
+      });     
+  
+      this.searchResultsState = false;
+    }
+  }
+
+  openResultMsg(result: any) {
+    console.log(result);
+    
   }
 
   openResultUser(data: any) {
@@ -154,9 +257,11 @@ export class HeaderComponent implements OnInit {
   }
 
   openResultChannel(result: any & ChannelWithKey) {
+
     if (result.type === 'Channel') {
       const channelWithKey = { ...result.data, key: result.id };
       this.channelSelected.emit(channelWithKey);
+
     }
     this.searchResultsState = false;
   }

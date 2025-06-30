@@ -2,6 +2,7 @@ import { HostListener, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { User } from './shared/interfaces/user';
 import { ChannelWithKey } from './shared/interfaces/channel';
+import { Message } from './shared/interfaces/message';
 
 @Injectable({
   providedIn: 'root',
@@ -45,6 +46,9 @@ export class VariablesService {
   private activeDmUserSubject = new BehaviorSubject<User | null>(null);
   activeDmUser$ = this.activeDmUserSubject.asObservable();
 
+  private activeMsgSubject = new BehaviorSubject<Message | null>(null);
+  activeMsg$ = this.activeMsgSubject.asObservable();
+
   private activeChannelSubject = new BehaviorSubject<ChannelWithKey | null>(
     null
   );
@@ -62,6 +66,10 @@ export class VariablesService {
   getActiveDmUser(): User | null {
     return this.activeDmUserSubject.getValue();
   }
+
+  setActiveMsg(msg: Message | null): void {
+    this.activeMsgSubject.next(msg);
+  }  
 
   setActiveChannel(channel: ChannelWithKey | null): void {
     if (channel) {
@@ -86,10 +94,10 @@ export class VariablesService {
   private isEmptyMessageSubject = new BehaviorSubject<boolean>(false);
   isEmptyMessage$ = this.isEmptyMessageSubject.asObservable();
 
-  private  isAboutToLoginSubject = new BehaviorSubject<boolean>(false);
+  private isAboutToLoginSubject = new BehaviorSubject<boolean>(false);
   isAboutToLogin$ = this.isAboutToLoginSubject.asObservable();
 
-  async setLoginStatusToTrue(){
+  async setLoginStatusToTrue() {
     this.isAboutToLoginSubject.next(true);
     setTimeout(() => {
       this.isAboutToLoginSubject.next(false);

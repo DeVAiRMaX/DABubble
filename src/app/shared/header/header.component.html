@@ -54,10 +54,13 @@
           *ngFor="let result of searchResults"
           (click)="openResult(result)"
         >
+          <!-- USER -->
           <ng-container *ngIf="result.type === 'User'">
             <img [src]="result.data.avatar" alt="User Avatar" />
             <p>{{ result.data.displayName }}</p>
           </ng-container>
+      
+          <!-- CHANNEL-NAME -->
           <ng-container *ngIf="result.type === 'Channel'">
             <mat-icon fontIcon="forum"></mat-icon>
             <p>{{ result.data.channelName }}</p>
@@ -68,8 +71,30 @@
               block
             </span>
           </ng-container>
+      
+          <!-- CHANNEL MESSAGES -->
+          <ng-container *ngIf="result.type === 'ChannelMessage'">
+            <img [src]="result.data.senderAvatar" alt="Avatar" class="avatar" />
+            <div class="message">
+              <strong>{{ result.data.senderDisplayName }}:</strong>
+              <p [innerHTML]="result.data.message"></p>
+              <small>aus Channel: #{{ result.data.channelName }}</small>
+            </div>
+          </ng-container>
+      
+          <!-- DIRECT MESSAGE -->
+          <ng-container *ngIf="result.type === 'Message'">
+            <img [src]="result.data.senderAvatar" alt="Avatar" class="avatar" />
+            <div class="message">
+              <strong>{{ result.data.senderDisplayName }}:</strong>
+              <p [innerHTML]="result.data.message"></p>
+              <small>#Nachricht</small>
+            </div>
+          </ng-container>
         </div>
       </div>
+      
+      
     </div>
 
     <div class="header-user" (click)="openDialog()">

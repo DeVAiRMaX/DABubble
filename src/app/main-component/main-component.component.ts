@@ -17,6 +17,7 @@ import { FirebaseService } from '../shared/services/firebase.service';
 import { AuthService } from '../shared/services/auth.service';
 import { SubService } from '../shared/services/sub.service';
 import { ChannelWithKey } from '../shared/interfaces/channel';
+import { Message } from '../shared/interfaces/message';
 import { userData, User } from '../../app/shared/interfaces/user';
 import { Subscription } from 'rxjs';
 import { StartNewMessageComponent } from '../shared/start-new-message/start-new-message.component';
@@ -31,7 +32,7 @@ import { StartNewMessageComponent } from '../shared/start-new-message/start-new-
     ThreadComponent,
     DirectMessageComponent,
     CommonModule,
-    StartNewMessageComponent
+    StartNewMessageComponent,
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.scss',
@@ -61,6 +62,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   uid: string | null = null;
   userChannels: ChannelWithKey[] = [];
   selectedChannel: ChannelWithKey | null = null;
+  selectedMsg: Message | null = null;
   selectedOtherUser: User | null = null;
 
   private subService: SubService = inject(SubService);
@@ -69,6 +71,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   public variableService: VariablesService = inject(VariablesService);
   private cdRef: ChangeDetectorRef = inject(ChangeDetectorRef);
   private userLeavedSubscription: Subscription | undefined;
+  private channelNameChangedSubscription: Subscription | undefined;
 
   private readonly GRP_UI_STATE = 'uiState';
   private readonly GRP_AUTH = 'auth';
@@ -77,11 +80,11 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   private readonly GRP_DATA_CHANNELS = 'dataLoadChannels';
   private readonly GRP_USER_DATA = 'mainUserData';
   private readonly GRP_ACTIVE_VIEW = 'activeViewListeners';
+  private readonly EMPTY_MESSAGE_SUB = 'isEmptyMessageSub';
 
-  private readonly EMPTY_MESSAGE_SUB  = 'isEmptyMessageSub';
-  isemptyMessageVisible: boolean = true; 
+  isemptyMessageVisible: boolean = true;
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     const sideNavSub = this.variableService.sideNavIsVisible$.subscribe(
@@ -108,6 +111,13 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     );
     this.subService.add(sideNavSub, this.GRP_UI_STATE);
     this.subService.add(threadVisibilitySub, this.GRP_UI_STATE);
+
+    this.channelNameChangedSubscription =
+      this.variableService.channelNameChanged$.subscribe(() => {
+        if (this.uid != null) {
+          this.loadChannels(this.uid);
+        }
+      });
 
     const authSub = this.authService.user$.subscribe((user) => {
       if (user) {
@@ -176,11 +186,12 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     );
     this.subService.add(activeDmUserSub, this.GRP_ACTIVE_VIEW);
 
-
-     const isEmptyMessage = this.variableService.isEmptyMessage$.subscribe((value)=>{
-      this.isemptyMessageVisible = value;
-    });
-    this.subService.add(isEmptyMessage ,this.EMPTY_MESSAGE_SUB);
+    const isEmptyMessage = this.variableService.isEmptyMessage$.subscribe(
+      (value) => {
+        this.isemptyMessageVisible = value;
+      }
+    );
+    this.subService.add(isEmptyMessage, this.EMPTY_MESSAGE_SUB);
   }
 
   loadUserSpecificData(uid: string): void {
@@ -195,13 +206,18 @@ export class MainComponentComponent implements OnInit, OnDestroy {
         this.userChannels = [...channels];
 
         let channelToSetAsActive: ChannelWithKey | null = null;
+
+        if (oldSelectedChannelKey) {
+          channelToSetAsActive =
+            this.userChannels.find((c) => c.key === oldSelectedChannelKey) ||
+            null;
+        }
+
         if (
-          this.selectedChannel &&
-          this.userChannels.some((c) => c.key === this.selectedChannel!.key)
+          !channelToSetAsActive &&
+          !this.selectedOtherUser &&
+          this.userChannels.length > 0
         ) {
-          channelToSetAsActive = this.selectedChannel;
-        } else if (this.selectedOtherUser) {
-        } else if (this.userChannels.length > 0) {
           channelToSetAsActive = this.userChannels[0];
         }
 
@@ -218,6 +234,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
         ) {
           this.onChannelSelected(null);
         }
+
         this.cdRef.markForCheck();
       },
       error: (err) => {
@@ -231,6 +248,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     this.subService.add(channelSub, this.GRP_DATA_CHANNELS);
   }
 
+
   onChannelSelected(channel: ChannelWithKey | null): void {
     if (channel) {
       this.selectedChannel = { ...channel };
@@ -242,6 +260,33 @@ export class MainComponentComponent implements OnInit, OnDestroy {
       this.selectedChannel = null;
       this.variableService.setActiveChannel(null);
     }
+    this.cdRef.markForCheck();
+  }
+
+  onChannelMsgSelected(payload: { channel: ChannelWithKey; msg: Message } | null): void {
+    if (payload) {
+      const { channel, msg } = payload;
+
+      this.selectedChannel = { ...channel };
+      this.selectedMsg = { ...msg };
+
+      // Reset anderer Zustände
+      if (this.selectedOtherUser) {
+        this.selectedOtherUser = null;
+      }
+
+      // Channel aktiv setzen
+      this.variableService.setActiveChannel(channel);
+
+      // Nachricht aktiv setzen (z. B. für Scroll oder Highlight)
+      this.variableService.setActiveMsg(msg);
+    } else {
+      this.selectedChannel = null;
+      this.selectedMsg = null;
+      this.variableService.setActiveChannel(null);
+      this.variableService.setActiveMsg(null);
+    }
+
     this.cdRef.markForCheck();
   }
 
@@ -272,6 +317,10 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     if (this.userLeavedSubscription) {
       this.userLeavedSubscription.unsubscribe();
     }
-     this.subService.unsubscribeGroup(this.EMPTY_MESSAGE_SUB);
+    this.subService.unsubscribeGroup(this.EMPTY_MESSAGE_SUB);
+
+    if (this.channelNameChangedSubscription) {
+      this.channelNameChangedSubscription.unsubscribe();
+    }
   }
 }
