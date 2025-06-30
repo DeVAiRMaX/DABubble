@@ -33,6 +33,20 @@ export class VariablesService {
   }
 
 
+ private channelNameChangedSource = new Subject<void>();
+  channelNameChanged$ = this.channelNameChangedSource.asObservable();
+
+  public notifyChannelNameChanged(): void {
+    this.channelNameChangedSource.next();
+  }
+
+  private profileNameChangedSource = new Subject<void>();
+  profileNameChanged$ = this.profileNameChangedSource.asObservable();
+
+  public notifyProfileNameChanged(): void {
+    this.profileNameChangedSource.next();
+  }
+
   private initialAnimationPlayed = false; 
 
   get InitialAnimationPlayed(): boolean {
