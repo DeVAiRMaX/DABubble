@@ -89,7 +89,20 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setResponsiveAnimation();
-    this.startAnimation();
+
+    if(!this.variableService.InitialAnimationPlayed) {
+      this.variableService.InitialAnimationPlayed = true;
+      this.startAnimation();
+    }else{
+
+      this.BackgroundState = 'hidden';
+      this.loginContainerState = 'visible';
+      this.logoState = this.logoAnimationTrigger === 'logoFadeIn' ? 'visible' : 'left';
+      this.textState = 'visible';
+      this.ContainerState = 'leftTop';
+    }
+
+   
     this.subscription = this.variableService.isAboutToLogin$.subscribe((status) => {
       this.isAboutToLogin = status;
     });
@@ -114,6 +127,15 @@ export class LoginComponent implements OnInit, OnDestroy {
   loginWithGoogle() {
     this.authService.loginWithGoogle();
   }
+
+  async loginAsGuest(): Promise<void>{
+    try{
+      await this.authService.loginAsGuest();
+      this.router.navigate(['/dashboard']);
+    }catch (error){
+console.error('fehler beim Gast-Login:', error);
+  }
+}
 
   startAnimation(): void {
     this.textState = 'hidden';

@@ -12,6 +12,7 @@ import { User } from '../../interfaces/user';
 import { Observable } from 'rxjs';
 import { SharedModule } from '../../../shared';
 import { EditProfilDialogComponent } from './edit-profil-dialog/edit-profil-dialog.component';
+import { VariablesService } from '../../../variables.service';
 
 @Component({
   selector: 'app-profil-dialog',
@@ -47,6 +48,9 @@ export class ProfilDialogComponent {
 
   private authService: AuthService = inject(AuthService);
 
+  public variableService: VariablesService = inject(VariablesService);
+  private isAGuestUser: boolean = false;
+
   profilDialogAnimation: 'open' | 'close' = 'close';
   user$: Observable<User | null>;
 
@@ -58,6 +62,11 @@ export class ProfilDialogComponent {
     setTimeout(() => {
       this.startAnimation();
     }, 10);
+
+  this.variableService.userIsAGuest$.subscribe((value) =>{
+    this.isAGuestUser = value;
+    console.log('ist ein gast:', this.isAGuestUser);
+  })
   }
 
   startAnimation() {

@@ -31,6 +31,17 @@ export class VariablesService {
     }
   }
 
+
+  private initialAnimationPlayed = false; 
+
+  get InitialAnimationPlayed(): boolean {
+    return this.initialAnimationPlayed;
+  }
+
+  set InitialAnimationPlayed(value: boolean) {
+    this.initialAnimationPlayed = value;
+  }
+
   private activeDmUserSubject = new BehaviorSubject<User | null>(null);
   activeDmUser$ = this.activeDmUserSubject.asObservable();
 
@@ -84,6 +95,13 @@ export class VariablesService {
       this.isAboutToLoginSubject.next(false);
     }, 800);
   }
+
+  private userIsAGuestSubject = new BehaviorSubject<boolean>(false);
+  userIsAGuest$ = this.userIsAGuestSubject.asObservable();
+
+  setUserIsAGuest(isGuest: boolean) {
+    this.userIsAGuestSubject.next(isGuest);
+  };
 
   private isClosedSubject = new BehaviorSubject<boolean>(
     this.getStoredValue('isClosed', false)

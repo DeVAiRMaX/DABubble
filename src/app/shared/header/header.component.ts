@@ -45,9 +45,11 @@ export class HeaderComponent implements OnInit {
   private authService: AuthService = inject(AuthService);
   private databaseService: FirebaseService = inject(FirebaseService);
   public variableService: VariablesService = inject(VariablesService);
+  public isGuestUser: boolean = false;
 
   user$: Observable<User | null>;
   isMobile$: Observable<boolean>;
+  guestUser$ = this.authService.guestUser$;
 
   constructor(public dialog: MatDialog) {
     this.variableService.checkWindowSize();
@@ -63,6 +65,20 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     this.user$.pipe(filter((user) => user !== null)).subscribe((user) => {
       this.userID = user!.uid;
+    const email = user.email ?? ''; 
+    const displayName = user.displayName?.toLowerCase().trim() ?? '';
+    const isGuest = displayName === 'gast' && email.trim() === '';
+    this.isGuestUser = isGuest;
+    console.log('Header empfängt User:', user)
+
+    if(this.isGuestUser) {
+        this.variableService.setUserIsAGuest(true);
+      } else {
+        this.variableService.setUserIsAGuest(false);
+      }
+
+      console.log(this.variableService.userIsAGuest$);
+    
     });
   }
 

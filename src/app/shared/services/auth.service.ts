@@ -6,6 +6,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
+  signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   UserCredential,
@@ -35,6 +36,9 @@ export class AuthService {
 
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
+
+  private guestUserSubject = new BehaviorSubject<AuthUser | null>(null);
+  guestUser$ = this.guestUserSubject.asObservable();
 
   private uidSubject = new BehaviorSubject<string | null>(null);
   uid$ = this.uidSubject.asObservable();
@@ -109,6 +113,67 @@ export class AuthService {
       }
     }
   }
+
+async loginAsGuest(): Promise<void> {
+  try {
+    const result = await signInAnonymously(this.auth);
+    const firebaseUser = result.user;
+
+    if (firebaseUser) {
+      await updateProfile(firebaseUser, {
+        displayName: 'Gast',
+        photoURL: '/assets/img/character/bsp-avatar.png',
+      });
+
+      const guestUser: User = {
+        uid: firebaseUser.uid,
+        email: null,
+        displayName: 'Gast',
+        avatar: '/assets/img/character/bsp-avatar.png',
+        channelKeys: [],
+      };
+
+      // Benutzer in DB speichern, falls noch nicht vorhanden
+      const userRef = ref(this.database, `users/${firebaseUser.uid}`);
+      const snapshot = await get(userRef);
+      if (!snapshot.exists()) {
+        await set(userRef, guestUser);
+      }
+
+      // Test-Channel zuweisen oder erstellen
+      this.firebaseService.getOrCreateTestChannelForGuest(firebaseUser.uid).subscribe({
+        next: () => {
+          // Benutzer neu laden
+          objectVal<User>(userRef).subscribe((dbUser) => {
+            this.userSubject.next({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: dbUser?.displayName ?? firebaseUser.displayName,
+              avatar: dbUser?.avatar ?? '/assets/img/character/bsp-avatar.png',
+              channelKeys: dbUser?.channelKeys ?? [],
+            });
+
+            // Optional: interne Variable setzen und Weiterleitung
+            this.variablesService.setUserIsAGuest(true);
+            this.router.navigate(['/dashboard']);
+          });
+        },
+        error: (err) => {
+          console.error('Fehler beim Testchannel:', err);
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Fehler bei der Gast-Anmeldung:', error);
+    throw error;
+  }
+}
+
+
+
+   
+  
+  
 
   async registerWithEmailPassword(
     email: string,

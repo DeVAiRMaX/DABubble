@@ -172,6 +172,60 @@ export class FirebaseService {
     );
   }
 
+getOrCreateTestChannelForGuest(uid: string): Observable<string> {
+  const testChannelKey = 'test-channel';
+  const testChannelRef = ref(this.database, `channels/${testChannelKey}`);
+
+  return from(get(testChannelRef)).pipe(
+    switchMap((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const members = data.members || [];
+
+        // Gast ist schon Mitglied?
+        if (!members.includes(uid)) {
+          members.push(uid);
+          const updateOps = [
+            update(testChannelRef, { members }),
+            this.addChannelKeyToUser(uid, testChannelKey),
+          ];
+          return from(Promise.all(updateOps)).pipe(map(() => testChannelKey));
+        }
+
+        // Gast ist schon drin
+        return of(testChannelKey);
+      } else {
+        // Channel einmalig anlegen
+        const timestamp = Date.now();
+        const newChannel = {
+          channelName: 'Test-Channel',
+          members: [uid],
+          description: 'Ein Channel für Gäste',
+          messages: [
+            {
+              message: `Welcome to #Test-Channel`,
+              reactions: [],
+              sender: `DABubble`,
+              time: timestamp,
+            },
+          ],
+          private: false,
+        };
+        return from(set(testChannelRef, newChannel)).pipe(
+          switchMap(() => this.addChannelKeyToUser(uid, testChannelKey)),
+          map(() => testChannelKey)
+        );
+      }
+    }),
+    catchError((err) => {
+      console.error('Fehler beim Laden/Erstellen des Test-Channels:', err);
+      throw err;
+    })
+  );
+}
+
+
+
   getChannel(channelKey: string): Observable<Channel | null> {
     if (!channelKey) {
       return throwError(

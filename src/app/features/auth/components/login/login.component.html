@@ -77,7 +77,7 @@
           <button class="login-btn" (click)="login(userEmail, userPassword)">
             Anmelden
           </button>
-          <button class="guest-login" [routerLink]="['/dashboard']">
+          <button class="guest-login" (click)="loginAsGuest()">
             Gast-Login
           </button>
         </div>

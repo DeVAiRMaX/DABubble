@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 import { User } from '../../../../shared/interfaces/user';
 import { ProfilePicsComponent } from './profile-pics/profile-pics.component';
 import { FirebaseService } from '../../../../shared/services/firebase.service';
+import { VariablesService } from '../../../../variables.service';
 
 
 @Component({
@@ -19,6 +20,8 @@ export class EditProfilDialogComponent {
 
   private authService: AuthService = inject(AuthService);
   private firebaseService: FirebaseService = inject(FirebaseService);
+   public variableService: VariablesService = inject(VariablesService);
+    private isAGuestUser: boolean = false;
   user$: Observable<User | null>;
 
   displayName: string = '';
@@ -36,10 +39,16 @@ export class EditProfilDialogComponent {
   ngOnInit(): void {
   
   const user = this.authService.getCurrentUser();
+  console.log('aktueller User', user);
   this.oldUserPic = user?.avatar || '';
   console.log(this.oldUserPic);
   this.displayName = user?.displayName || '';
   this.checkFormInvalid();
+
+  this.variableService.userIsAGuest$.subscribe((value) =>{
+    this.isAGuestUser = value;
+    console.log('ist ein gast:', this.isAGuestUser);
+  })
     
   }
 
