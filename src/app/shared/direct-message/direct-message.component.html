@@ -7,7 +7,7 @@
           [alt]="otherUser?.displayName"
           class="dm-header-avatar"
         />
-        <span class="online-status-indicator" *ngIf="otherUser"></span>
+        <span *ngIf="otherUser"></span>
       </div>
       <h3>{{ otherUser?.displayName }}</h3>
     </div>
