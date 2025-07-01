@@ -38,10 +38,13 @@ import { Subscription } from 'rxjs';
     ]),
     trigger('ContainerAnimation', [
       state('center', style({ opacity: 1 })),
-      state('leftTop', style({
-        transform: 'translateX(-200%) translateY(-240%) scale(0.5)',
-        opacity: 0,
-      })),
+      state(
+        'leftTop',
+        style({
+          transform: 'translateX(-200%) translateY(-240%) scale(0.5)',
+          opacity: 0,
+        })
+      ),
       transition('center => leftTop', [animate('1.2s ease-out')]),
     ]),
     trigger('BackgroundAnimation', [
@@ -55,15 +58,20 @@ import { Subscription } from 'rxjs';
       transition('hidden => visible', [animate('0.65s ease-out')]),
     ]),
     trigger('loginFeedbackFade', [
-  transition(':enter', [
-    style({ opacity: 0, transform: 'translateY(20px)' }),
-    animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
-  ]),
-  transition(':leave', [
-    animate('300ms ease-in', style({ opacity: 0, transform: 'translateY(20px)' })),
-  ]),
-]),
-    
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px)' }),
+        animate(
+          '400ms ease-out',
+          style({ opacity: 1, transform: 'translateY(0)' })
+        ),
+      ]),
+      transition(':leave', [
+        animate(
+          '300ms ease-in',
+          style({ opacity: 0, transform: 'translateY(20px)' })
+        ),
+      ]),
+    ]),
   ],
 })
 export class LoginComponent implements OnInit, OnDestroy {
@@ -82,35 +90,34 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   userEmail: string = '';
   userPassword: string = '';
-  isAboutToLogin : boolean = false;
+  isAboutToLogin: boolean = false;
   private subscription!: Subscription;
-  
+
   loginError: string | null = null;
 
   ngOnInit(): void {
     this.setResponsiveAnimation();
 
-    if(!this.variableService.InitialAnimationPlayed) {
+    if (!this.variableService.InitialAnimationPlayed) {
       this.variableService.InitialAnimationPlayed = true;
       this.startAnimation();
-    }else{
-
+    } else {
       this.BackgroundState = 'hidden';
       this.loginContainerState = 'visible';
-      this.logoState = this.logoAnimationTrigger === 'logoFadeIn' ? 'visible' : 'left';
+      this.logoState =
+        this.logoAnimationTrigger === 'logoFadeIn' ? 'visible' : 'left';
       this.textState = 'visible';
       this.ContainerState = 'leftTop';
     }
 
-   
-    this.subscription = this.variableService.isAboutToLogin$.subscribe((status) => {
-      this.isAboutToLogin = status;
-    });
-
+    this.subscription = this.variableService.isAboutToLogin$.subscribe(
+      (status) => {
+        this.isAboutToLogin = status;
+      }
+    );
   }
 
   ngOnDestroy(): void {
-    
     this.subscription.unsubscribe();
   }
 
@@ -128,21 +135,21 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService.loginWithGoogle();
   }
 
-  async loginAsGuest(): Promise<void>{
-    try{
+  async loginAsGuest(): Promise<void> {
+    try {
       await this.authService.loginAsGuest();
-      this.router.navigate(['/dashboard']);
-    }catch (error){
-console.error('fehler beim Gast-Login:', error);
+    } catch (error) {
+      console.error('fehler beim Gast-Login:', error);
+    }
   }
-}
 
   startAnimation(): void {
     this.textState = 'hidden';
     this.ContainerState = 'center';
 
     setTimeout(() => {
-      this.logoState = this.logoAnimationTrigger === 'logoFadeIn' ? 'visible' : 'left';
+      this.logoState =
+        this.logoAnimationTrigger === 'logoFadeIn' ? 'visible' : 'left';
     }, 500);
 
     setTimeout(() => {

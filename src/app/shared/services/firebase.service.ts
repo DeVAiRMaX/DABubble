@@ -172,59 +172,57 @@ export class FirebaseService {
     );
   }
 
-getOrCreateTestChannelForGuest(uid: string): Observable<string> {
-  const testChannelKey = 'test-channel';
-  const testChannelRef = ref(this.database, `channels/${testChannelKey}`);
+  getOrCreateTestChannelForGuest(uid: string): Observable<string> {
+    const testChannelKey = 'test-channel';
+    const testChannelRef = ref(this.database, `channels/${testChannelKey}`);
 
-  return from(get(testChannelRef)).pipe(
-    switchMap((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const members = data.members || [];
+    return from(get(testChannelRef)).pipe(
+      switchMap((snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const members = data.members || [];
 
-        // Gast ist schon Mitglied?
-        if (!members.includes(uid)) {
-          members.push(uid);
-          const updateOps = [
-            update(testChannelRef, { members }),
-            this.addChannelKeyToUser(uid, testChannelKey),
-          ];
-          return from(Promise.all(updateOps)).pipe(map(() => testChannelKey));
+          // Gast ist schon Mitglied?
+          if (!members.includes(uid)) {
+            members.push(uid);
+            const updateOps = [
+              update(testChannelRef, { members }),
+              this.addChannelKeyToUser(uid, testChannelKey),
+            ];
+            return from(Promise.all(updateOps)).pipe(map(() => testChannelKey));
+          }
+
+          // Gast ist schon drin
+          return of(testChannelKey);
+        } else {
+          // Channel einmalig anlegen
+          const timestamp = Date.now();
+          const newChannel = {
+            channelName: 'Test-Channel',
+            members: [uid],
+            description: 'Ein Channel für Gäste',
+            messages: [
+              {
+                message: `Welcome to #Test-Channel`,
+                reactions: [],
+                sender: `DABubble`,
+                time: timestamp,
+              },
+            ],
+            private: false,
+          };
+          return from(set(testChannelRef, newChannel)).pipe(
+            switchMap(() => this.addChannelKeyToUser(uid, testChannelKey)),
+            map(() => testChannelKey)
+          );
         }
-
-        // Gast ist schon drin
-        return of(testChannelKey);
-      } else {
-        // Channel einmalig anlegen
-        const timestamp = Date.now();
-        const newChannel = {
-          channelName: 'Test-Channel',
-          members: [uid],
-          description: 'Ein Channel für Gäste',
-          messages: [
-            {
-              message: `Welcome to #Test-Channel`,
-              reactions: [],
-              sender: `DABubble`,
-              time: timestamp,
-            },
-          ],
-          private: false,
-        };
-        return from(set(testChannelRef, newChannel)).pipe(
-          switchMap(() => this.addChannelKeyToUser(uid, testChannelKey)),
-          map(() => testChannelKey)
-        );
-      }
-    }),
-    catchError((err) => {
-      console.error('Fehler beim Laden/Erstellen des Test-Channels:', err);
-      throw err;
-    })
-  );
-}
-
-
+      }),
+      catchError((err) => {
+        console.error('Fehler beim Laden/Erstellen des Test-Channels:', err);
+        throw err;
+      })
+    );
+  }
 
   getChannel(channelKey: string): Observable<Channel | null> {
     if (!channelKey) {
@@ -316,7 +314,7 @@ getOrCreateTestChannelForGuest(uid: string): Observable<string> {
       set(userRef, updatedUserChannels),
     ]);
 
-    if(updatedMembers.length === 0){
+    if (updatedMembers.length === 0) {
       await remove(channelRef);
     }
   }
@@ -1339,18 +1337,18 @@ getOrCreateTestChannelForGuest(uid: string): Observable<string> {
   }
 
   async getAllDirectMessageKeys() {
-  const messagesRef = ref(this.database, 'direct-messages');
-  
-  try {
-    const snapshot = await get(messagesRef);
-    if (snapshot.exists()) {
-      return snapshot.val(); // Gibt das Objekt mit allen Nachrichten zurück
-    } else {
-      return null; // Es gibt keine Daten an diesem Pfad
+    const messagesRef = ref(this.database, 'direct-messages');
+
+    try {
+      const snapshot = await get(messagesRef);
+      if (snapshot.exists()) {
+        return snapshot.val(); // Gibt das Objekt mit allen Nachrichten zurück
+      } else {
+        return null; // Es gibt keine Daten an diesem Pfad
+      }
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Daten:', error);
+      return null;
     }
-  } catch (error) {
-    console.error("Fehler beim Abrufen der Daten:", error);
-    return null;
   }
-}
 }

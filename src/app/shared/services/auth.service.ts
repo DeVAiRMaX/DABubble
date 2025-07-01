@@ -32,7 +32,6 @@ export class AuthService {
   private firebaseService: FirebaseService = inject(FirebaseService);
   public database: Database = inject(Database);
   private variablesService = inject(VariablesService);
-  
 
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
@@ -114,66 +113,63 @@ export class AuthService {
     }
   }
 
-async loginAsGuest(): Promise<void> {
-  try {
-    const result = await signInAnonymously(this.auth);
-    const firebaseUser = result.user;
+  async loginAsGuest(): Promise<void> {
+    try {
+      const result = await signInAnonymously(this.auth);
+      const firebaseUser = result.user;
 
-    if (firebaseUser) {
-      await updateProfile(firebaseUser, {
-        displayName: 'Gast',
-        photoURL: '/assets/img/character/bsp-avatar.png',
-      });
+      if (firebaseUser) {
+        await updateProfile(firebaseUser, {
+          displayName: 'Gast',
+          photoURL: '/assets/img/character/bsp-avatar.png',
+        });
 
-      const guestUser: User = {
-        uid: firebaseUser.uid,
-        email: null,
-        displayName: 'Gast',
-        avatar: '/assets/img/character/bsp-avatar.png',
-        channelKeys: [],
-      };
+        const guestUser: User = {
+          uid: firebaseUser.uid,
+          email: null,
+          displayName: 'Gast',
+          avatar: '/assets/img/character/bsp-avatar.png',
+          channelKeys: [],
+        };
 
-      // Benutzer in DB speichern, falls noch nicht vorhanden
-      const userRef = ref(this.database, `users/${firebaseUser.uid}`);
-      const snapshot = await get(userRef);
-      if (!snapshot.exists()) {
-        await set(userRef, guestUser);
-      }
+        // Benutzer in DB speichern, falls noch nicht vorhanden
+        const userRef = ref(this.database, `users/${firebaseUser.uid}`);
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
+          await set(userRef, guestUser);
+        }
 
-      // Test-Channel zuweisen oder erstellen
-      this.firebaseService.getOrCreateTestChannelForGuest(firebaseUser.uid).subscribe({
-        next: () => {
-          // Benutzer neu laden
-          objectVal<User>(userRef).subscribe((dbUser) => {
-            this.userSubject.next({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              displayName: dbUser?.displayName ?? firebaseUser.displayName,
-              avatar: dbUser?.avatar ?? '/assets/img/character/bsp-avatar.png',
-              channelKeys: dbUser?.channelKeys ?? [],
-            });
+        // Test-Channel zuweisen oder erstellen
+        this.firebaseService
+          .getOrCreateTestChannelForGuest(firebaseUser.uid)
+          .subscribe({
+            next: () => {
+              // Benutzer neu laden
+              objectVal<User>(userRef).subscribe((dbUser) => {
+                this.userSubject.next({
+                  uid: firebaseUser.uid,
+                  email: firebaseUser.email,
+                  displayName: dbUser?.displayName ?? firebaseUser.displayName,
+                  avatar:
+                    dbUser?.avatar ?? '/assets/img/character/bsp-avatar.png',
+                  channelKeys: dbUser?.channelKeys ?? [],
+                });
 
-            // Optional: interne Variable setzen und Weiterleitung
-            this.variablesService.setUserIsAGuest(true);
-            this.router.navigate(['/dashboard']);
+                // Optional: interne Variable setzen und Weiterleitung
+                this.variablesService.setUserIsAGuest(true);
+                this.router.navigate(['/dashboard']);
+              });
+            },
+            error: (err) => {
+              console.error('Fehler beim Testchannel:', err);
+            },
           });
-        },
-        error: (err) => {
-          console.error('Fehler beim Testchannel:', err);
-        },
-      });
+      }
+    } catch (error) {
+      console.error('Fehler bei der Gast-Anmeldung:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error('Fehler bei der Gast-Anmeldung:', error);
-    throw error;
   }
-}
-
-
-
-   
-  
-  
 
   async registerWithEmailPassword(
     email: string,
@@ -219,12 +215,15 @@ async loginAsGuest(): Promise<void> {
         email,
         password
       );
-       await this.variablesService.setLoginStatusToTrue();
-       console.log(this.variablesService.isAboutToLogin$.subscribe(value => console.log('Login status:', value)));
-       setTimeout(() => {
-         this.router.navigate(['/dashboard']);
-       }, 700);
-     
+      await this.variablesService.setLoginStatusToTrue();
+      console.log(
+        this.variablesService.isAboutToLogin$.subscribe((value) =>
+          console.log('Login status:', value)
+        )
+      );
+      setTimeout(() => {
+        this.router.navigate(['/dashboard']);
+      }, 700);
     } catch (error: any) {
       console.error('Error during email/password login:', error);
 
