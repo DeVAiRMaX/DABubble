@@ -78,17 +78,6 @@
   }
 }
 
-.header-user-avatar-status {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background-color: #92c83e;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  border: 2px solid #fff;
-}
-
 mat-icon {
   font-size: 30px;
   cursor: pointer;
@@ -169,7 +158,6 @@ mat-icon {
 .channel-message .message {
   max-width: 100%;
 }
-
 
 .user-not-found-msg {
   font-size: 40px;

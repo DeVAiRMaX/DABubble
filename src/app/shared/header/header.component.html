@@ -59,7 +59,7 @@
             <img [src]="result.data.avatar" alt="User Avatar" />
             <p>{{ result.data.displayName }}</p>
           </ng-container>
-      
+
           <!-- CHANNEL-NAME -->
           <ng-container *ngIf="result.type === 'Channel'">
             <mat-icon fontIcon="forum"></mat-icon>
@@ -71,7 +71,7 @@
               block
             </span>
           </ng-container>
-      
+
           <!-- CHANNEL MESSAGES -->
           <ng-container *ngIf="result.type === 'ChannelMessage'">
             <img [src]="result.data.senderAvatar" alt="Avatar" class="avatar" />
@@ -81,7 +81,7 @@
               <small>aus Channel: #{{ result.data.channelName }}</small>
             </div>
           </ng-container>
-      
+
           <!-- DIRECT MESSAGE -->
           <ng-container *ngIf="result.type === 'Message'">
             <img [src]="result.data.senderAvatar" alt="Avatar" class="avatar" />
@@ -93,8 +93,6 @@
           </ng-container>
         </div>
       </div>
-      
-      
     </div>
 
     <div class="header-user" (click)="openDialog()">
@@ -102,8 +100,6 @@
         <h2>{{ user.displayName }}</h2>
       </div>
       <div class="header-user-avatar">
-        <div class="header-user-avatar-status"></div>
-
         <img
           [src]="user.avatar || '/assets/img/character/bsp-avatar.png'"
           alt="avatar"
