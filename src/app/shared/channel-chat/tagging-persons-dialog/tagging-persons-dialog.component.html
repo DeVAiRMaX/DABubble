@@ -2,7 +2,7 @@
   <div class="wholeDialog">
     <div
       *ngFor="let contact of filteredContacts"
-      class="singleContact"
+      class="singleContact dot"
       (mousedown)="selectItem(contact)"
     >
       <img [src]="contact.img" alt="{{ contact.name }}" />

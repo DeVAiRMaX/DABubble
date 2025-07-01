@@ -1,9 +1,9 @@
 .wholeDialog {
   display: flex;
   flex-direction: column;
-  
+
   max-width: 350px;
- 
+
   max-height: 467px;
   overflow-y: scroll;
   box-sizing: border-box;
@@ -33,17 +33,17 @@
       border-radius: 100px;
     }
 
-    &::after {
-      content: "";
-      width: 10px;
-      height: 10px;
-      background-color: #92c83e;
-      border-radius: 50%;
-      position: absolute;
-      bottom: 5px;
-      left: 55px;
-      border: 2px solid white;
-    }
+    // &::after {
+    //   content: "";
+    //   width: 10px;
+    //   height: 10px;
+    //   background-color: #92c83e;
+    //   border-radius: 50%;
+    //   position: absolute;
+    //   bottom: 5px;
+    //   left: 55px;
+    //   border: 2px solid white;
+    // }
 
     > span {
       color: black;
@@ -56,31 +56,29 @@
   }
 }
 
-
-@media screen and (max-width: 400px ){
-
-  .wholeDialog{
-    >.singleContact{
-      >img{
+@media screen and (max-width: 400px) {
+  .wholeDialog {
+    > .singleContact {
+      > img {
         width: 35px;
         height: 35px;
       }
 
-        &::after {
-      content: "";
-      width: 8px;
-      height: 8px;
-      background-color: #92c83e;
-      border-radius: 50%;
-      position: absolute;
-      bottom: 5px;
-      left: 45px;
-      border: 2px solid white;
-    }
+      &::after {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background-color: #92c83e;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 5px;
+        left: 45px;
+        border: 2px solid white;
+      }
 
-    >span{
-      font-size: 14px;
-    }
+      > span {
+        font-size: 14px;
+      }
     }
   }
 }
