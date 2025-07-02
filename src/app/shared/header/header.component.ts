@@ -70,20 +70,16 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     this.user$.pipe(filter((user) => user !== null)).subscribe((user) => {
       this.userID = user!.uid;
-    const email = user.email ?? ''; 
-    const displayName = user.displayName?.toLowerCase().trim() ?? '';
-    const isGuest = displayName === 'gast' && email.trim() === '';
-    this.isGuestUser = isGuest;
-    console.log('Header empfängt User:', user)
+      const email = user.email ?? '';
+      const displayName = user.displayName?.toLowerCase().trim() ?? '';
+      const isGuest = displayName === 'gast' && email.trim() === '';
+      this.isGuestUser = isGuest;
 
-    if(this.isGuestUser) {
+      if (this.isGuestUser) {
         this.variableService.setUserIsAGuest(true);
       } else {
         this.variableService.setUserIsAGuest(false);
       }
-
-      console.log(this.variableService.userIsAGuest$);
-    
     });
   }
 
@@ -135,7 +131,7 @@ export class HeaderComponent implements OnInit {
         ? Object.entries(data["direct-messages"] as Record<string, any>)
           .filter(([_, directMessage]) => {
             if (!directMessage.messages) return false;
-   
+
             return Object.values(directMessage.messages).some(
               (msg: any) => msg.senderUid === this.userID
             );
@@ -216,30 +212,32 @@ export class HeaderComponent implements OnInit {
   }
 
   openResultChannelMessage(result: any) {
-    if (result.type === 'ChannelMessage') {
-      const channelWithKey = {
-        ...result.data,
-        key: result.data.channelId,
-      };
-  
-      const msgWithKey = {
-        ...result.data,
-        key: result.id,
-      };
-  
-      this.channelMessageSelected.emit({
-        channel: channelWithKey,
-        msg: msgWithKey,
-      });     
-  
-      this.searchResultsState = false;
-    }
+    this.databaseService.getChannel(result.data.channelId).subscribe((channel) => {
+      if (channel) {
+        const channelWithKey = { ...channel, key: result.data.channelId };
+        this.channelSelected.emit(channelWithKey);
+        this.variableService.showChannelChatView();
+      }
+    });
   }
 
   openResultMsg(result: any) {
-    console.log(result);
-    
+    this.databaseService.getUserData(result.data.senderUid).subscribe((user) => {
+      if (user) {
+        this.userSelected.emit(user);
+        this.variableService.showsDmChatView();
+      }
+    });
   }
+  
+  // openResultMsg(result: any) {
+  //   this.databaseService.getDirectMessages(result.conversationId).subscribe((msg) => {
+  //     if (msg && msg.length > 0) {
+  //       this.msgSelected.emit(msg[0]);
+  //       this.variableService.showsDmChatView();
+  //     }
+  //   });
+  // }
 
   openResultUser(data: any) {
     const dialogRef = this.dialog.open(UserProfilComponent, {
