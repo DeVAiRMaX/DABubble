@@ -171,6 +171,13 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   async login(userEmail: string, userPassword: string) {
     this.loginError = null;
+
+
+    if(!userEmail || !userPassword || userEmail.trim() === '' || userPassword.trim() === '') {
+      this.loginError = 'Bitte E-Mail-Adresse und Passwort eingeben.';
+      return;
+    }
+
     try {
       await this.authService.loginWithEmailPassword(userEmail, userPassword);
     } catch (error: any) {
