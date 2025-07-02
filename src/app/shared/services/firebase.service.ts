@@ -184,13 +184,13 @@ export class FirebaseService {
 
           // Gast ist schon Mitglied?
           if (!members.includes(uid)) {
-            members.push(uid);
-            const updateOps = [
-              update(testChannelRef, { members }),
-              this.addChannelKeyToUser(uid, testChannelKey),
-            ];
-            return from(Promise.all(updateOps)).pipe(map(() => testChannelKey));
-          }
+  members.push(uid);
+  // 1. Update Mitgliederliste
+  return from(update(testChannelRef, { members })).pipe(
+    switchMap(() => this.addChannelKeyToUser(uid, testChannelKey)),
+    map(() => testChannelKey)
+  );
+}
 
           // Gast ist schon drin
           return of(testChannelKey);
@@ -384,6 +384,8 @@ export class FirebaseService {
   }
 
   addChannelKeyToUser(uid: string, channelKey: string): Observable<void> {
+    
+
     if (!uid || !channelKey) {
       return throwError(
         () =>
