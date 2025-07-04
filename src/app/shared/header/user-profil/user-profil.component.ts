@@ -35,7 +35,7 @@ export class UserProfilComponent {
   }
 
   selectUserForDm(user: User): void {
-    console.log('[Dialog] User selected:', user);
+ 
     if (this.dialogRef) {
       this.dialogRef.close(user); // gibt User zurück an HeaderComponent
     }

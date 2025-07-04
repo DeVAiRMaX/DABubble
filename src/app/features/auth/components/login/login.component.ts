@@ -193,7 +193,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       error.code === 'auth/invalid-credential'
     ) {
       this.loginError = 'E-Mail-Adresse oder Passwort ist ungültig.';
-      console.log(this.loginError);
+     
     }
   }
 }

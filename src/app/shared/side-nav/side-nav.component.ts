@@ -124,7 +124,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   selectChannel(channel: ChannelWithKey): void {
-    console.log('[SideNav] Channel selected:', channel);
+  
     
     this.channelSelected.emit(channel);
 
@@ -132,7 +132,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   selectUserForDm(user: User): void {
-console.log(user);
+
 
     this.userSelected.emit(user);
     this.variableService.showsDmChatView();

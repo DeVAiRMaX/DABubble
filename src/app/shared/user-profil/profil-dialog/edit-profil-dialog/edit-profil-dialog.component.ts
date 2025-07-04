@@ -41,15 +41,12 @@ export class EditProfilDialogComponent {
   ngOnInit(): void {
   
   const user = this.authService.getCurrentUser();
-  console.log('aktueller User', user);
   this.oldUserPic = user?.avatar || '';
-  console.log(this.oldUserPic);
   this.displayName = user?.displayName || '';
   this.checkFormInvalid();
 
   this.variableService.userIsAGuest$.subscribe((value) =>{
     this.isAGuestUser = value;
-    console.log('ist ein gast:', this.isAGuestUser);
   })
     
   }

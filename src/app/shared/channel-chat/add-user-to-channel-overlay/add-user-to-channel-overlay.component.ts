@@ -57,7 +57,7 @@ export class AddUserToChannelOverlayComponent {
         this.channelData.push(channelDataJson);
       });
 
-    console.log(this.channelData);
+   
   }
 
   searchForUser(): void {
@@ -91,7 +91,7 @@ export class AddUserToChannelOverlayComponent {
 
   checkFormInvalid() {
     if (this.userInput === '' && this.selectedUser.length > 0) {
-      console.log(this.selectedUser.length);
+     
       this.formInvalid = true;
     } else {
       this.formInvalid = false;

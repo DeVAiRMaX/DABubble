@@ -66,7 +66,7 @@ export class RegisterComponent {
         password,
         displayName
       );
-      console.log(this.authService.getCurrentUser());
+    
     } catch (error: any) {
       console.error('Fehler bei der Registrierung:', error);
       this.emailInvalid = true;

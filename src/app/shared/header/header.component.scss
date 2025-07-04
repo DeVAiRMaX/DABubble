@@ -98,6 +98,8 @@ mat-icon {
   position: absolute;
   top: 50px;
   left: 50px;
+  overflow-y: scroll;
+  max-height: 400px;
   background-color: #fff;
   z-index: 9999;
   border: 1px solid #cecece;

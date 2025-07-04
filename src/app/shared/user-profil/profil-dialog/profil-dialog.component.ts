@@ -65,7 +65,7 @@ export class ProfilDialogComponent {
 
   this.variableService.userIsAGuest$.subscribe((value) =>{
     this.isAGuestUser = value;
-    console.log('ist ein gast:', this.isAGuestUser);
+   
   })
   }
 

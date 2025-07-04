@@ -1231,10 +1231,7 @@ export class FirebaseService {
       message: newText,
       editedAt: serverTimestamp(),
     };
-    console.log(
-      '[FirebaseService] updateDirectMessage - Updates-Objekt:',
-      updates
-    );
+   
 
     return from(update(messageRef, updates)).pipe(
       catchError((error) => {
@@ -1274,11 +1271,7 @@ export class FirebaseService {
     };
 
     return from(update(messageRef, updates)).pipe(
-      tap(() =>
-        console.log(
-          `[FirebaseService] Nachricht ${messageKey} in Thread ${threadKey} unter Pfad ${messagePath} erfolgreich aktualisiert.`
-        )
-      ),
+      
       catchError((error) => {
         console.error(
           `[FirebaseService] Fehler beim Aktualisieren der Nachricht ${messageKey} in Thread ${threadKey} unter Pfad ${messagePath}:`,
@@ -1308,7 +1301,7 @@ export class FirebaseService {
           this.channelListDatabase.push(channel.channelName);
         });
       } else {
-        console.log('Keine Channels gefunden.');
+       
       }
     } catch (error) {
       console.error('Fehler beim Laden der Channels:', error);

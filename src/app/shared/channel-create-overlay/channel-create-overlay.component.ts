@@ -79,7 +79,7 @@ export class ChannelCreateOverlayComponent {
   async getChannelNames() {
    await this.firebaseService.getChannelNames();
     this.channelList = this.firebaseService.channelListDatabase;
-    console.log(this.channelList);
+  
     
 
   }
@@ -144,7 +144,7 @@ closeDialog() {
     );
 
     if(duplicateExists){
-      console.log('channel name already exists');
+     
       this.channelNameExists = true;
     }
   

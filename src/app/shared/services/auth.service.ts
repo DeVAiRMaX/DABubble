@@ -216,11 +216,7 @@ export class AuthService {
         password
       );
       await this.variablesService.setLoginStatusToTrue();
-      console.log(
-        this.variablesService.isAboutToLogin$.subscribe((value) =>
-          console.log('Login status:', value)
-        )
-      );
+    
       setTimeout(() => {
         this.router.navigate(['/dashboard']);
       }, 700);

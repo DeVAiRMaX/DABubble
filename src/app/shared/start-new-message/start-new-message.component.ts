@@ -42,7 +42,7 @@ export class StartNewMessageComponent {
 
   ngOnInit(): void {
     this.realUser = this.authService.getCurrentUser();
-    console.log(this.realUser);
+   
   }
 
   onInputForTagging(event: Event) {
@@ -603,9 +603,9 @@ export class StartNewMessageComponent {
       this.firebaseService.getChannel(channelKey).subscribe({
         next: (channel) => {
           if (channel) {
-            console.log('Channel Name:', channel.channelName);
+           
           } else {
-            console.log(`Kein Channel gefunden für Key: ${channelKey}`);
+           
           }
         },
         error: (err) => {
@@ -648,7 +648,7 @@ export class StartNewMessageComponent {
 
       Object.keys(listObj).forEach((chatKey) => {
         if (chatKey.includes(realUserID) && chatKey.includes(userToCheckUID)) {
-          console.log('Chat gefunden für User:', chatKey);
+       
           const sendPromise = firstValueFrom(
             this.firebaseService.sendDirectMessage(
               chatKey,
@@ -666,7 +666,7 @@ export class StartNewMessageComponent {
       const channelMembers = element.data.members || [];
 
       if (channelMembers.includes(realUserID)) {
-        console.log('Nachricht wird an Channel gesendet:', channelKey);
+       
         const sendPromise = firstValueFrom(
           this.firebaseService.sendMessage(
             channelKey,
@@ -678,7 +678,7 @@ export class StartNewMessageComponent {
         );
         sendPromises.push(sendPromise);
       } else {
-        console.log('Sie haben keinen Zugriff auf diesen Channel:', channelKey);
+       
         this.channelAccessDenied = true;
       }
     });
@@ -686,7 +686,6 @@ export class StartNewMessageComponent {
     try {
       await Promise.all(sendPromises);
       this.messageInput.nativeElement.innerText = '';
-      console.log('Alle Nachrichten erfolgreich gesendet.');
       this.addedUsersNewMessage = [];
       this.addedChannelsNewMessage = [];
       this.searchValue = '';
