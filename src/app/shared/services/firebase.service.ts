@@ -184,13 +184,13 @@ export class FirebaseService {
 
           // Gast ist schon Mitglied?
           if (!members.includes(uid)) {
-  members.push(uid);
-  // 1. Update Mitgliederliste
-  return from(update(testChannelRef, { members })).pipe(
-    switchMap(() => this.addChannelKeyToUser(uid, testChannelKey)),
-    map(() => testChannelKey)
-  );
-}
+            members.push(uid);
+            // 1. Update Mitgliederliste
+            return from(update(testChannelRef, { members })).pipe(
+              switchMap(() => this.addChannelKeyToUser(uid, testChannelKey)),
+              map(() => testChannelKey)
+            );
+          }
 
           // Gast ist schon drin
           return of(testChannelKey);
@@ -384,8 +384,6 @@ export class FirebaseService {
   }
 
   addChannelKeyToUser(uid: string, channelKey: string): Observable<void> {
-    
-
     if (!uid || !channelKey) {
       return throwError(
         () =>
@@ -1231,7 +1229,6 @@ export class FirebaseService {
       message: newText,
       editedAt: serverTimestamp(),
     };
-   
 
     return from(update(messageRef, updates)).pipe(
       catchError((error) => {
@@ -1271,7 +1268,6 @@ export class FirebaseService {
     };
 
     return from(update(messageRef, updates)).pipe(
-      
       catchError((error) => {
         console.error(
           `[FirebaseService] Fehler beim Aktualisieren der Nachricht ${messageKey} in Thread ${threadKey} unter Pfad ${messagePath}:`,
@@ -1301,7 +1297,6 @@ export class FirebaseService {
           this.channelListDatabase.push(channel.channelName);
         });
       } else {
-       
       }
     } catch (error) {
       console.error('Fehler beim Laden der Channels:', error);

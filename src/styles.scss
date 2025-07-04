@@ -46,6 +46,28 @@ body {
   height: unset !important;
 }
 
+.channel-tag {
+  display: inline-block;
+  color: rgb(249, 178, 54);
+  padding: 1px 6px;
+  border-radius: 8px 0 8px 8px;
+  font-size: 0.95em;
+  line-height: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0 1px;
+  vertical-align: baseline;
+  transition: all 0.1s ease-in-out;
+  margin-left: 3px;
+
+  &:hover {
+    color: white;
+    background-color: rgb(249, 178, 54);
+  }
+}
+
 .user-tag {
   display: inline-block;
   color: rgb(147, 200, 58);

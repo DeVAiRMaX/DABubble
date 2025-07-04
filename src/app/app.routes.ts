@@ -24,11 +24,15 @@ export const routes: Routes = [
     component: RegisterComponent,
   },
   {
-    path: 'dashboard/:id',
+    path: 'dashboard',
     component: MainComponentComponent,
+    children: [
+      { path: 'channel/:channelId', component: ChannelChatComponent },
+      { path: 'dm/:conversationId', component: DirectMessageComponent },
+    ],
   },
   {
-    path: 'dashboard',
+    path: 'dashboard/:id',
     component: MainComponentComponent,
   },
   {
@@ -44,6 +48,10 @@ export const routes: Routes = [
     component: NewPasswordComponent,
   },
   {
+    path: 'confirm-reset-password',
+    component: NewPasswordComponent,
+  },
+  {
     path: 'impressum',
     component: ImpressumComponent,
   },
@@ -52,13 +60,7 @@ export const routes: Routes = [
     component: DataProtectionComponent,
   },
   {
-    path: 'dashboard',
-    component: MainComponentComponent,
-    children: [
-      { path: 'channel/:channelId', component: ChannelChatComponent },
-      { path: 'dm/:conversationId', component: DirectMessageComponent },
-    ],
+    path: '**',
+    redirectTo: '',
   },
-  { path: '**', redirectTo: '' },
-  { path: 'confirm-reset-password', component: NewPasswordComponent },
 ];
