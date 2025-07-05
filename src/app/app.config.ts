@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withHashLocation } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { environment } from '../environments/environment';
 
@@ -13,7 +13,7 @@ import { getDatabase, provideDatabase } from '@angular/fire/database';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withHashLocation()),
     provideAnimations(),
     provideAnimationsAsync(),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
