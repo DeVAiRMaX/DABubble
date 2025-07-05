@@ -32,8 +32,7 @@ export class VariablesService {
     }
   }
 
-
- private channelNameChangedSource = new Subject<void>();
+  private channelNameChangedSource = new Subject<void>();
   channelNameChanged$ = this.channelNameChangedSource.asObservable();
 
   public notifyChannelNameChanged(): void {
@@ -47,7 +46,7 @@ export class VariablesService {
     this.profileNameChangedSource.next();
   }
 
-  private initialAnimationPlayed = false; 
+  private initialAnimationPlayed = false;
 
   get InitialAnimationPlayed(): boolean {
     return this.initialAnimationPlayed;
@@ -83,7 +82,7 @@ export class VariablesService {
 
   setActiveMsg(msg: Message | null): void {
     this.activeMsgSubject.next(msg);
-  }  
+  }
 
   setActiveChannel(channel: ChannelWithKey | null): void {
     if (channel) {
@@ -123,7 +122,7 @@ export class VariablesService {
 
   setUserIsAGuest(isGuest: boolean) {
     this.userIsAGuestSubject.next(isGuest);
-  };
+  }
 
   private isClosedSubject = new BehaviorSubject<boolean>(
     this.getStoredValue('isClosed', false)

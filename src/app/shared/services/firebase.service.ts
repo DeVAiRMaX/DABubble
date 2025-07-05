@@ -145,7 +145,7 @@ export class FirebaseService {
       description: description,
       messages: [
         {
-          message: `Welcome to #${channelName}`,
+          message: `Welcome ^^`,
           reactions: [],
           sender: `DABubble`,
           time: timestamp,
@@ -203,7 +203,7 @@ export class FirebaseService {
             description: 'Ein Channel für Gäste',
             messages: [
               {
-                message: `Welcome to #Test-Channel`,
+                message: `Welcome ^^`,
                 reactions: [],
                 sender: `DABubble`,
                 time: timestamp,
